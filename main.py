@@ -40,6 +40,10 @@ app.include_router(scenarios_router, prefix=settings.api_v1_str)
 from backend.api.fleet_data_router import router as fleet_data_router
 app.include_router(fleet_data_router, prefix=settings.api_v1_str)
 
+# Import and include fleet config router
+from backend.api.fleet_config_router import router as fleet_config_router
+app.include_router(fleet_config_router, prefix=settings.api_v1_str)
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -87,8 +91,21 @@ def initialize_sample_data(db: Session = Depends(get_db)):
             )
             db.add(manager_user)
         
+        # Create sample configurator
+        configurator_user = db.query(User).filter(User.username == "configurator1").first()
+        if not configurator_user:
+            configurator_user = User(
+                username="configurator1",
+                password_hash=get_password_hash("pass"),  # Shorter password
+                email="configurator1@fleetmanagement.com",
+                role="configurator",
+                qr_code=generate_qr_code(),
+                is_active=True
+            )
+            db.add(configurator_user)
+        
         db.commit()
-        return {"message": "Sample data initialized successfully", "users_created": 3}
+        return {"message": "Sample data initialized successfully", "users_created": 4}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error initializing data: {str(e)}")
@@ -103,6 +120,7 @@ async def root():
             "Connect++": "/connect-plus",
             "Commands_Manager": "/commands-manager",
             "Fleet_Data_Manager": "/fleet-data-manager",
+            "Fleet_Config_Manager": "/fleet-config-manager",
             "API_Documentation": "/docs",
             "Initialize_Sample_Data": "/api/v1/init-data (POST)"
         }
@@ -1384,6 +1402,927 @@ async def fleet_data_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         <strong>Error testing Dashboard API:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAuthUI();
+            });
+        </script>
+    </body>
+    </html>
+    """
+
+# Fleet Config Manager Module
+@app.get("/fleet-config-manager", response_class=HTMLResponse)
+async def fleet_config_manager():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Fleet Config Manager - Fleet Management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1400px; margin: 0 auto; }
+            .header { background: #9b59b6; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+            .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+            .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+            .stat-value { font-size: 2em; font-weight: bold; color: #9b59b6; }
+            .stat-label { color: #666; margin-top: 5px; }
+            .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .tabs { display: flex; margin-bottom: 20px; flex-wrap: wrap; }
+            .tab { padding: 8px 15px; background: #bdc3c7; color: #333; cursor: pointer; border: none; margin: 2px; font-size: 12px; }
+            .tab.active { background: #9b59b6; color: white; }
+            .tab-content { display: none; }
+            .tab-content.active { display: block; }
+            .btn { background: #9b59b6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+            .btn:hover { background: #8e44ad; }
+            .btn-secondary { background: #95a5a6; }
+            .btn-secondary:hover { background: #7f8c8d; }
+            .btn-success { background: #27ae60; }
+            .btn-success:hover { background: #229954; }
+            .btn-danger { background: #e74c3c; }
+            .btn-danger:hover { background: #c0392b; }
+            .form-group { margin-bottom: 15px; }
+            .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+            .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+            .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+            .data-table th, .data-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+            .data-table th { background-color: #f8f9fa; font-weight: bold; }
+            .data-table tr:hover { background-color: #f8f9fa; }
+            .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #9b59b6; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+            .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+            .filter-section { background: #e8f5e8; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+            .config-card { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px; }
+            .config-header { font-weight: bold; color: #9b59b6; margin-bottom: 10px; }
+            .config-value { background: white; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+            .backup-section { background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>⚙️ Fleet Config Manager</h1>
+            </div>
+            
+            <div class="module-info">
+                <h3>Moduł dla Configurator</h3>
+                <p><strong>Port:</strong> 5000</p>
+                <p><strong>Rola:</strong> Configurator</p>
+                <p><strong>Funkcje:</strong> Zarządzanie konfiguracją systemu, urządzeń i scenariuszy testowych</p>
+            </div>
+
+            <div class="auth-section">
+                <h4>🔐 Uwierzytelnianie</h4>
+                <div id="auth-status">
+                    <p>Zaloguj się jako Configurator aby uzyskać dostęp do funkcji:</p>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="login-username" placeholder="Username" style="padding: 5px;">
+                        <input type="password" id="login-password" placeholder="Password" style="padding: 5px;">
+                        <button class="btn" onclick="login()">Zaloguj</button>
+                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    </div>
+                    <div id="auth-message" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- Dashboard Statistics -->
+            <div id="dashboard-section" style="display: none;">
+                <h3>📈 Configuration Dashboard</h3>
+                <div class="dashboard" id="dashboard-stats">
+                    <!-- Stats will be loaded here -->
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="section">
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTab('system-config')">Konfiguracja systemu</button>
+                        <button class="tab" onclick="showTab('device-config')">Konfiguracja urządzeń</button>
+                        <button class="tab" onclick="showTab('test-config')">Scenariusze testowe</button>
+                        <button class="tab" onclick="showTab('backup')">Backup/Restore</button>
+                    </div>
+
+                    <!-- System Configuration Tab -->
+                    <div id="system-config-tab" class="tab-content active">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4>🔧 Konfiguracja systemu</h4>
+                            <button class="btn" onclick="showAddSystemConfigForm()">Dodaj konfigurację</button>
+                        </div>
+                        
+                        <div id="system-configs-list">
+                            <p>Zaloguj się aby zobaczyć konfigurację systemu...</p>
+                        </div>
+                    </div>
+
+                    <!-- Device Configuration Tab -->
+                    <div id="device-config-tab" class="tab-content">
+                        <h4>📱 Konfiguracja urządzeń</h4>
+                        
+                        <table class="data-table" id="device-configs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Numer urządzenia</th>
+                                    <th>Typ</th>
+                                    <th>Status</th>
+                                    <th>Konfiguracja</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="6">Zaloguj się aby zobaczyć konfigurację urządzeń...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Test Configuration Tab -->
+                    <div id="test-config-tab" class="tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4>🧪 Scenariusze testowe</h4>
+                            <button class="btn" onclick="showAddTestScenarioForm()">Dodaj scenariusz</button>
+                        </div>
+                        
+                        <table class="data-table" id="test-scenarios-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nazwa</th>
+                                    <th>Typ testu</th>
+                                    <th>Parametry</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5">Zaloguj się aby zobaczyć scenariusze...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Backup/Restore Tab -->
+                    <div id="backup-tab" class="tab-content">
+                        <h4>💾 Backup i Restore konfiguracji</h4>
+                        
+                        <div class="backup-section">
+                            <h5>Backup konfiguracji</h5>
+                            <p>Utwórz kopię zapasową wszystkich konfiguracji systemu:</p>
+                            <button class="btn btn-success" onclick="createBackup()">Utwórz Backup</button>
+                        </div>
+
+                        <div class="backup-section">
+                            <h5>Restore konfiguracji</h5>
+                            <p>Przywróć konfigurację z pliku backup:</p>
+                            <textarea id="restore-data" placeholder='Wklej dane backup w formacie JSON...' rows="5" style="width: 100%; margin-bottom: 10px;"></textarea>
+                            <button class="btn btn-danger" onclick="restoreBackup()">Przywróć z Backup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 id="form-title">Formularz konfiguracji</h3>
+                    
+                    <!-- Add System Config Form -->
+                    <div id="add-system-config-form" style="display: none;">
+                        <h4>Dodaj konfigurację systemu</h4>
+                        <form id="system-config-form">
+                            <div class="form-group">
+                                <label>Nazwa konfiguracji:</label>
+                                <input type="text" id="config-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Typ konfiguracji:</label>
+                                <select id="config-type" required>
+                                    <option value="">Wybierz typ</option>
+                                    <option value="device_settings">Ustawienia urządzeń</option>
+                                    <option value="test_parameters">Parametry testów</option>
+                                    <option value="system_limits">Limity systemu</option>
+                                    <option value="network_config">Konfiguracja sieci</option>
+                                    <option value="security_config">Konfiguracja bezpieczeństwa</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Wartości konfiguracji (JSON):</label>
+                                <textarea id="config-value" rows="5" placeholder='{"key": "value", "setting": 123}'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Opis:</label>
+                                <textarea id="config-description" rows="3"></textarea>
+                            </div>
+                            <button type="button" class="btn" onclick="createSystemConfig()">Dodaj konfigurację</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideSystemConfigForm()">Anuluj</button>
+                        </form>
+                    </div>
+
+                    <!-- Add Test Scenario Form -->
+                    <div id="add-test-scenario-form" style="display: none;">
+                        <h4>Dodaj scenariusz testowy</h4>
+                        <form id="test-scenario-form">
+                            <div class="form-group">
+                                <label>Nazwa scenariusza:</label>
+                                <input type="text" id="scenario-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Typ testu:</label>
+                                <select id="test-type" required>
+                                    <option value="">Wybierz typ</option>
+                                    <option value="mask_leak_test">Test nieszczelności maski</option>
+                                    <option value="pressure_test">Test ciśnienia</option>
+                                    <option value="flow_test">Test przepływu</option>
+                                    <option value="calibration_test">Test kalibracji</option>
+                                    <option value="functional_test">Test funkcjonalny</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Parametry (JSON):</label>
+                                <textarea id="test-parameters" rows="5" placeholder='{"duration": 300, "pressure": 50, "tolerance": 2}'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Oczekiwane wyniki (JSON):</label>
+                                <textarea id="expected-results" rows="3" placeholder='{"pass_criteria": "value < 10", "units": "Pa"}'></textarea>
+                            </div>
+                            <button type="button" class="btn" onclick="createTestScenario()">Dodaj scenariusz</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTestScenarioForm()">Anuluj</button>
+                        </form>
+                    </div>
+
+                    <!-- Device Config Form -->
+                    <div id="device-config-form" style="display: none;">
+                        <h4>Konfiguracja urządzenia</h4>
+                        <form id="device-config-edit-form">
+                            <div class="form-group">
+                                <label>ID urządzenia:</label>
+                                <input type="number" id="device-config-id" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Konfiguracja (JSON):</label>
+                                <textarea id="device-configuration" rows="8" placeholder='{"baudrate": 9600, "timeout": 5}'></textarea>
+                            </div>
+                            <button type="button" class="btn" onclick="updateDeviceConfig()">Aktualizuj konfigurację</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideDeviceConfigForm()">Anuluj</button>
+                        </form>
+                    </div>
+
+                    <!-- API Test Section -->
+                    <div id="api-test-section">
+                        <h4>🔍 Test API</h4>
+                        <button class="btn btn-secondary" onclick="testConfigAPI()">Test Config API</button>
+                        <button class="btn btn-secondary" onclick="testConfigDashboard()">Test Dashboard</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result" style="margin-top: 20px;"></div>
+        </div>
+
+        <script>
+            let authToken = null;
+            let systemConfigs = [];
+            let deviceConfigs = [];
+            let testScenarios = [];
+
+            function getAuthToken() {
+                if (!authToken) {
+                    authToken = localStorage.getItem('jwt_token');
+                }
+                return authToken;
+            }
+
+            function setAuthToken(token) {
+                authToken = token;
+                localStorage.setItem('jwt_token', token);
+                updateAuthUI();
+            }
+
+            function clearAuthToken() {
+                authToken = null;
+                localStorage.removeItem('jwt_token');
+                updateAuthUI();
+            }
+
+            function updateAuthUI() {
+                const isLoggedIn = !!getAuthToken();
+                document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+                document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+                document.getElementById('dashboard-section').style.display = isLoggedIn ? 'block' : 'none';
+                
+                if (isLoggedIn) {
+                    document.getElementById('auth-message').innerHTML = 
+                        '<span style="color: green;">✅ Zalogowany jako Configurator</span>';
+                    loadDashboard();
+                    loadSystemConfigs();
+                    loadDeviceConfigs();
+                    loadTestScenarios();
+                } else {
+                    document.getElementById('auth-message').innerHTML = 
+                        '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    clearData();
+                }
+            }
+
+            function clearData() {
+                document.getElementById('system-configs-list').innerHTML = 
+                    '<p>Zaloguj się aby zobaczyć konfigurację systemu...</p>';
+                document.getElementById('device-configs-table').getElementsByTagName('tbody')[0].innerHTML = 
+                    '<tr><td colspan="6">Zaloguj się aby zobaczyć konfigurację urządzeń...</td></tr>';
+                document.getElementById('test-scenarios-table').getElementsByTagName('tbody')[0].innerHTML = 
+                    '<tr><td colspan="5">Zaloguj się aby zobaczyć scenariusze...</td></tr>';
+            }
+
+            async function login() {
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                if (!username || !password) {
+                    alert('Podaj username i hasło');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('login-password').value = '';
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Zalogowano pomyślnie jako ${username}
+                            </div>
+                        `;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+                }
+            }
+
+            function logout() {
+                clearAuthToken();
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    ℹ️ Wylogowano pomyślnie
+                    </div>
+                `;
+            }
+
+            async function makeAuthenticatedRequest(url, options = {}) {
+                const token = getAuthToken();
+                
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { 'Authorization': `Bearer ${token}` }),
+                            ...options.headers
+                        }
+                    });
+                    return response;
+                } catch (error) {
+                    console.error('Request failed:', error);
+                    throw error;
+                }
+            }
+
+            function showTab(tabName) {
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                // Show selected tab
+                document.getElementById(tabName + '-tab').classList.add('active');
+                event.target.classList.add('active');
+
+                // Hide all forms
+                hideAllForms();
+            }
+
+            function hideAllForms() {
+                document.getElementById('add-system-config-form').style.display = 'none';
+                document.getElementById('add-test-scenario-form').style.display = 'none';
+                document.getElementById('device-config-form').style.display = 'none';
+                document.getElementById('form-title').textContent = 'Formularz konfiguracji';
+            }
+
+            async function loadDashboard() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/dashboard');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        displayDashboard(data);
+                    }
+                } catch (error) {
+                    console.error('Error loading dashboard:', error);
+                }
+            }
+
+            function displayDashboard(data) {
+                const container = document.getElementById('dashboard-stats');
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_devices}</div>
+                        <div class="stat-label">Urządzenia</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.configured_devices}</div>
+                        <div class="stat-label">Skonfigurowane</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_test_scenarios}</div>
+                        <div class="stat-label">Scenariusze</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.configuration_coverage}%</div>
+                        <div class="stat-label">Pokrycie konfiguracji</div>
+                    </div>
+                `;
+            }
+
+            async function loadSystemConfigs() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/system-configs');
+                    
+                    if (response.ok) {
+                        systemConfigs = await response.json();
+                        displaySystemConfigs(systemConfigs);
+                    } else if (response.status === 401 || response.status === 403) {
+                        document.getElementById('system-configs-list').innerHTML = 
+                            '<p style="color: #e74c3c;">❌ Brak autoryzacji Configurator</p>';
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania konfiguracji systemu: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displaySystemConfigs(configs) {
+                const container = document.getElementById('system-configs-list');
+                if (configs.length === 0) {
+                    container.innerHTML = '<p>Brak konfiguracji systemu.</p>';
+                    return;
+                }
+
+                container.innerHTML = configs.map(config => `
+                    <div class="config-card">
+                        <div class="config-header">${config.config_name} (${config.config_type})</div>
+                        <div class="config-value">${JSON.stringify(config.config_value, null, 2)}</div>
+                        <div style="margin-top: 10px;">
+                            <small>Opis: ${config.description || 'Brak opisu'}</small>
+                            <div style="float: right;">
+                                <button class="btn btn-secondary" onclick="editSystemConfig(${config.id})">Edytuj</button>
+                                <button class="btn btn-danger" onclick="deleteSystemConfig(${config.id})">Usuń</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async function loadDeviceConfigs() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/device-configs');
+                    
+                    if (response.ok) {
+                        deviceConfigs = await response.json();
+                        displayDeviceConfigs(deviceConfigs);
+                    } else if (response.status === 401 || response.status === 403) {
+                        document.getElementById('device-configs-table').getElementsByTagName('tbody')[0].innerHTML = 
+                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania konfiguracji urządzeń: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displayDeviceConfigs(configs) {
+                const tbody = document.getElementById('device-configs-table').getElementsByTagName('tbody')[0];
+                if (configs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">Brak urządzeń do konfiguracji.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = configs.map(device => `
+                    <tr>
+                        <td>${device.device_id}</td>
+                        <td>${device.device_number}</td>
+                        <td>${device.device_type}</td>
+                        <td>${device.status}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                            ${Object.keys(device.configuration).length > 0 ? 'Skonfigurowane' : 'Brak konfiguracji'}
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editDeviceConfig(${device.device_id})">Konfiguruj</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async function loadTestScenarios() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/test-scenario-configs');
+                    
+                    if (response.ok) {
+                        testScenarios = await response.json();
+                        displayTestScenarios(testScenarios);
+                    } else if (response.status === 401 || response.status === 403) {
+                        document.getElementById('test-scenarios-table').getElementsByTagName('tbody')[0].innerHTML = 
+                            '<tr><td colspan="5" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania scenariuszy: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displayTestScenarios(scenarios) {
+                const tbody = document.getElementById('test-scenarios-table').getElementsByTagName('tbody')[0];
+                if (scenarios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">Brak scenariuszy testowych.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = scenarios.map(scenario => `
+                    <tr>
+                        <td>${scenario.scenario_id}</td>
+                        <td>${scenario.scenario_name}</td>
+                        <td>${scenario.test_type}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                            ${JSON.stringify(scenario.parameters).substring(0, 50)}...
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editTestScenario(${scenario.scenario_id})">Edytuj</button>
+                            <button class="btn btn-danger" onclick="deleteTestScenario(${scenario.scenario_id})">Usuń</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function showAddSystemConfigForm() {
+                hideAllForms();
+                document.getElementById('add-system-config-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Dodaj konfigurację systemu';
+            }
+
+            function hideSystemConfigForm() {
+                document.getElementById('add-system-config-form').style.display = 'none';
+                document.getElementById('system-config-form').reset();
+                document.getElementById('form-title').textContent = 'Formularz konfiguracji';
+            }
+
+            function showAddTestScenarioForm() {
+                hideAllForms();
+                document.getElementById('add-test-scenario-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Dodaj scenariusz testowy';
+            }
+
+            function hideTestScenarioForm() {
+                document.getElementById('add-test-scenario-form').style.display = 'none';
+                document.getElementById('test-scenario-form').reset();
+                document.getElementById('form-title').textContent = 'Formularz konfiguracji';
+            }
+
+            function hideDeviceConfigForm() {
+                document.getElementById('device-config-form').style.display = 'none';
+                document.getElementById('device-config-edit-form').reset();
+                document.getElementById('form-title').textContent = 'Formularz konfiguracji';
+            }
+
+            function editDeviceConfig(deviceId) {
+                const device = deviceConfigs.find(d => d.device_id === deviceId);
+                if (!device) return;
+
+                hideAllForms();
+                document.getElementById('device-config-form').style.display = 'block';
+                document.getElementById('form-title').textContent = `Konfiguracja urządzenia ${device.device_number}`;
+                document.getElementById('device-config-id').value = deviceId;
+                document.getElementById('device-configuration').value = JSON.stringify(device.configuration, null, 2);
+            }
+
+            async function updateDeviceConfig() {
+                const deviceId = document.getElementById('device-config-id').value;
+                const configText = document.getElementById('device-configuration').value;
+                
+                let configuration;
+                try {
+                    configuration = JSON.parse(configText);
+                } catch (e) {
+                    alert('Nieprawidłowy format JSON w konfiguracji');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-config/device-configs/${deviceId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            device_id: parseInt(deviceId),
+                            configuration: configuration
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message}
+                            </div>
+                        `;
+                        hideDeviceConfigForm();
+                        loadDeviceConfigs();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd aktualizacji konfiguracji: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function createSystemConfig() {
+                const configData = {
+                    config_name: document.getElementById('config-name').value,
+                    config_type: document.getElementById('config-type').value,
+                    config_value: {},
+                    description: document.getElementById('config-description').value
+                };
+
+                try {
+                    configData.config_value = JSON.parse(document.getElementById('config-value').value);
+                } catch (e) {
+                    alert('Nieprawidłowy format JSON w wartościach konfiguracji');
+                    return;
+                }
+
+                if (!configData.config_name || !configData.config_type) {
+                    alert('Podaj nazwę i typ konfiguracji');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/system-configs', {
+                        method: 'POST',
+                        body: JSON.stringify(configData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Konfiguracja ${result.config_name} została dodana pomyślnie
+                            </div>
+                        `;
+                        hideSystemConfigForm();
+                        loadSystemConfigs();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd tworzenia konfiguracji: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function createTestScenario() {
+                const scenarioData = {
+                    scenario_name: document.getElementById('scenario-name').value,
+                    test_type: document.getElementById('test-type').value,
+                    parameters: {},
+                    expected_results: {}
+                };
+
+                try {
+                    scenarioData.parameters = JSON.parse(document.getElementById('test-parameters').value);
+                    const expectedText = document.getElementById('expected-results').value;
+                    if (expectedText) {
+                        scenarioData.expected_results = JSON.parse(expectedText);
+                    }
+                } catch (e) {
+                    alert('Nieprawidłowy format JSON w parametrach lub wynikach');
+                    return;
+                }
+
+                if (!scenarioData.scenario_name || !scenarioData.test_type) {
+                    alert('Podaj nazwę i typ scenariusza');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/test-scenario-configs', {
+                        method: 'POST',
+                        body: JSON.stringify(scenarioData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message}
+                            </div>
+                        `;
+                        hideTestScenarioForm();
+                        loadTestScenarios();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd tworzenia scenariusza: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function createBackup() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/backup', {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message}
+                            Backup ID: ${result.backup_id}
+                            
+                            Dane backup:
+                            ${JSON.stringify(result.backup_data, null, 2)}
+                            </div>
+                        `;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd tworzenia backup: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd backup: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function restoreBackup() {
+                const backupText = document.getElementById('restore-data').value;
+                
+                if (!backupText) {
+                    alert('Podaj dane backup do przywrócenia');
+                    return;
+                }
+
+                let backupData;
+                try {
+                    backupData = JSON.parse(backupText);
+                } catch (e) {
+                    alert('Nieprawidłowy format JSON w danych backup');
+                    return;
+                }
+
+                if (!confirm('Czy na pewno chcesz przywrócić konfigurację z backup? To może nadpisać obecną konfigurację.')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/restore', {
+                        method: 'POST',
+                        body: JSON.stringify(backupData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message}
+                            Przywrócono: ${result.restored_at}
+                            </div>
+                        `;
+                        // Reload all data
+                        loadDashboard();
+                        loadSystemConfigs();
+                        loadDeviceConfigs();
+                        loadTestScenarios();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd przywracania: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd restore: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function testConfigAPI() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/system-configs');
+                    const data = await response.json();
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Test Fleet Config API Response:</strong>
+                        Status: ${response.status}
+                        ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Error testing Fleet Config API:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function testConfigDashboard() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-config/dashboard');
+                    const data = await response.json();
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Test Config Dashboard API Response:</strong>
+                        Status: ${response.status}
+                        ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Error testing Config Dashboard API:</strong>
                         ${error.message}
                         </div>
                     `;
