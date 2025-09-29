@@ -10,7 +10,7 @@ class User(Base):
     username = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, index=True)
-    role = Column(String(50), nullable=False)  # operator, admin, superuser, developer
+    role = Column(String(50), nullable=False)  # operator, admin, superuser, developer, manager, configurator, maker
     qr_code = Column(String(255), unique=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -140,3 +140,91 @@ class Translation(Base):
     value = Column(Text, nullable=False)
     component = Column(String(50))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Software(Base):
+    __tablename__ = "software"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, index=True)
+    description = Column(Text)
+    vendor = Column(String(255))
+    category = Column(String(100))  # firmware, application, driver, tool
+    platform = Column(String(100))  # device platform compatibility
+    license_type = Column(String(100))
+    repository_url = Column(String(500))
+    documentation_url = Column(String(500))
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    creator = relationship("User", foreign_keys=[created_by])
+    versions = relationship("SoftwareVersion", back_populates="software", cascade="all, delete-orphan")
+    device_installations = relationship("DeviceSoftware", back_populates="software")
+
+class SoftwareVersion(Base):
+    __tablename__ = "software_versions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    software_id = Column(Integer, ForeignKey("software.id"), nullable=False)
+    version_number = Column(String(50), nullable=False)
+    release_notes = Column(Text)
+    changelog = Column(Text)
+    file_path = Column(String(500))  # path to software file
+    file_size = Column(Integer)  # size in bytes
+    checksum = Column(String(64))  # SHA-256 checksum
+    download_url = Column(String(500))
+    is_stable = Column(Boolean, default=True)
+    is_beta = Column(Boolean, default=False)
+    requires_reboot = Column(Boolean, default=False)
+    compatibility = Column(JSON)  # device compatibility info
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    released_at = Column(DateTime(timezone=True))
+    
+    # Relationships
+    software = relationship("Software", back_populates="versions")
+    creator = relationship("User", foreign_keys=[created_by])
+    installations = relationship("SoftwareInstallation", back_populates="version")
+
+class DeviceSoftware(Base):
+    __tablename__ = "device_software"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
+    software_id = Column(Integer, ForeignKey("software.id"), nullable=False)
+    version_id = Column(Integer, ForeignKey("software_versions.id"))
+    installed_version = Column(String(50))
+    installation_status = Column(String(50), default='not_installed')  # not_installed, installing, installed, failed, outdated
+    installation_date = Column(DateTime(timezone=True))
+    last_updated = Column(DateTime(timezone=True), onupdate=func.now())
+    configuration = Column(JSON)  # software-specific configuration
+    notes = Column(Text)
+    
+    # Relationships
+    device = relationship("Device")
+    software = relationship("Software", back_populates="device_installations")
+    version = relationship("SoftwareVersion")
+
+class SoftwareInstallation(Base):
+    __tablename__ = "software_installations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
+    version_id = Column(Integer, ForeignKey("software_versions.id"), nullable=False)
+    action = Column(String(50), nullable=False)  # install, update, uninstall, rollback
+    status = Column(String(50), default='pending')  # pending, in_progress, completed, failed, cancelled
+    initiated_by = Column(Integer, ForeignKey("users.id"))
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True))
+    error_message = Column(Text)
+    installation_log = Column(Text)
+    previous_version = Column(String(50))
+    new_version = Column(String(50))
+    rollback_point = Column(JSON)  # data needed for rollback
+    
+    # Relationships
+    device = relationship("Device")
+    version = relationship("SoftwareVersion", back_populates="installations")
+    initiator = relationship("User", foreign_keys=[initiated_by])

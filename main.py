@@ -44,6 +44,10 @@ app.include_router(fleet_data_router, prefix=settings.api_v1_str)
 from backend.api.fleet_config_router import router as fleet_config_router
 app.include_router(fleet_config_router, prefix=settings.api_v1_str)
 
+# Import and include fleet software router
+from backend.api.fleet_software_router import router as fleet_software_router
+app.include_router(fleet_software_router, prefix=settings.api_v1_str)
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -104,8 +108,21 @@ def initialize_sample_data(db: Session = Depends(get_db)):
             )
             db.add(configurator_user)
         
+        # Create sample maker
+        maker_user = db.query(User).filter(User.username == "maker1").first()
+        if not maker_user:
+            maker_user = User(
+                username="maker1",
+                password_hash=get_password_hash("pass"),  # Shorter password
+                email="maker1@fleetmanagement.com",
+                role="maker",
+                qr_code=generate_qr_code(),
+                is_active=True
+            )
+            db.add(maker_user)
+        
         db.commit()
-        return {"message": "Sample data initialized successfully", "users_created": 4}
+        return {"message": "Sample data initialized successfully", "users_created": 5}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error initializing data: {str(e)}")
@@ -121,6 +138,7 @@ async def root():
             "Commands_Manager": "/commands-manager",
             "Fleet_Data_Manager": "/fleet-data-manager",
             "Fleet_Config_Manager": "/fleet-config-manager",
+            "Fleet_Software_Manager": "/fleet-software-manager",
             "API_Documentation": "/docs",
             "Initialize_Sample_Data": "/api/v1/init-data (POST)"
         }
@@ -2323,6 +2341,925 @@ async def fleet_config_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         <strong>Error testing Config Dashboard API:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAuthUI();
+            });
+        </script>
+    </body>
+    </html>
+    """
+
+# Fleet Software Manager Module
+@app.get("/fleet-software-manager", response_class=HTMLResponse)
+async def fleet_software_manager():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Fleet Software Manager - Fleet Management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1400px; margin: 0 auto; }
+            .header { background: #34495e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+            .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+            .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+            .stat-value { font-size: 2em; font-weight: bold; color: #34495e; }
+            .stat-label { color: #666; margin-top: 5px; }
+            .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .tabs { display: flex; margin-bottom: 20px; flex-wrap: wrap; }
+            .tab { padding: 8px 15px; background: #bdc3c7; color: #333; cursor: pointer; border: none; margin: 2px; font-size: 12px; }
+            .tab.active { background: #34495e; color: white; }
+            .tab-content { display: none; }
+            .tab-content.active { display: block; }
+            .btn { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+            .btn:hover { background: #2c3e50; }
+            .btn-secondary { background: #95a5a6; }
+            .btn-secondary:hover { background: #7f8c8d; }
+            .btn-success { background: #27ae60; }
+            .btn-success:hover { background: #229954; }
+            .btn-danger { background: #e74c3c; }
+            .btn-danger:hover { background: #c0392b; }
+            .form-group { margin-bottom: 15px; }
+            .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+            .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+            .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+            .data-table th, .data-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+            .data-table th { background-color: #f8f9fa; font-weight: bold; }
+            .data-table tr:hover { background-color: #f5f5f5; }
+            .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #34495e; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+            .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+            .version-badge { background: #3498db; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+            .status-badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; color: white; }
+            .status-installed { background: #27ae60; }
+            .status-pending { background: #f39c12; }
+            .status-failed { background: #e74c3c; }
+            .category-badge { background: #9b59b6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>💾 Fleet Software Manager</h1>
+            </div>
+            
+            <div class="module-info">
+                <h3>Moduł dla Maker</h3>
+                <p><strong>Port:</strong> 5000</p>
+                <p><strong>Rola:</strong> Maker</p>
+                <p><strong>Funkcje:</strong> Zarządzanie oprogramowaniem urządzeń, instalacje, aktualizacje</p>
+            </div>
+
+            <div class="auth-section">
+                <h4>🔐 Uwierzytelnianie</h4>
+                <div id="auth-status">
+                    <p>Zaloguj się jako Maker aby uzyskać dostęp do funkcji:</p>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="login-username" placeholder="Username" style="padding: 5px;">
+                        <input type="password" id="login-password" placeholder="Password" style="padding: 5px;">
+                        <button class="btn" onclick="login()">Zaloguj</button>
+                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    </div>
+                    <div id="auth-message" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- Dashboard Statistics -->
+            <div class="dashboard" id="dashboard">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-software">-</div>
+                    <div class="stat-label">Całkowite oprogramowanie</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-versions">-</div>
+                    <div class="stat-label">Wersje oprogramowania</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="devices-with-software">-</div>
+                    <div class="stat-label">Urządzenia z oprogramowaniem</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="recent-installations">-</div>
+                    <div class="stat-label">Dzisiejsze instalacje</div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="section">
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTab('software-tab', this)">Oprogramowanie</button>
+                        <button class="tab" onclick="showTab('versions-tab', this)">Wersje</button>
+                        <button class="tab" onclick="showTab('installations-tab', this)">Instalacje</button>
+                    </div>
+
+                    <!-- Software Management Tab -->
+                    <div id="software-tab" class="tab-content active">
+                        <h3>📦 Zarządzanie Oprogramowaniem</h3>
+                        <button class="btn" onclick="loadSoftware()">Odśwież listę</button>
+                        <button class="btn btn-success" onclick="showCreateSoftwareForm()">Dodaj oprogramowanie</button>
+                        
+                        <div id="software-list">
+                            <p>Kliknij "Odśwież listę" aby załadować oprogramowanie...</p>
+                        </div>
+
+                        <!-- Create Software Form -->
+                        <div id="create-software-form" style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
+                            <h4>➕ Dodaj nowe oprogramowanie</h4>
+                            <div class="form-group">
+                                <label>Nazwa oprogramowania:</label>
+                                <input type="text" id="software-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Opis:</label>
+                                <textarea id="software-description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Dostawca:</label>
+                                <input type="text" id="software-vendor">
+                            </div>
+                            <div class="form-group">
+                                <label>Kategoria:</label>
+                                <select id="software-category">
+                                    <option value="">Wybierz kategorię</option>
+                                    <option value="firmware">Firmware</option>
+                                    <option value="application">Aplikacja</option>
+                                    <option value="driver">Driver</option>
+                                    <option value="tool">Narzędzie</option>
+                                    <option value="middleware">Middleware</option>
+                                    <option value="os">System operacyjny</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Platforma:</label>
+                                <input type="text" id="software-platform" placeholder="np. ARM, x86, Linux">
+                            </div>
+                            <div class="form-group">
+                                <label>URL repozytorium:</label>
+                                <input type="url" id="software-repository">
+                            </div>
+                            <button class="btn btn-success" onclick="createSoftware()">Utwórz</button>
+                            <button class="btn btn-secondary" onclick="hideCreateSoftwareForm()">Anuluj</button>
+                        </div>
+                    </div>
+
+                    <!-- Versions Management Tab -->
+                    <div id="versions-tab" class="tab-content">
+                        <h3>🔢 Zarządzanie Wersjami</h3>
+                        <div class="form-group">
+                            <label>Wybierz oprogramowanie:</label>
+                            <select id="version-software-select" onchange="loadVersions()">
+                                <option value="">-- Wybierz oprogramowanie --</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-success" onclick="showCreateVersionForm()" id="add-version-btn" style="display: none;">Dodaj wersję</button>
+                        
+                        <div id="versions-list">
+                            <p>Wybierz oprogramowanie aby zobaczyć wersje...</p>
+                        </div>
+
+                        <!-- Create Version Form -->
+                        <div id="create-version-form" style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
+                            <h4>➕ Dodaj nową wersję</h4>
+                            <div class="form-group">
+                                <label>Numer wersji:</label>
+                                <input type="text" id="version-number" required placeholder="np. 1.0.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Notatki wydania:</label>
+                                <textarea id="version-release-notes" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>URL pobierania:</label>
+                                <input type="url" id="version-download-url">
+                            </div>
+                            <div style="display: flex; gap: 20px;">
+                                <label><input type="checkbox" id="version-stable" checked> Stabilna</label>
+                                <label><input type="checkbox" id="version-beta"> Beta</label>
+                                <label><input type="checkbox" id="version-reboot"> Wymaga restart</label>
+                            </div>
+                            <br>
+                            <button class="btn btn-success" onclick="createVersion()">Utwórz wersję</button>
+                            <button class="btn btn-secondary" onclick="hideCreateVersionForm()">Anuluj</button>
+                        </div>
+                    </div>
+
+                    <!-- Installations Tab -->
+                    <div id="installations-tab" class="tab-content">
+                        <h3>⚙️ Historia Instalacji</h3>
+                        <button class="btn" onclick="loadInstallations()">Odśwież listę</button>
+                        <button class="btn btn-success" onclick="showInstallationForm()">Nowa instalacja</button>
+                        
+                        <div id="installations-list">
+                            <p>Kliknij "Odśwież listę" aby załadować historię instalacji...</p>
+                        </div>
+
+                        <!-- Installation Form -->
+                        <div id="installation-form" style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
+                            <h4>⚙️ Nowa instalacja oprogramowania</h4>
+                            <div class="form-group">
+                                <label>Urządzenie:</label>
+                                <select id="installation-device" required>
+                                    <option value="">-- Wybierz urządzenie --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Wersja oprogramowania:</label>
+                                <select id="installation-version" required>
+                                    <option value="">-- Wybierz wersję --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Akcja:</label>
+                                <select id="installation-action" required>
+                                    <option value="install">Instaluj</option>
+                                    <option value="update">Aktualizuj</option>
+                                    <option value="uninstall">Odinstaluj</option>
+                                    <option value="rollback">Wycofaj</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Notatki:</label>
+                                <textarea id="installation-notes" rows="3"></textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="createInstallation()">Rozpocznij instalację</button>
+                            <button class="btn btn-secondary" onclick="hideInstallationForm()">Anuluj</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔍 API Endpoints Test</h3>
+                    <button class="btn btn-secondary" onclick="testSoftwareAPI()">Test Software API</button>
+                    <button class="btn btn-secondary" onclick="testVersionsAPI()">Test Versions API</button>
+                    <button class="btn btn-secondary" onclick="testInstallationsAPI()">Test Installations API</button>
+                    <button class="btn btn-secondary" onclick="testDashboard()">Test Dashboard</button>
+                </div>
+            </div>
+
+            <div id="result" style="margin-top: 20px;"></div>
+        </div>
+
+        <script>
+            let authToken = null;
+            let currentSoftwareId = null;
+            let softwareList = [];
+
+            function getAuthToken() {
+                if (!authToken) {
+                    authToken = localStorage.getItem('jwt_token');
+                }
+                return authToken;
+            }
+
+            function setAuthToken(token) {
+                authToken = token;
+                localStorage.setItem('jwt_token', token);
+                updateAuthUI();
+            }
+
+            function clearAuthToken() {
+                authToken = null;
+                localStorage.removeItem('jwt_token');
+                updateAuthUI();
+            }
+
+            function updateAuthUI() {
+                const isLoggedIn = !!getAuthToken();
+                document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+                document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+                
+                if (isLoggedIn) {
+                    document.getElementById('auth-message').innerHTML = 
+                        '<span style="color: green;">✅ Zalogowany jako Maker</span>';
+                    loadDashboard();
+                } else {
+                    document.getElementById('auth-message').innerHTML = 
+                        '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                }
+            }
+
+            async function login() {
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                if (!username || !password) {
+                    alert('Podaj username i hasło');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('login-password').value = '';
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Zalogowano pomyślnie jako ${username}
+                            </div>
+                        `;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+                }
+            }
+
+            function logout() {
+                clearAuthToken();
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                document.getElementById('software-list').innerHTML = 
+                    '<p>Zaloguj się aby zobaczyć oprogramowanie...</p>';
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    ℹ️ Wylogowano pomyślnie
+                    </div>
+                `;
+            }
+
+            async function makeAuthenticatedRequest(url, options = {}) {
+                const token = getAuthToken();
+                
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { 'Authorization': `Bearer ${token}` }),
+                            ...options.headers
+                        }
+                    });
+                    return response;
+                } catch (error) {
+                    console.error('Request failed:', error);
+                    throw error;
+                }
+            }
+
+            function showTab(tabId, tabButton) {
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Remove active class from all tab buttons
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Show selected tab and mark button as active
+                document.getElementById(tabId).classList.add('active');
+                tabButton.classList.add('active');
+            }
+
+            async function loadDashboard() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/dashboard/stats');
+                    
+                    if (response.status === 401 || response.status === 403) {
+                        return;
+                    }
+
+                    const stats = await response.json();
+                    
+                    document.getElementById('total-software').textContent = stats.total_software || 0;
+                    document.getElementById('total-versions').textContent = stats.total_versions || 0;
+                    document.getElementById('devices-with-software').textContent = stats.devices_with_software || 0;
+                    document.getElementById('recent-installations').textContent = stats.recent_installations || 0;
+                    
+                } catch (error) {
+                    console.error('Failed to load dashboard:', error);
+                }
+            }
+
+            async function loadSoftware() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/software');
+                    
+                    if (response.status === 401 || response.status === 403) {
+                        document.getElementById('software-list').innerHTML = `
+                            <div style="color: #e74c3c; padding: 10px;">
+                            ❌ Brak autoryzacji. Zaloguj się jako Maker aby zobaczyć oprogramowanie.
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    softwareList = await response.json();
+                    displaySoftware(softwareList);
+                    populateSoftwareSelect();
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Błąd ładowania oprogramowania:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displaySoftware(software) {
+                const container = document.getElementById('software-list');
+                if (software.length === 0) {
+                    container.innerHTML = '<p>Brak oprogramowania. Dodaj pierwsze oprogramowanie.</p>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr>';
+                html += '<th>Nazwa</th><th>Kategoria</th><th>Dostawca</th><th>Platforma</th>';
+                html += '<th>Wersje</th><th>Najnowsza</th><th>Akcje</th></tr></thead><tbody>';
+                
+                software.forEach(sw => {
+                    html += `<tr>
+                        <td><strong>${sw.name}</strong><br><small>${sw.description || 'Brak opisu'}</small></td>
+                        <td><span class="category-badge">${sw.category}</span></td>
+                        <td>${sw.vendor || '-'}</td>
+                        <td>${sw.platform || '-'}</td>
+                        <td>${sw.versions_count}</td>
+                        <td><span class="version-badge">${sw.latest_version || 'Brak'}</span></td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewSoftware(${sw.id})" style="font-size: 10px; padding: 5px;">Zobacz</button>
+                            <button class="btn btn-danger" onclick="deleteSoftware(${sw.id})" style="font-size: 10px; padding: 5px;">Usuń</button>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            function populateSoftwareSelect() {
+                const select = document.getElementById('version-software-select');
+                select.innerHTML = '<option value="">-- Wybierz oprogramowanie --</option>';
+                
+                softwareList.forEach(sw => {
+                    select.innerHTML += `<option value="${sw.id}">${sw.name} (${sw.category})</option>`;
+                });
+
+                // Also populate installation device and version selects
+                loadDevicesForInstallation();
+                loadVersionsForInstallation();
+            }
+
+            async function loadDevicesForInstallation() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/devices');
+                    const data = await response.json();
+                    
+                    const select = document.getElementById('installation-device');
+                    select.innerHTML = '<option value="">-- Wybierz urządzenie --</option>';
+                    
+                    if (data.devices) {
+                        data.devices.forEach(device => {
+                            select.innerHTML += `<option value="${device.id}">${device.device_number} (${device.device_type})</option>`;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load devices:', error);
+                }
+            }
+
+            async function loadVersionsForInstallation() {
+                const select = document.getElementById('installation-version');
+                select.innerHTML = '<option value="">-- Wybierz wersję --</option>';
+                
+                // Load all versions from all software
+                for (const sw of softwareList) {
+                    try {
+                        const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${sw.id}/versions`);
+                        const versions = await response.json();
+                        
+                        versions.forEach(version => {
+                            select.innerHTML += `<option value="${version.id}">${sw.name} v${version.version_number}</option>`;
+                        });
+                    } catch (error) {
+                        console.error(`Failed to load versions for ${sw.name}:`, error);
+                    }
+                }
+            }
+
+            function showCreateSoftwareForm() {
+                document.getElementById('create-software-form').style.display = 'block';
+            }
+
+            function hideCreateSoftwareForm() {
+                document.getElementById('create-software-form').style.display = 'none';
+                // Clear form
+                document.getElementById('software-name').value = '';
+                document.getElementById('software-description').value = '';
+                document.getElementById('software-vendor').value = '';
+                document.getElementById('software-category').value = '';
+                document.getElementById('software-platform').value = '';
+                document.getElementById('software-repository').value = '';
+            }
+
+            async function createSoftware() {
+                const softwareData = {
+                    name: document.getElementById('software-name').value,
+                    description: document.getElementById('software-description').value,
+                    vendor: document.getElementById('software-vendor').value,
+                    category: document.getElementById('software-category').value,
+                    platform: document.getElementById('software-platform').value,
+                    repository_url: document.getElementById('software-repository').value,
+                    is_active: true
+                };
+
+                if (!softwareData.name || !softwareData.category) {
+                    alert('Podaj nazwę i kategorię oprogramowania');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/software', {
+                        method: 'POST',
+                        body: JSON.stringify(softwareData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Oprogramowanie '${result.name}' utworzone pomyślnie
+                            </div>
+                        `;
+                        hideCreateSoftwareForm();
+                        loadSoftware();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd tworzenia oprogramowania: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function loadVersions() {
+                const softwareId = document.getElementById('version-software-select').value;
+                if (!softwareId) {
+                    document.getElementById('versions-list').innerHTML = '<p>Wybierz oprogramowanie aby zobaczyć wersje...</p>';
+                    document.getElementById('add-version-btn').style.display = 'none';
+                    return;
+                }
+
+                currentSoftwareId = softwareId;
+                document.getElementById('add-version-btn').style.display = 'inline';
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${softwareId}/versions`);
+                    const versions = await response.json();
+                    
+                    displayVersions(versions);
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania wersji: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displayVersions(versions) {
+                const container = document.getElementById('versions-list');
+                if (versions.length === 0) {
+                    container.innerHTML = '<p>Brak wersji dla tego oprogramowania.</p>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr>';
+                html += '<th>Wersja</th><th>Typ</th><th>Instalacje</th><th>Utworzono</th><th>Akcje</th></tr></thead><tbody>';
+                
+                versions.forEach(version => {
+                    const badges = [];
+                    if (version.is_stable) badges.push('<span class="status-badge status-installed">Stabilna</span>');
+                    if (version.is_beta) badges.push('<span class="status-badge" style="background: #f39c12;">Beta</span>');
+                    if (version.requires_reboot) badges.push('<span class="status-badge" style="background: #e67e22;">Restart</span>');
+
+                    html += `<tr>
+                        <td><strong>${version.version_number}</strong><br><small>${version.release_notes || 'Brak notatek'}</small></td>
+                        <td>${badges.join(' ')}</td>
+                        <td>${version.installations_count}</td>
+                        <td>${new Date(version.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewVersion(${version.id})" style="font-size: 10px; padding: 5px;">Zobacz</button>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            function showCreateVersionForm() {
+                if (!currentSoftwareId) {
+                    alert('Wybierz oprogramowanie');
+                    return;
+                }
+                document.getElementById('create-version-form').style.display = 'block';
+            }
+
+            function hideCreateVersionForm() {
+                document.getElementById('create-version-form').style.display = 'none';
+                // Clear form
+                document.getElementById('version-number').value = '';
+                document.getElementById('version-release-notes').value = '';
+                document.getElementById('version-download-url').value = '';
+                document.getElementById('version-stable').checked = true;
+                document.getElementById('version-beta').checked = false;
+                document.getElementById('version-reboot').checked = false;
+            }
+
+            async function createVersion() {
+                if (!currentSoftwareId) {
+                    alert('Wybierz oprogramowanie');
+                    return;
+                }
+
+                const versionData = {
+                    software_id: currentSoftwareId,
+                    version_number: document.getElementById('version-number').value,
+                    release_notes: document.getElementById('version-release-notes').value,
+                    download_url: document.getElementById('version-download-url').value,
+                    is_stable: document.getElementById('version-stable').checked,
+                    is_beta: document.getElementById('version-beta').checked,
+                    requires_reboot: document.getElementById('version-reboot').checked
+                };
+
+                if (!versionData.version_number) {
+                    alert('Podaj numer wersji');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${currentSoftwareId}/versions`, {
+                        method: 'POST',
+                        body: JSON.stringify(versionData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Wersja '${result.version_number}' utworzona pomyślnie
+                            </div>
+                        `;
+                        hideCreateVersionForm();
+                        loadVersions();
+                        loadSoftware(); // Refresh software list to update version counts
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd tworzenia wersji: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function loadInstallations() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/installations');
+                    
+                    if (response.status === 401 || response.status === 403) {
+                        document.getElementById('installations-list').innerHTML = `
+                            <div style="color: #e74c3c; padding: 10px;">
+                            ❌ Brak autoryzacji. Zaloguj się jako Maker aby zobaczyć instalacje.
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const installations = await response.json();
+                    displayInstallations(installations);
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Błąd ładowania instalacji:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displayInstallations(installations) {
+                const container = document.getElementById('installations-list');
+                if (installations.length === 0) {
+                    container.innerHTML = '<p>Brak historii instalacji.</p>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr>';
+                html += '<th>Urządzenie</th><th>Oprogramowanie</th><th>Akcja</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+                
+                installations.forEach(installation => {
+                    const statusClass = installation.status === 'completed' ? 'status-installed' :
+                                       installation.status === 'pending' ? 'status-pending' : 'status-failed';
+
+                    html += `<tr>
+                        <td>${installation.device_number}</td>
+                        <td><strong>${installation.software_name}</strong><br><small>v${installation.version_number}</small></td>
+                        <td>${installation.action}</td>
+                        <td><span class="status-badge ${statusClass}">${installation.status}</span></td>
+                        <td>${new Date(installation.started_at).toLocaleString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            function showInstallationForm() {
+                document.getElementById('installation-form').style.display = 'block';
+            }
+
+            function hideInstallationForm() {
+                document.getElementById('installation-form').style.display = 'none';
+                document.getElementById('installation-device').value = '';
+                document.getElementById('installation-version').value = '';
+                document.getElementById('installation-action').value = 'install';
+                document.getElementById('installation-notes').value = '';
+            }
+
+            async function createInstallation() {
+                const installationData = {
+                    device_id: parseInt(document.getElementById('installation-device').value),
+                    version_id: parseInt(document.getElementById('installation-version').value),
+                    action: document.getElementById('installation-action').value,
+                    notes: document.getElementById('installation-notes').value
+                };
+
+                if (!installationData.device_id || !installationData.version_id || !installationData.action) {
+                    alert('Wypełnij wszystkie wymagane pola');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/installations', {
+                        method: 'POST',
+                        body: JSON.stringify(installationData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Instalacja rozpoczęta pomyślnie na urządzeniu ${result.device_number}
+                            Oprogramowanie: ${result.software_name} v${result.version_number}
+                            </div>
+                        `;
+                        hideInstallationForm();
+                        loadInstallations();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd instalacji: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            // API Testing functions
+            async function testSoftwareAPI() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/software');
+                    const data = await response.json();
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Test Software API Response:</strong>
+                        Status: ${response.status}
+                        ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Error testing Software API:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function testVersionsAPI() {
+                if (softwareList.length > 0) {
+                    const softwareId = softwareList[0].id;
+                    try {
+                        const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${softwareId}/versions`);
+                        const data = await response.json();
+                        
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            <strong>Test Versions API Response:</strong>
+                            Status: ${response.status}
+                            ${JSON.stringify(data, null, 2)}
+                            </div>
+                        `;
+                    } catch (error) {
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            <strong>Error testing Versions API:</strong>
+                            ${error.message}
+                            </div>
+                        `;
+                    }
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Brak oprogramowania do testowania API wersji
+                        </div>
+                    `;
+                }
+            }
+
+            async function testInstallationsAPI() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/installations');
+                    const data = await response.json();
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Test Installations API Response:</strong>
+                        Status: ${response.status}
+                        ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Error testing Installations API:</strong>
+                        ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function testDashboard() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/v1/fleet-software/dashboard/stats');
+                    const data = await response.json();
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Test Dashboard API Response:</strong>
+                        Status: ${response.status}
+                        ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        <strong>Error testing Dashboard API:</strong>
                         ${error.message}
                         </div>
                     `;
