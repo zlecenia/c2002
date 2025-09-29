@@ -1,0 +1,1109 @@
+# Specyfikacja Techniczna: System Fleet Management
+## Dla Replit.com - Frontend & Backend z API
+
+---
+
+## 1. PRZEGLĄD SYSTEMU
+
+### 1.1 Opis Ogólny
+System zarządzania flotą urządzeń testowych do masek ochronnych z wieloma modułami webGUI dla różnych ról użytkowników.
+
+### 1.2 Komponenty Systemu
+| Komponent | Port | Akronim | Rola | Funkcje |
+|-----------|------|---------|------|---------|
+| Connect ++ | 8080 | CPP | Operator | Obsługa testów |
+| Commands Manager | 8081 | CM | Superuser | Tworzenie scenariuszy testowych |
+| Fleet Data Manager | 8082 | FDM | Manager | Zarządzanie danymi urządzeń |
+| Fleet Config Manager | 8083 | FCM | Configurator | Zarządzanie konfiguracją |
+| Fleet Software Manager | 8084 | FSM | Maker | Zarządzanie oprogramowaniem |
+
+---
+
+## 2. ARCHITEKTURA SYSTEMU
+
+### 2.1 Warstwy Aplikacji
+
+```
+┌─────────────────────────────────────┐
+│   FRONTEND (HTML/CSS/JavaScript)    │
+│   - Interfejs użytkownika          │
+│   - Client API (SDK)                │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│   API LAYER (JSON/XML)              │
+│   - REST API                        │
+│   - WebSocket (Real-time)           │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│   SERVER (Python)                   │
+│   - Business Logic                  │
+│   - Authentication                  │
+│   - Authorization                   │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│   DATABASE (PostgreSQL/SQLite)      │
+│   - Users, Devices, Tests           │
+│   - Logs, Configurations            │
+└─────────────────────────────────────┘
+```
+
+### 2.2 Stack Technologiczny
+
+**Backend:**
+- Python 3.11+
+- Framework: FastAPI
+- ORM: SQLAlchemy
+- Authentication: JWT
+- WebSocket: python-socketio
+- Task Queue: Celery (optional)
+
+**Frontend:**
+- HTML5, CSS3, JavaScript (ES6+)
+- Framework: React.js / Vue.js
+- UI Library: Tailwind CSS / Bootstrap
+- State Management: Redux / Vuex
+- HTTP Client: Axios
+
+**Database:**
+- PostgreSQL (production)
+- SQLite (development)
+
+**Deployment:**
+- Replit Runtime
+- Environment Variables
+- Secrets Management
+
+---
+
+## 3. MODEL BAZY DANYCH
+
+### 3.1 Główne Tabele
+
+#### 3.1.1 Users (Użytkownicy)
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    role VARCHAR(50) NOT NULL, -- operator, admin, superuser, developer
+    qr_code VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+```
+
+#### 3.1.2 Customers (Klienci)
+```sql
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_info JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.3 Devices (Urządzenia)
+```sql
+CREATE TABLE devices (
+    id SERIAL PRIMARY KEY,
+    device_number VARCHAR(100) UNIQUE NOT NULL,
+    device_type VARCHAR(100) NOT NULL,
+    kind_of_device VARCHAR(100),
+    serial_number VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'active',
+    customer_id INTEGER REFERENCES customers(id),
+    configuration JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.4 Test Scenarios (Scenariusze testów)
+```sql
+CREATE TABLE test_scenarios (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    device_type VARCHAR(100),
+    test_flow JSONB, -- Structure of test steps
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+```
+
+#### 3.1.5 Test Steps (Kroki testów)
+```sql
+CREATE TABLE test_steps (
+    id SERIAL PRIMARY KEY,
+    scenario_id INTEGER REFERENCES test_scenarios(id),
+    step_order INTEGER NOT NULL,
+    step_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    parameters JSONB,
+    criteria JSONB,
+    auto_test BOOLEAN DEFAULT FALSE,
+    operator_participation BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.6 Test Reports (Raporty testów)
+```sql
+CREATE TABLE test_reports (
+    id SERIAL PRIMARY KEY,
+    test_scenario_id INTEGER REFERENCES test_scenarios(id),
+    device_id INTEGER REFERENCES devices(id),
+    operator_id INTEGER REFERENCES users(id),
+    customer_id INTEGER REFERENCES customers(id),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP,
+    status VARCHAR(50), -- pending, in_progress, completed, failed
+    results JSONB,
+    pressure_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.7 System Logs (Logi systemowe)
+```sql
+CREATE TABLE system_logs (
+    id SERIAL PRIMARY KEY,
+    log_level VARCHAR(50), -- INFO, WARNING, ERROR, HELP
+    user_id INTEGER REFERENCES users(id),
+    action VARCHAR(255),
+    details JSONB,
+    ip_address VARCHAR(45),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.8 Configurations (Konfiguracje)
+```sql
+CREATE TABLE configurations (
+    id SERIAL PRIMARY KEY,
+    config_key VARCHAR(100) UNIQUE NOT NULL,
+    config_value JSONB NOT NULL,
+    component VARCHAR(50), -- CPP, CM, FDM, FCM, FSM
+    updated_by INTEGER REFERENCES users(id),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3.1.9 Translations (Tłumaczenia)
+```sql
+CREATE TABLE translations (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(255) NOT NULL,
+    language VARCHAR(10) NOT NULL,
+    value TEXT NOT NULL,
+    component VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(key, language)
+);
+```
+
+---
+
+## 4. API ENDPOINTS
+
+### 4.1 Authentication & Authorization
+
+#### POST /api/auth/login
+**Request:**
+```json
+{
+  "username": "operator1",
+  "password": "password123"
+}
+```
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": 1,
+    "username": "operator1",
+    "role": "operator"
+  }
+}
+```
+
+#### POST /api/auth/login/qr
+**Request:**
+```json
+{
+  "qr_code": "QR123456"
+}
+```
+
+#### POST /api/auth/refresh
+#### POST /api/auth/logout
+
+---
+
+### 4.2 Users Management
+
+#### GET /api/users
+**Query Params:** `?role=operator&page=1&limit=20`
+
+#### GET /api/users/{id}
+
+#### POST /api/users
+**Request:**
+```json
+{
+  "username": "operator2",
+  "password": "securepass",
+  "email": "operator2@company.com",
+  "role": "operator",
+  "qr_code": "QR789012"
+}
+```
+
+#### PUT /api/users/{id}
+#### DELETE /api/users/{id}
+
+---
+
+### 4.3 Devices Management
+
+#### GET /api/devices
+**Query Params:** `?type=mask&status=active&page=1`
+
+#### GET /api/devices/{id}
+
+#### POST /api/devices
+**Request:**
+```json
+{
+  "device_number": "DEV-001",
+  "device_type": "PP Mask",
+  "kind_of_device": "G1",
+  "serial_number": "SN123456",
+  "customer_id": 1,
+  "configuration": {
+    "pressure_low": -14,
+    "pressure_high": 10
+  }
+}
+```
+
+#### PUT /api/devices/{id}
+#### DELETE /api/devices/{id}
+
+#### GET /api/devices/{id}/history
+**Response:**
+```json
+{
+  "device_id": 1,
+  "history": [
+    {
+      "test_id": 100,
+      "date": "2025-09-20T10:30:00Z",
+      "status": "passed",
+      "operator": "operator1"
+    }
+  ]
+}
+```
+
+---
+
+### 4.4 Test Scenarios Management
+
+#### GET /api/test-scenarios
+#### GET /api/test-scenarios/{id}
+
+#### POST /api/test-scenarios
+**Request:**
+```json
+{
+  "name": "Maska G1 Test Flow",
+  "description": "Test maski co 12 miesięcy",
+  "device_type": "G1",
+  "test_flow": {
+    "steps": [
+      {
+        "step_order": 1,
+        "step_name": "Kontrola wzrokowa",
+        "auto_test": false,
+        "operator_participation": true,
+        "criteria": {
+          "type": "visual_inspection",
+          "required": true
+        }
+      },
+      {
+        "step_order": 2,
+        "step_name": "Test podciśnienia",
+        "auto_test": true,
+        "parameters": {
+          "target_pressure": -14,
+          "tolerance": 0.5
+        }
+      }
+    ]
+  }
+}
+```
+
+#### PUT /api/test-scenarios/{id}
+#### DELETE /api/test-scenarios/{id}
+
+---
+
+### 4.5 Test Execution
+
+#### POST /api/tests/start
+**Request:**
+```json
+{
+  "scenario_id": 1,
+  "device_id": 1,
+  "operator_id": 1,
+  "customer_id": 1
+}
+```
+**Response:**
+```json
+{
+  "test_id": 100,
+  "status": "started",
+  "current_step": 1
+}
+```
+
+#### POST /api/tests/{test_id}/step
+**Request:**
+```json
+{
+  "step_id": 1,
+  "result": {
+    "passed": true,
+    "notes": "Wszystko OK"
+  }
+}
+```
+
+#### POST /api/tests/{test_id}/complete
+
+#### GET /api/tests/{test_id}
+#### GET /api/tests/{test_id}/report
+
+---
+
+### 4.6 Reports
+
+#### GET /api/reports
+**Query Params:** `?from=2025-09-01&to=2025-09-30&operator_id=1`
+
+#### GET /api/reports/{id}
+
+#### GET /api/reports/{id}/pdf
+#### POST /api/reports/{id}/export
+
+---
+
+### 4.7 Configuration Management
+
+#### GET /api/config
+**Query Params:** `?component=CPP`
+
+#### PUT /api/config/{key}
+**Request:**
+```json
+{
+  "config_key": "pressure_labels",
+  "config_value": {
+    "low_pressure_label": "Niskie ciśnienie",
+    "high_pressure_label": "Wysokie ciśnienie"
+  },
+  "component": "CPP"
+}
+```
+
+---
+
+### 4.8 Remote Control (Fleet Data Manager)
+
+#### GET /api/fleet/devices
+**Response:**
+```json
+{
+  "devices": [
+    {
+      "ip": "192.168.1.11",
+      "status": "online",
+      "device_type": "C20"
+    },
+    {
+      "ip": "192.168.1.12",
+      "status": "offline",
+      "device_type": "C20"
+    }
+  ]
+}
+```
+
+#### POST /api/fleet/remote-session
+**Request:**
+```json
+{
+  "device_ip": "192.168.1.11",
+  "session_type": "control"
+}
+```
+
+#### POST /api/fleet/update-firmware
+#### POST /api/fleet/migrate-data
+#### POST /api/fleet/export-data
+
+---
+
+### 4.9 System Logs
+
+#### GET /api/logs
+**Query Params:** `?level=ERROR&from=2025-09-01&user_id=1`
+
+#### POST /api/logs
+**Request:**
+```json
+{
+  "log_level": "INFO",
+  "action": "User logged in",
+  "details": {
+    "username": "operator1"
+  }
+}
+```
+
+---
+
+### 4.10 Translations
+
+#### GET /api/translations
+**Query Params:** `?language=pl&component=CPP`
+
+#### PUT /api/translations
+**Request:**
+```json
+{
+  "key": "login.welcome",
+  "language": "pl",
+  "value": "Witaj w systemie",
+  "component": "CPP"
+}
+```
+
+---
+
+## 5. ROLE I UPRAWNIENIA
+
+### 5.1 Macierz Dostępu
+
+| Akcja | Operator | Admin | Superuser | Developer |
+|-------|----------|-------|-----------|-----------|
+| Read | ✓ | ✓ | ✓ | ✓ |
+| Write | - | ✓ | ✓ | ✓ |
+| Execute | ✓ | ✓ | ✓ | ✓ |
+| Delete | - | ✓ | ✓ | ✓ |
+| Configure | - | - | ✓ | ✓ |
+
+### 5.2 Dostęp do Komponentów
+
+| Rola | CPP | CM | FDM | FCM | FSM |
+|------|-----|----|----|-----|-----|
+| Operator | ✓ | - | - | - | - |
+| Admin | ✓ | - | ✓ | - | - |
+| Superuser | ✓ | ✓ | ✓ | - | - |
+| Manager | ✓ | - | ✓ | - | - |
+| Configurator | ✓ | ✓ | ✓ | ✓ | - |
+| Maker | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+---
+
+## 6. FRONTEND - KOMPONENTY
+
+### 6.1 Layout Structure
+
+```
+App
+├── Header
+│   ├── Logo
+│   ├── Navigation
+│   └── UserMenu
+├── Sidebar
+│   └── MenuItems (dynamic based on role)
+├── MainContent
+│   ├── Dashboard
+│   ├── TestMenu
+│   ├── DeviceManagement
+│   ├── UserManagement
+│   ├── Reports
+│   └── Settings
+└── Footer
+```
+
+### 6.2 Kluczowe Ekrany
+
+#### 6.2.1 Login Screen
+- Scanner QR/Barcode
+- Keyboard login (username/password)
+- Welcome message
+- System status
+
+#### 6.2.2 Dashboard (Operator)
+- Active tests
+- Device status
+- Pressure sensors (real-time)
+- Quick actions
+
+#### 6.2.3 Test Menu
+1. Kind of Device (wybór urządzenia)
+2. Device Type (typ urządzenia)
+3. Kind of Test (rodzaj testu)
+4. Test Flow (przepływ testu)
+5. Test Steps (kroki testu)
+
+#### 6.2.4 Commands Manager (Superuser)
+- Edit Structure
+- Remove Item
+- Create Test Scenario
+- Define Test Steps
+- Set Criteria
+
+#### 6.2.5 Fleet Data Manager (Manager)
+- User Data (migrate/export)
+- Device Data (migrate/export)
+- Remote Control
+- Update Data
+
+#### 6.2.6 Fleet Config Manager (Configurator)
+- Translations
+- Edit Structure
+- Autodiagnostic configuration
+- System settings
+
+#### 6.2.7 Fleet Software Manager (Maker)
+- Update Firmware
+- Remote Control
+- C20 Devices list
+- Autodiagnostic
+
+---
+
+## 7. PRZEPŁYW PRACY
+
+### 7.1 Workflow: Test Execution
+
+```
+1. System Start (10s)
+   ↓
+2. Autodiagnostic (6s)
+   ↓
+3. Login (QR/Keyboard)
+   ↓
+4. User Menu
+   ↓
+5. Test Menu
+   ├── Select Device Kind
+   ├── Select Device Type
+   ├── Select Test Type
+   └── Select Test Flow
+   ↓
+6. Execute Test Steps
+   ├── Automatic tests
+   └── Operator participation
+   ↓
+7. Generate Report
+   ↓
+8. Logout
+```
+
+### 7.2 Test Steps Example
+
+**Scenariusz: Maska G1 - Test co 12 miesięcy**
+
+1. **Kontrola wzrokowa**
+   - Operator: TAK
+   - Kryteria: Brak uszkodzeń
+   - Raportowanie: TAK
+
+2. **Wytworzenie podciśnienia (-14 mbar)**
+   - Automatyczny: TAK
+   - Operator: Monitoring
+   - Kryteria: -14 ±0.5 mbar
+
+3. **Test szczelności**
+   - Automatyczny: TAK
+   - Czas: 60s
+   - Kryteria: Utrata < 10% ciśnienia
+
+---
+
+## 8. REAL-TIME FEATURES
+
+### 8.1 WebSocket Events
+
+**Client → Server:**
+- `test.start`
+- `test.step_complete`
+- `sensor.data`
+- `device.status_update`
+
+**Server → Client:**
+- `test.progress`
+- `sensor.reading`
+- `device.status_changed`
+- `notification`
+
+### 8.2 Sensor Data Stream
+
+```json
+{
+  "event": "sensor.reading",
+  "data": {
+    "device_id": 1,
+    "pressure": {
+      "low": -14.2,
+      "high": 10.5
+    },
+    "timestamp": "2025-09-29T10:30:45Z"
+  }
+}
+```
+
+---
+
+## 9. BEZPIECZEŃSTWO
+
+### 9.1 Authentication
+- JWT tokens (access + refresh)
+- QR code authentication
+- Password hashing (bcrypt)
+- Session management
+
+### 9.2 Authorization
+- Role-based access control (RBAC)
+- Permission middleware
+- API endpoint protection
+
+### 9.3 Data Protection
+- TLS/SSL encryption
+- Password encryption
+- Sensitive data masking
+- Audit logs
+
+### 9.4 Security Headers
+```python
+# FastAPI middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://yourdomain.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+---
+
+## 10. KONFIGURACJA REPLIT
+
+### 10.1 .replit File
+
+```toml
+[deployment]
+run = ["sh", "-c", "python main.py"]
+
+[nix]
+channel = "stable-23_11"
+
+[env]
+DATABASE_URL = "postgresql://user:pass@localhost/fleetdb"
+SECRET_KEY = "${REPLIT_SECRET_KEY}"
+JWT_SECRET = "${JWT_SECRET}"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+```
+
+### 10.2 Environment Variables
+
+```bash
+# Database
+DATABASE_URL=postgresql://localhost/fleetdb
+DB_POOL_SIZE=20
+
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_SECRET=jwt-secret-key
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Application
+APP_NAME=Fleet Management System
+APP_VERSION=1.0.0
+DEBUG=False
+
+# Services
+CPP_PORT=8080
+CM_PORT=8081
+FDM_PORT=8082
+FCM_PORT=8083
+FSM_PORT=8084
+
+# CORS
+ALLOWED_ORIGINS=https://your-domain.com
+```
+
+### 10.3 Requirements.txt
+
+```
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.12.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-socketio==5.10.0
+aiofiles==23.2.1
+celery==5.3.4
+redis==5.0.1
+```
+
+---
+
+## 11. STRUKTURA PROJEKTU
+
+```
+fleet-management/
+│
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── user.py
+│   │   │   ├── device.py
+│   │   │   ├── test.py
+│   │   │   └── log.py
+│   │   │
+│   │   ├── schemas/
+│   │   │   ├── __init__.py
+│   │   │   ├── user.py
+│   │   │   ├── device.py
+│   │   │   └── test.py
+│   │   │
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── deps.py
+│   │   │   ├── auth.py
+│   │   │   ├── users.py
+│   │   │   ├── devices.py
+│   │   │   ├── tests.py
+│   │   │   ├── reports.py
+│   │   │   └── config.py
+│   │   │
+│   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   ├── security.py
+│   │   │   ├── config.py
+│   │   │   └── middleware.py
+│   │   │
+│   │   └── services/
+│   │       ├── __init__.py
+│   │       ├── user_service.py
+│   │       ├── device_service.py
+│   │       ├── test_service.py
+│   │       └── websocket_service.py
+│   │
+│   ├── alembic/
+│   │   ├── versions/
+│   │   └── env.py
+│   │
+│   └── tests/
+│       ├── test_auth.py
+│       ├── test_devices.py
+│       └── test_tests.py
+│
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Layout/
+│   │   │   │   ├── Header.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   └── Footer.jsx
+│   │   │   │
+│   │   │   ├── Auth/
+│   │   │   │   ├── LoginForm.jsx
+│   │   │   │   └── QRScanner.jsx
+│   │   │   │
+│   │   │   ├── Dashboard/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── DeviceStatus.jsx
+│   │   │   │   └── SensorDisplay.jsx
+│   │   │   │
+│   │   │   ├── Tests/
+│   │   │   │   ├── TestMenu.jsx
+│   │   │   │   ├── TestFlow.jsx
+│   │   │   │   └── TestStep.jsx
+│   │   │   │
+│   │   │   ├── Devices/
+│   │   │   │   ├── DeviceList.jsx
+│   │   │   │   └── DeviceForm.jsx
+│   │   │   │
+│   │   │   └── Reports/
+│   │   │       ├── ReportList.jsx
+│   │   │       └── ReportView.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   ├── websocket.js
+│   │   │   └── storage.js
+│   │   │
+│   │   ├── store/
+│   │   │   ├── index.js
+│   │   │   ├── authSlice.js
+│   │   │   ├── deviceSlice.js
+│   │   │   └── testSlice.js
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── constants.js
+│   │   │   └── helpers.js
+│   │   │
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
+├── .replit
+├── replit.nix
+├── README.md
+└── .gitignore
+```
+
+---
+
+## 12. DEPLOYMENT STEPS
+
+### 12.1 Inicjalizacja Projektu w Replit
+
+1. **Create New Repl**
+   - Template: Python
+   - Name: fleet-management-system
+
+2. **Setup Database**
+```bash
+# Install PostgreSQL
+nix-env -iA nixpkgs.postgresql
+
+# Initialize database
+initdb -D ./pgdata
+
+# Start PostgreSQL
+pg_ctl -D ./pgdata start
+
+# Create database
+createdb fleetdb
+```
+
+3. **Install Dependencies**
+```bash
+pip install -r requirements.txt
+cd frontend && npm install
+```
+
+4. **Run Migrations**
+```bash
+alembic upgrade head
+```
+
+5. **Seed Initial Data**
+```python
+# create_admin.py
+from app.core.security import get_password_hash
+from app.database import SessionLocal
+from app.models.user import User
+
+db = SessionLocal()
+admin = User(
+    username="admin",
+    password_hash=get_password_hash("admin123"),
+    role="developer",
+    email="admin@system.com"
+)
+db.add(admin)
+db.commit()
+```
+
+6. **Start Services**
+```bash
+# Backend
+uvicorn app.main:app --host 0.0.0.0 --port 8080
+
+# Frontend (development)
+cd frontend && npm run dev
+```
+
+---
+
+## 13. TESTING STRATEGY
+
+### 13.1 Unit Tests
+```python
+# tests/test_auth.py
+import pytest
+from app.core.security import create_access_token, verify_token
+
+def test_create_token():
+    token = create_access_token({"sub": "user1"})
+    assert token is not None
+
+def test_verify_token():
+    token = create_access_token({"sub": "user1"})
+    payload = verify_token(token)
+    assert payload["sub"] == "user1"
+```
+
+### 13.2 Integration Tests
+```python
+# tests/test_devices.py
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_create_device():
+    response = client.post(
+        "/api/devices",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "device_number": "DEV-TEST-001",
+            "device_type": "G1"
+        }
+    )
+    assert response.status_code == 201
+```
+
+---
+
+## 14. MONITORING & LOGGING
+
+### 14.1 Logging Configuration
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),
+        logging.StreamHandler()
+    ]
+)
+```
+
+### 14.2 Metrics to Track
+- API response times
+- Database query performance
+- Active test sessions
+- User activity
+- Error rates
+- System resource usage
+
+---
+
+## 15. DOKUMENTACJA API
+
+Automatyczna dokumentacja dostępna pod:
+- Swagger UI: `http://localhost:8080/docs`
+- ReDoc: `http://localhost:8080/redoc`
+
+---
+
+## 16. ROADMAP
+
+### Phase 1: MVP (4 tygodnie)
+- ✓ Authentication & Authorization
+- ✓ User Management
+- ✓ Device Management
+- ✓ Basic Test Flow
+- ✓ Connect ++ (CPP) module
+
+### Phase 2: Advanced Features (4 tygodnie)
+- ✓ Commands Manager (CM)
+- ✓ Fleet Data Manager (FDM)
+- ✓ Real-time sensor data
+- ✓ WebSocket integration
+- ✓ Reporting system
+
+### Phase 3: Fleet Management (4 tygodnie)
+- ✓ Fleet Config Manager (FCM)
+- ✓ Fleet Software Manager (FSM)
+- ✓ Remote control
+- ✓ Firmware updates
+- ✓ Data migration
+
+### Phase 4: Polish & Production (2 tygodnie)
+- ✓ Performance optimization
+- ✓ Security hardening
+- ✓ Documentation
+- ✓ User training
+- ✓ Production deployment
+
+---
+
+## 17. KONTAKT & WSPARCIE
+
+**Documentation:** README.md + inline comments  
+**API Docs:** /docs endpoint  
+**Issues:** GitHub Issues / Replit Comments  
+
+---
+
+## PODSUMOWANIE
+
+System Fleet Management jest kompleksowym rozwiązaniem do zarządzania testami urządzeń ochronnych. Architektura oparta na mikroserwisach zapewnia skalowalność, a podział na role gwarantuje bezpieczeństwo i odpowiedni poziom dostępu dla każdego użytkownika.
+
+**Kluczowe funkcje:**
+- Multi-role authentication (QR/Password)
+- Real-time sensor monitoring
+- Comprehensive test management
+- Fleet-wide control and updates
+- Detailed reporting and analytics
+- Multilingual support
+
+**Technologie:**
+- Backend: Python/FastAPI
+- Frontend: React/Vue.js
+- Database: PostgreSQL
+- Real-time: WebSocket
+- Deployment: Replit
+
+System gotowy do wdrożenia na platformie Replit.com!
