@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from backend.core.config import settings
 from backend.db.base import get_db, engine
 from backend.models.models import Base, User, Device, Customer, TestScenario
+from backend.api.auth_router import router as auth_router
+from backend.api.users_router import router as users_router
+from backend.auth.auth import get_password_hash, generate_qr_code
 import os
 
 # Create database tables
@@ -25,22 +28,71 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers
+app.include_router(auth_router, prefix=settings.api_v1_str)
+app.include_router(users_router, prefix=settings.api_v1_str)
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Initialize sample data endpoint
+@app.post("/api/v1/init-data")
+def initialize_sample_data(db: Session = Depends(get_db)):
+    """Initialize database with sample data."""
+    try:
+        # Check if admin user exists, create if not
+        admin_user = db.query(User).filter(User.username == "admin").first()
+        if not admin_user:
+            admin_user = User(
+                username="admin",
+                password_hash=get_password_hash("admin"),
+                email="admin@fleetmanagement.com",
+                role="admin",
+                qr_code=generate_qr_code(),
+                is_active=True
+            )
+            db.add(admin_user)
+        
+        # Create sample operator
+        operator_user = db.query(User).filter(User.username == "operator1").first()
+        if not operator_user:
+            operator_user = User(
+                username="operator1",
+                password_hash=get_password_hash("test"),
+                email="operator1@fleetmanagement.com",
+                role="operator",
+                qr_code=generate_qr_code(),
+                is_active=True
+            )
+            db.add(operator_user)
+        
+        db.commit()
+        return {"message": "Sample data initialized successfully", "users_created": 2}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error initializing data: {str(e)}")
 
 # Basic API endpoints
 @app.get("/")
 async def root():
-    return {"message": "Fleet Management System API", "version": "1.0.0"}
+    return {
+        "message": "Fleet Management System API", 
+        "version": "1.0.0",
+        "modules": {
+            "Connect++": "/connect-plus",
+            "API_Documentation": "/docs",
+            "Initialize_Sample_Data": "/api/v1/init-data (POST)"
+        }
+    }
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "database": "connected"}
 
-# Users endpoints
-@app.get("/api/v1/users")
-async def get_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
+# Public endpoints for Connect++ demo (no auth required)
+@app.get("/api/v1/demo/users")
+async def get_demo_users(db: Session = Depends(get_db)):
+    users = db.query(User).limit(10).all()
     return {"users": [{"id": user.id, "username": user.username, "role": user.role} for user in users]}
 
 @app.get("/api/v1/devices")
@@ -119,7 +171,7 @@ async def connect_plus():
                 }
             }
 
-            function testUsers() { testAPI('users', 'Users'); }
+            function testUsers() { testAPI('demo/users', 'Users'); }
             function testDevices() { testAPI('devices', 'Devices'); }
             function testCustomers() { testAPI('customers', 'Customers'); }
             function testScenarios() { testAPI('test-scenarios', 'Test Scenarios'); }
