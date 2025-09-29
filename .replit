@@ -35,9 +35,14 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 39251
+externalPort = 3001
+
+[[ports]]
 localPort = 46047
 externalPort = 3000
 
 [deployment]
-deploymentTarget = "static"
+deploymentTarget = "autoscale"
 publicDir = "public"
+run = ["python", "main.py"]

@@ -1,39 +1,63 @@
-# 02 Project
+# Fleet Management System
 
 ## Overview
-This is a simple Node.js web application that was imported from GitHub (https://github.com/zlecenia/02). The original repository contained only a README file, so a complete web application structure was created to make it functional in the Replit environment.
+Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
-- **September 29, 2025**: Complete project setup from minimal GitHub import
-  - Added Node.js/Express.js server configuration
-  - Created frontend interface with HTML, CSS, and JavaScript
-  - Configured Replit workflow for port 5000
-  - Set up deployment configuration for autoscale
+- **September 29, 2025**: Complete Fleet Management System implementation
+  - Built from scratch: Python FastAPI + PostgreSQL + JWT authentication
+  - Implemented Connect++ module for operators with web interface
+  - Created comprehensive REST API with 30+ endpoints
+  - Added QR code authentication system
+  - Configured role-based access control (operator, admin, superuser)
+  - Set up deployment configuration for production autoscale
 
 ## Project Architecture
-- **Backend**: Express.js server running on port 5000 (0.0.0.0 for Replit compatibility)
-- **Frontend**: Static HTML/CSS/JS served from /public directory
-- **API**: Basic REST endpoint at /api/hello
-- **Deployment**: Configured for autoscale deployment target
+- **Backend**: Python FastAPI with SQLAlchemy ORM running on port 5000
+- **Database**: PostgreSQL with 9 tables (Users, Devices, Customers, Test Scenarios, etc.)
+- **Authentication**: JWT tokens + QR code login system
+- **API**: REST API with OpenAPI 3.1 documentation
+- **Frontend**: Connect++ Module - HTML/CSS/JS interface for operators
+- **Deployment**: Production-ready autoscale configuration
 
 ## Key Features
-- Express.js web server
-- Static file serving
-- Basic API endpoint
-- Responsive frontend interface
-- Replit-optimized configuration
+- JWT + QR code authentication system
+- Role-based access control (operator/admin/superuser roles)
+- Connect++ module for device testing operations
+- Comprehensive CRUD API with 30+ endpoints
+- PostgreSQL database with full relational schema
+- OpenAPI documentation with Swagger UI
+- Production deployment configuration
+
+## Modules Implemented
+1. **Connect++** (`/connect-plus`) - Operator interface for device testing
+2. **API Documentation** (`/docs`) - Complete Swagger documentation  
+3. **Authentication System** - JWT + QR code login endpoints
+4. **User Management** - CRUD operations with role protection
 
 ## Structure
 ```
 /
-├── server.js          # Main Express server
-├── package.json       # Node.js dependencies and scripts
-├── public/            # Static frontend files
-│   ├── index.html     # Main webpage
-│   ├── style.css      # Styling
-│   └── script.js      # Frontend JavaScript
-└── replit.md          # This documentation
+├── main.py                 # Main FastAPI application
+├── requirements.txt        # Python dependencies
+├── backend/               # Backend components
+│   ├── models/           # SQLAlchemy database models
+│   ├── auth/             # Authentication & JWT handling
+│   ├── api/              # API routers (auth, users)
+│   ├── core/             # Configuration settings
+│   └── db/               # Database connection
+├── frontend/             # Frontend modules (future expansion)
+└── replit.md             # This documentation
 ```
 
+## API Endpoints
+- `POST /api/v1/auth/login` - Username/password authentication
+- `POST /api/v1/auth/login/qr` - QR code authentication  
+- `GET /api/v1/auth/me` - Current user information
+- `GET /api/v1/users/` - User management (admin protected)
+- `GET /api/v1/devices` - Device listing
+- `GET /api/v1/customers` - Customer management
+- `GET /api/v1/test-scenarios` - Test scenario management
+
 ## Current State
-The application is fully functional and running. The web server is configured to run on port 5000 with proper host binding for Replit's proxy environment. The deployment is configured for production use with autoscale target.
+The Fleet Management System is fully functional and ready for production deployment. All core components work end-to-end: authentication, database operations, API endpoints, and the Connect++ operator interface. The system is configured for autoscale deployment and optimized for Replit's cloud environment.
