@@ -38,5 +38,6 @@ localPort = 38969
 externalPort = 3000
 
 [deployment]
-deploymentTarget = "autoscale"
-run = ["npm", "start"]
+deploymentTarget = "static"
+run = ["sh", "-c", "bash -c printf \"%s\\n\\n%s\" \"$0\" \"$1\" Please use the \u001B[1;93mConfiguration\u001B[0m pane to configure your run command. For more info, see: https://docs.replit.com/replit-workspace/configuring-repl#run"]
+publicDir = "public"
