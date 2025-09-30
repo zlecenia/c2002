@@ -1650,6 +1650,41 @@ async def commands_manager():
                 }
             }
 
+            async function deleteScenario(scenarioId) {
+                if (!confirm('Czy na pewno chcesz usunąć ten scenariusz?')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/scenarios/${scenarioId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message || 'Scenariusz został usunięty'}
+                            </div>
+                        `;
+                        loadScenarios();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd usuwania scenariusza: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
             async function testScenariosAPI() {
                 try {
                     const response = await fetch('/api/v1/scenarios/');
@@ -1967,7 +2002,7 @@ async def fleet_data_manager():
                                     <option value="">Brak przypisania</option>
                                 </select>
                             </div>
-                            <button type="button" class="btn" onclick="createDevice()">Dodaj urządzenie</button>
+                            <button type="button" class="btn" id="device-submit-btn" onclick="saveDevice()">Dodaj urządzenie</button>
                             <button type="button" class="btn btn-secondary" onclick="hideDeviceForm()">Anuluj</button>
                         </form>
                     </div>
@@ -1994,7 +2029,7 @@ async def fleet_data_manager():
                                     <!-- JSON preview -->
                                 </div>
                             </div>
-                            <button type="button" class="btn" onclick="createCustomer()">Dodaj klienta</button>
+                            <button type="button" class="btn" id="customer-submit-btn" onclick="saveCustomer()">Dodaj klienta</button>
                             <button type="button" class="btn btn-secondary" onclick="hideCustomerForm()">Anuluj</button>
                         </form>
                     </div>
@@ -2693,6 +2728,8 @@ async def fleet_data_manager():
                 document.getElementById('add-device-form').style.display = 'block';
                 document.getElementById('form-title').textContent = 'Dodaj urządzenie';
                 currentEditingDevice = null;
+                document.getElementById('device-submit-btn').textContent = 'Dodaj urządzenie';
+                loadCustomersForSelect();
             }
 
             function hideDeviceForm() {
@@ -2707,6 +2744,7 @@ async def fleet_data_manager():
                 document.getElementById('add-customer-form').style.display = 'block';
                 document.getElementById('form-title').textContent = 'Dodaj klienta';
                 currentEditingCustomer = null;
+                document.getElementById('customer-submit-btn').textContent = 'Dodaj klienta';
                 
                 customerJsonEditor.setData({
                     phone: '',
@@ -2722,6 +2760,22 @@ async def fleet_data_manager():
                 document.getElementById('customer-form').reset();
                 document.getElementById('form-title').textContent = 'Formularz';
                 currentEditingCustomer = null;
+            }
+
+            async function saveDevice() {
+                if (currentEditingDevice) {
+                    await updateDevice();
+                } else {
+                    await createDevice();
+                }
+            }
+
+            async function saveCustomer() {
+                if (currentEditingCustomer) {
+                    await updateCustomer();
+                } else {
+                    await createCustomer();
+                }
             }
 
             async function createDevice() {
@@ -2812,6 +2866,132 @@ async def fleet_data_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         ❌ Błąd tworzenia klienta: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function editDevice(deviceId) {
+                const device = devices.find(d => d.id === deviceId);
+                if (!device) return;
+
+                hideCustomerForm();
+                document.getElementById('add-device-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Edytuj urządzenie';
+                currentEditingDevice = deviceId;
+                document.getElementById('device-submit-btn').textContent = 'Zaktualizuj urządzenie';
+
+                document.getElementById('device-number').value = device.device_number;
+                document.getElementById('device-type').value = device.device_type;
+                document.getElementById('kind-of-device').value = device.kind_of_device || '';
+                document.getElementById('serial-number').value = device.serial_number || '';
+                document.getElementById('device-status').value = device.status;
+                document.getElementById('device-customer').value = device.customer_id || '';
+                loadCustomersForSelect();
+            }
+
+            async function updateDevice() {
+                const deviceData = {
+                    device_number: document.getElementById('device-number').value,
+                    device_type: document.getElementById('device-type').value,
+                    kind_of_device: document.getElementById('kind-of-device').value,
+                    serial_number: document.getElementById('serial-number').value,
+                    status: document.getElementById('device-status').value,
+                    customer_id: document.getElementById('device-customer').value || null
+                };
+
+                if (!deviceData.device_number || !deviceData.device_type) {
+                    alert('Podaj numer i typ urządzenia');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-data/devices/${currentEditingDevice}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(deviceData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Urządzenie ${result.device_number} zostało zaktualizowane
+                            </div>
+                        `;
+                        hideDeviceForm();
+                        loadDevices();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd aktualizacji urządzenia: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function editCustomer(customerId) {
+                const customer = customers.find(c => c.id === customerId);
+                if (!customer) return;
+
+                hideDeviceForm();
+                document.getElementById('add-customer-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Edytuj klienta';
+                currentEditingCustomer = customerId;
+                document.getElementById('customer-submit-btn').textContent = 'Zaktualizuj klienta';
+
+                document.getElementById('customer-name').value = customer.name;
+                customerJsonEditor.setData(customer.contact_info || {});
+            }
+
+            async function updateCustomer() {
+                const customerData = {
+                    name: document.getElementById('customer-name').value,
+                    contact_info: customerJsonEditor.getData()
+                };
+
+                if (!customerData.name) {
+                    alert('Podaj nazwę klienta');
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-data/customers/${currentEditingCustomer}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(customerData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Klient ${result.name} został zaktualizowany
+                            </div>
+                        `;
+                        hideCustomerForm();
+                        loadCustomers();
+                        loadCustomersForSelect();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd aktualizacji klienta: ${error.message}
                         </div>
                     `;
                 }
@@ -4277,6 +4457,58 @@ async def fleet_config_manager():
                 }
             }
 
+            async function editSystemConfig(configId) {
+                const config = systemConfigs.find(c => c.id === configId);
+                if (!config) return;
+
+                document.getElementById('add-config-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Edytuj konfigurację systemową';
+
+                document.getElementById('config-name').value = config.config_name;
+                document.getElementById('config-type').value = config.config_type;
+                document.getElementById('config-description').value = config.description || '';
+                
+                if (configValueEditor) {
+                    configValueEditor.setData(config.config_value || {});
+                }
+            }
+
+            async function deleteSystemConfig(configId) {
+                if (!confirm('Czy na pewno chcesz usunąć tę konfigurację systemową?')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-config/system-configs/${configId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message || 'Konfiguracja została usunięta'}
+                            </div>
+                        `;
+                        loadSystemConfigs();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd usuwania konfiguracji: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
             async function createTestScenario() {
                 const scenarioData = {
                     scenario_name: document.getElementById('scenario-name').value,
@@ -4330,6 +4562,60 @@ async def fleet_config_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         ❌ Błąd tworzenia scenariusza: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function editTestScenario(scenarioId) {
+                const scenario = testScenarios.find(s => s.scenario_id === scenarioId);
+                if (!scenario) return;
+
+                document.getElementById('add-scenario-form').style.display = 'block';
+                document.getElementById('form-title').textContent = 'Edytuj scenariusz testowy';
+
+                document.getElementById('scenario-name').value = scenario.scenario_name;
+                document.getElementById('test-type').value = scenario.test_type;
+
+                if (testParametersEditor) {
+                    testParametersEditor.setData(scenario.parameters || {});
+                }
+                if (expectedResultsEditor) {
+                    expectedResultsEditor.setData(scenario.expected_results || {});
+                }
+            }
+
+            async function deleteTestScenario(scenarioId) {
+                if (!confirm('Czy na pewno chcesz usunąć ten scenariusz testowy?')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-config/test-scenario-configs/${scenarioId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message || 'Scenariusz został usunięty'}
+                            </div>
+                        `;
+                        loadTestScenarios();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd usuwania scenariusza: ${error.message}
                         </div>
                     `;
                 }
@@ -5473,6 +5759,101 @@ async def fleet_software_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         ❌ Błąd: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function viewSoftware(softwareId) {
+                const software = allSoftware.find(s => s.id === softwareId);
+                if (!software) return;
+
+                document.getElementById('result').innerHTML = `
+                    <div class="result" style="background: #e8f5e9; border-color: #4caf50;">
+                        <h4>📦 ${software.name}</h4>
+                        <p><strong>Kategoria:</strong> <span class="category-badge">${software.category}</span></p>
+                        <p><strong>Vendor:</strong> ${software.vendor || 'Brak'}</p>
+                        <p><strong>Platforma:</strong> ${software.platform || 'Brak'}</p>
+                        <p><strong>Opis:</strong> ${software.description || 'Brak opisu'}</p>
+                        <p><strong>Repository:</strong> ${software.repository_url ? `<a href="${software.repository_url}" target="_blank">${software.repository_url}</a>` : 'Brak'}</p>
+                        <p><strong>Status:</strong> ${software.is_active ? '<span class="status-badge status-installed">Aktywne</span>' : '<span class="status-badge status-failed">Nieaktywne</span>'}</p>
+                        <p><strong>Utworzono:</strong> ${new Date(software.created_at).toLocaleDateString()}</p>
+                    </div>
+                `;
+            }
+
+            async function deleteSoftware(softwareId) {
+                if (!confirm('Czy na pewno chcesz usunąć to oprogramowanie? Spowoduje to również usunięcie wszystkich wersji i instalacji.')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${softwareId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ ${result.message || 'Oprogramowanie zostało usunięte'}
+                            </div>
+                        `;
+                        loadSoftware();
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd usuwania oprogramowania: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function viewVersion(versionId) {
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-software/software/${currentSoftwareId}/versions`);
+                    const versions = await response.json();
+                    const version = versions.find(v => v.id === versionId);
+                    
+                    if (!version) {
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Nie znaleziono wersji
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const badges = [];
+                    if (version.is_stable) badges.push('<span class="status-badge status-installed">Stabilna</span>');
+                    if (version.is_beta) badges.push('<span class="status-badge" style="background: #f39c12;">Beta</span>');
+                    if (version.requires_reboot) badges.push('<span class="status-badge" style="background: #e67e22;">Wymaga restartu</span>');
+
+                    document.getElementById('result').innerHTML = `
+                        <div class="result" style="background: #e3f2fd; border-color: #2196f3;">
+                            <h4>🔢 Wersja ${version.version_number}</h4>
+                            <p><strong>Typ:</strong> ${badges.join(' ')}</p>
+                            <p><strong>Notatki wydania:</strong> ${version.release_notes || 'Brak notatek'}</p>
+                            <p><strong>Ścieżka pobierania:</strong> ${version.download_url || 'Brak'}</p>
+                            <p><strong>Rozmiar pliku:</strong> ${version.file_size || 'Nieznany'}</p>
+                            <p><strong>Checksum:</strong> ${version.checksum || 'Brak'}</p>
+                            <p><strong>Instalacje:</strong> ${version.installations_count}</p>
+                            <p><strong>Utworzono:</strong> ${new Date(version.created_at).toLocaleDateString()}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania wersji: ${error.message}
                         </div>
                     `;
                 }
