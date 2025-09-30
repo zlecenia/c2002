@@ -235,7 +235,33 @@ services:
 - Dodano sprawdzanie istnienia katalogów w main.py
 - Usunięto przestarzały atrybut `version` z docker-compose.yml
 
+### Makefile - Uproszczone zarządzanie
+
+Projekt zawiera **Makefile** z wszystkimi operacjami:
+
+```bash
+# Pokaż wszystkie dostępne komendy
+make help
+
+# Docker
+make docker-up          # Uruchom kontenery
+make docker-down        # Zatrzymaj kontenery
+make docker-logs        # Pokaż logi
+
+# Backup & Restore
+make backup             # Stwórz backup bazy
+make backup-list        # Lista backupów
+make restore FILE=...   # Przywróć backup
+
+# Development
+make run                # Uruchom aplikację
+make test               # Testy
+make clean              # Wyczyść cache
+```
+
 📖 **Szczegółowa dokumentacja:** Zobacz [DOCKER.md](DOCKER.md) dla:
+- Pełna lista komend Makefile
+- Backup & Restore bazy danych
 - Konfiguracji środowiska produkcyjnego
 - Troubleshooting i diagnostyka
 - Zaawansowane komendy Docker

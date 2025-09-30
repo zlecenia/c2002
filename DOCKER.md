@@ -5,10 +5,12 @@
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
+- [Makefile Usage](#makefile-usage)
 - [Docker Configuration](#docker-configuration)
 - [Environment Variables](#environment-variables)
 - [Container Architecture](#container-architecture)
 - [Docker Commands](#docker-commands)
+- [Database Backup & Restore](#database-backup--restore)
 - [Troubleshooting](#troubleshooting)
 - [Production Deployment](#production-deployment)
 
@@ -84,6 +86,134 @@ docker compose down
 
 # Stop, remove containers, and delete volumes (⚠️ deletes all data)
 docker compose down -v
+```
+
+---
+
+## 🛠️ Makefile Usage
+
+The project includes a comprehensive **Makefile** that simplifies common operations. This is the **recommended way** to interact with the system.
+
+### Quick Reference
+
+```bash
+# Show all available commands
+make help
+
+# Docker operations
+make docker-up          # Start containers
+make docker-down        # Stop containers
+make docker-logs        # View logs
+
+# Database backup & restore
+make backup             # Create backup
+make backup-list        # List backups
+make restore FILE=...   # Restore from backup
+
+# Development
+make run                # Run application
+make test               # Run tests
+make clean              # Clean cache
+```
+
+### Complete Command List
+
+#### 📦 Setup & Installation
+```bash
+make install            # Install all dependencies
+make venv               # Create Python virtual environment
+make deps               # Install Python dependencies only
+```
+
+#### 🚀 Application
+```bash
+make run                # Run the FastAPI application
+make dev                # Run in development mode (auto-reload)
+make seed               # Initialize database with sample data
+make reset              # Reset database (drop all data)
+```
+
+#### 🗄️ Database Operations
+```bash
+make backup             # Create database backup (Docker)
+make backup-local       # Create database backup (Local PostgreSQL)
+make backup-list        # List all available backups
+make restore FILE=...   # Restore database from backup file
+make db-prune           # Remove old backups (keep last 10)
+make psql               # Connect to PostgreSQL shell (Docker)
+make psql-local         # Connect to PostgreSQL shell (Local)
+```
+
+#### 🐳 Docker Operations
+```bash
+make docker-build       # Build Docker images
+make docker-up          # Start all containers
+make docker-down        # Stop all containers
+make docker-restart     # Restart all containers
+make docker-logs        # Show container logs (all)
+make docker-logs-api    # Show API logs only
+make docker-logs-db     # Show database logs only
+make docker-ps          # Show container status
+make docker-clean       # Remove containers and volumes
+make docker-shell       # Open shell in API container
+```
+
+#### 🧪 Testing & QA
+```bash
+make test               # Run all tests
+make test-auth          # Run authentication tests
+make test-api           # Run API tests
+make test-modules       # Run module tests
+make test-coverage      # Run tests with coverage report
+make lint               # Run code linting
+```
+
+#### 🛠️ Utilities
+```bash
+make clean              # Clean Python cache files
+make clean-all          # Clean everything (cache, logs, backups)
+make format             # Format code with black
+make format-check       # Check code formatting
+make logs-clean         # Clean application logs
+make requirements       # Update requirements.txt
+```
+
+### Examples
+
+#### Complete Development Workflow
+```bash
+# 1. Start Docker containers
+make docker-up
+
+# 2. Seed database with sample data
+make seed
+
+# 3. View logs
+make docker-logs-api
+
+# 4. Create a backup
+make backup
+
+# 5. Run tests
+make test
+
+# 6. Stop containers
+make docker-down
+```
+
+#### Backup & Restore Workflow
+```bash
+# Create backup
+make backup
+
+# List all backups
+make backup-list
+
+# Restore from specific backup
+make restore FILE=backups/fleet_management_20250930_120000.sql.gz
+
+# Clean old backups (keep last 10)
+make db-prune
 ```
 
 ---
@@ -333,15 +463,249 @@ docker compose stats
 # Connect to PostgreSQL
 docker compose exec db psql -U fleetuser -d fleet_management
 
-# Create database backup
-docker compose exec db pg_dump -U fleetuser fleet_management > backup.sql
-
-# Restore database from backup
-docker compose exec -T db psql -U fleetuser -d fleet_management < backup.sql
-
 # Reset database (⚠️ deletes all data)
 docker compose down -v
 docker compose up -d db
+```
+
+---
+
+## 💾 Database Backup & Restore
+
+The system includes automated scripts for database backup and restore operations with support for both Docker and local PostgreSQL installations.
+
+### Quick Backup & Restore
+
+```bash
+# Using Makefile (recommended)
+make backup                 # Create backup
+make backup-list            # List backups
+make restore FILE=backup.sql.gz  # Restore backup
+
+# Using scripts directly
+./scripts/backup.sh --docker
+./scripts/restore.sh --docker backups/fleet_management_20250930_120000.sql.gz
+```
+
+### Backup Features
+
+✅ **Automatic timestamped filenames** - `fleet_management_YYYYMMDD_HHMMSS.sql.gz`  
+✅ **Gzip compression** - Reduced storage and faster transfers  
+✅ **Retention policy** - Automatically keeps last 10 backups  
+✅ **Docker & local support** - Works with both environments  
+✅ **Verification** - File size and integrity checks  
+
+### Creating Backups
+
+#### Via Makefile (Recommended)
+
+```bash
+# Backup from Docker container
+make backup
+
+# Backup from local PostgreSQL
+make backup-local
+
+# List all backups
+make backup-list
+```
+
+#### Via Script Directly
+
+```bash
+# Docker backup (compressed)
+./scripts/backup.sh --docker
+
+# Local PostgreSQL backup
+./scripts/backup.sh --local
+
+# Custom filename
+./scripts/backup.sh --docker --file backups/my_backup.sql.gz
+
+# Uncompressed backup
+./scripts/backup.sh --docker --no-compress
+
+# Verbose output
+./scripts/backup.sh --docker --verbose
+```
+
+### Restoring Backups
+
+⚠️ **WARNING:** Restore operations will **REPLACE ALL DATA** in the target database!
+
+#### Via Makefile (Recommended)
+
+```bash
+# List available backups
+make backup-list
+
+# Restore specific backup (Docker)
+make restore FILE=backups/fleet_management_20250930_120000.sql.gz
+
+# Restore to local PostgreSQL
+make restore-local FILE=backups/fleet_management_20250930_120000.sql.gz
+```
+
+#### Via Script Directly
+
+```bash
+# Restore to Docker container
+./scripts/restore.sh --docker backups/fleet_management_20250930_120000.sql.gz
+
+# Restore to local PostgreSQL
+./scripts/restore.sh --local backups/fleet_management_20250930_120000.sql.gz
+
+# Skip confirmation prompt
+./scripts/restore.sh --docker --yes backups/latest.sql.gz
+
+# Dry run (show what would be done)
+./scripts/restore.sh --docker --dry-run backups/backup.sql.gz
+```
+
+### Backup Directory Structure
+
+```
+backups/
+├── .gitignore                                    # Ignores *.sql files
+├── README.md                                     # Backup documentation
+├── fleet_management_20250930_120000.sql.gz      # Compressed backup
+├── fleet_management_20250930_140000.sql.gz      # Another backup
+└── ...
+```
+
+### Retention Policy
+
+The system automatically manages backup retention:
+
+- **Default:** Keep last 10 backups
+- **Automatic pruning:** Runs after each backup
+- **Manual pruning:** `make db-prune`
+- **Custom retention:** Set `MAX_BACKUPS` environment variable
+
+```bash
+# Custom retention (keep 20 backups)
+export MAX_BACKUPS=20
+make backup
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | - | PostgreSQL connection string (local only) |
+| `POSTGRES_USER` | fleetuser | PostgreSQL username (Docker) |
+| `POSTGRES_DB` | fleet_management | Database name (Docker) |
+| `MAX_BACKUPS` | 10 | Maximum backups to keep |
+
+### Backup Strategies
+
+#### Development
+```bash
+# Before major changes
+make backup
+
+# After successful migration
+make backup
+```
+
+#### Production
+```bash
+# Daily backup (cron job)
+0 2 * * * cd /path/to/project && make backup
+
+# Before deployment
+make backup
+
+# After deployment verification
+make backup
+```
+
+### PostgreSQL Shell Access
+
+```bash
+# Docker container
+make psql
+
+# Local PostgreSQL
+make psql-local
+
+# Or directly
+docker compose exec db psql -U fleetuser -d fleet_management
+```
+
+### Manual Database Operations
+
+```bash
+# Connect to PostgreSQL shell
+make psql
+
+# List all databases
+\l
+
+# List all tables
+\dt
+
+# Describe table structure
+\d table_name
+
+# Run SQL query
+SELECT * FROM users LIMIT 10;
+
+# Exit
+\q
+```
+
+### Backup Best Practices
+
+1. **Regular Backups** - Schedule daily automated backups
+2. **Before Changes** - Always backup before schema migrations
+3. **Test Restores** - Periodically test restore procedures
+4. **Off-site Storage** - Copy critical backups to external storage
+5. **Retention Policy** - Balance storage costs with recovery needs
+6. **Documentation** - Keep notes on important backup timestamps
+
+### Troubleshooting Backups
+
+#### Backup Script Fails
+
+```bash
+# Check Docker container is running
+docker compose ps
+
+# Check disk space
+df -h
+
+# Verify permissions
+ls -la backups/
+
+# Run with verbose output
+./scripts/backup.sh --docker --verbose
+```
+
+#### Restore Fails
+
+```bash
+# Verify backup file exists
+ls -lh backups/
+
+# Check file integrity (compressed)
+gunzip -t backups/fleet_management_20250930_120000.sql.gz
+
+# Dry run to test
+./scripts/restore.sh --docker --dry-run backups/backup.sql.gz
+```
+
+#### Container Not Running
+
+```bash
+# Start containers
+make docker-up
+
+# Wait for database to be ready
+sleep 10
+
+# Try backup again
+make backup
 ```
 
 ---
