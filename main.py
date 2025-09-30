@@ -2441,7 +2441,7 @@ async def fleet_config_manager():
                         <div class="backup-section">
                             <h5>Restore konfiguracji</h5>
                             <p>Przywróć konfigurację z pliku backup:</p>
-                            <textarea id="restore-data" placeholder='Wklej dane backup w formacie JSON...' rows="5" style="width: 100%; margin-bottom: 10px;"></textarea>
+                            <div id="restore-data-editor" style="margin-bottom: 10px;"></div>
                             <button class="btn btn-danger" onclick="restoreBackup()">Przywróć z Backup</button>
                         </div>
                     </div>
@@ -2471,7 +2471,7 @@ async def fleet_config_manager():
                             </div>
                             <div class="form-group">
                                 <label>Wartości konfiguracji (JSON):</label>
-                                <textarea id="config-value" rows="5" placeholder='{"key": "value", "setting": 123}'></textarea>
+                                <div id="config-value-editor"></div>
                             </div>
                             <div class="form-group">
                                 <label>Opis:</label>
@@ -2503,11 +2503,11 @@ async def fleet_config_manager():
                             </div>
                             <div class="form-group">
                                 <label>Parametry (JSON):</label>
-                                <textarea id="test-parameters" rows="5" placeholder='{"duration": 300, "pressure": 50, "tolerance": 2}'></textarea>
+                                <div id="test-parameters-editor"></div>
                             </div>
                             <div class="form-group">
                                 <label>Oczekiwane wyniki (JSON):</label>
-                                <textarea id="expected-results" rows="3" placeholder='{"pass_criteria": "value < 10", "units": "Pa"}'></textarea>
+                                <div id="expected-results-editor"></div>
                             </div>
                             <button type="button" class="btn" onclick="createTestScenario()">Dodaj scenariusz</button>
                             <button type="button" class="btn btn-secondary" onclick="hideTestScenarioForm()">Anuluj</button>
@@ -3003,6 +3003,15 @@ async def fleet_config_manager():
                 // Hide all forms
                 hideAllForms();
                 
+                // Initialize restore editor when backup tab is shown
+                if (tabName === 'backup' && !restoreDataEditor) {
+                    restoreDataEditor = new JSONTreeEditor('restore-data-editor', {
+                        system_configs: [],
+                        device_configs: [],
+                        test_scenarios: []
+                    });
+                }
+                
                 // Update URL hash
                 if (!skipHashUpdate) {
                     window.location.hash = tabName;
@@ -3201,25 +3210,80 @@ async def fleet_config_manager():
                 `).join('');
             }
 
+            let configValueEditor = null;
+
             function showAddSystemConfigForm() {
                 hideAllForms();
                 document.getElementById('add-system-config-form').style.display = 'block';
                 document.getElementById('form-title').textContent = 'Dodaj konfigurację systemu';
+                
+                // Initialize JSON editor for config-value
+                if (!configValueEditor) {
+                    configValueEditor = new JSONTreeEditor('config-value-editor', {
+                        key: "value",
+                        setting: 123,
+                        enabled: true
+                    });
+                }
             }
 
             function hideSystemConfigForm() {
+                // Reset JSON editor FIRST before hiding form
+                if (configValueEditor) {
+                    configValueEditor.setData({
+                        key: "value",
+                        setting: 123,
+                        enabled: true
+                    });
+                }
+                
                 document.getElementById('add-system-config-form').style.display = 'none';
                 document.getElementById('system-config-form').reset();
                 document.getElementById('form-title').textContent = 'Formularz konfiguracji';
             }
 
+            let testParametersEditor = null;
+            let expectedResultsEditor = null;
+
             function showAddTestScenarioForm() {
                 hideAllForms();
                 document.getElementById('add-test-scenario-form').style.display = 'block';
                 document.getElementById('form-title').textContent = 'Dodaj scenariusz testowy';
+                
+                // Initialize JSON editors
+                if (!testParametersEditor) {
+                    testParametersEditor = new JSONTreeEditor('test-parameters-editor', {
+                        duration: 300,
+                        pressure: 50,
+                        tolerance: 2
+                    });
+                }
+                
+                if (!expectedResultsEditor) {
+                    expectedResultsEditor = new JSONTreeEditor('expected-results-editor', {
+                        pass_criteria: "value < 10",
+                        units: "Pa"
+                    });
+                }
             }
 
             function hideTestScenarioForm() {
+                // Reset JSON editors FIRST before hiding form
+                if (testParametersEditor) {
+                    testParametersEditor.setData({
+                        duration: 300,
+                        pressure: 50,
+                        tolerance: 2
+                    });
+                }
+                
+                if (expectedResultsEditor) {
+                    expectedResultsEditor.setData({
+                        pass_criteria: "value < 10",
+                        units: "Pa"
+                    });
+                }
+                
                 document.getElementById('add-test-scenario-form').style.display = 'none';
                 document.getElementById('test-scenario-form').reset();
                 document.getElementById('form-title').textContent = 'Formularz konfiguracji';
@@ -3298,10 +3362,11 @@ async def fleet_config_manager():
                     description: document.getElementById('config-description').value
                 };
 
-                try {
-                    configData.config_value = JSON.parse(document.getElementById('config-value').value);
-                } catch (e) {
-                    alert('Nieprawidłowy format JSON w wartościach konfiguracji');
+                // Get JSON data from editor
+                if (configValueEditor) {
+                    configData.config_value = configValueEditor.getData();
+                } else {
+                    alert('Edytor JSON nie został zainicjalizowany');
                     return;
                 }
 
@@ -3351,15 +3416,16 @@ async def fleet_config_manager():
                     expected_results: {}
                 };
 
-                try {
-                    scenarioData.parameters = JSON.parse(document.getElementById('test-parameters').value);
-                    const expectedText = document.getElementById('expected-results').value;
-                    if (expectedText) {
-                        scenarioData.expected_results = JSON.parse(expectedText);
-                    }
-                } catch (e) {
-                    alert('Nieprawidłowy format JSON w parametrach lub wynikach');
+                // Get JSON data from editors
+                if (testParametersEditor) {
+                    scenarioData.parameters = testParametersEditor.getData();
+                } else {
+                    alert('Edytor parametrów nie został zainicjalizowany');
                     return;
+                }
+                
+                if (expectedResultsEditor) {
+                    scenarioData.expected_results = expectedResultsEditor.getData();
                 }
 
                 if (!scenarioData.scenario_name || !scenarioData.test_type) {
@@ -3434,19 +3500,19 @@ async def fleet_config_manager():
                 }
             }
 
+            let restoreDataEditor = null;
+
             async function restoreBackup() {
-                const backupText = document.getElementById('restore-data').value;
-                
-                if (!backupText) {
-                    alert('Podaj dane backup do przywrócenia');
+                // Get data from JSON editor
+                if (!restoreDataEditor) {
+                    alert('Edytor restore nie został zainicjalizowany');
                     return;
                 }
-
-                let backupData;
-                try {
-                    backupData = JSON.parse(backupText);
-                } catch (e) {
-                    alert('Nieprawidłowy format JSON w danych backup');
+                
+                const backupData = restoreDataEditor.getData();
+                
+                if (!backupData || Object.keys(backupData).length === 0) {
+                    alert('Podaj dane backup do przywrócenia');
                     return;
                 }
 
@@ -3468,6 +3534,16 @@ async def fleet_config_manager():
                             Przywrócono: ${result.restored_at}
                             </div>
                         `;
+                        
+                        // Reset restore editor after successful restore
+                        if (restoreDataEditor) {
+                            restoreDataEditor.setData({
+                                system_configs: [],
+                                device_configs: [],
+                                test_scenarios: []
+                            });
+                        }
+                        
                         // Reload all data
                         loadDashboard();
                         loadSystemConfigs();
