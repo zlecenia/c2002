@@ -53,7 +53,7 @@ class DeviceResponse(BaseModel):
     customer_id: Optional[int]
     configuration: Optional[Dict[str, Any]]
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
