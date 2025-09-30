@@ -540,8 +540,14 @@ async def connect_plus():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #3498db; }
+            .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             h1 { color: #2c3e50; text-align: center; }
             .module-info { background: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0; }
             .api-test { margin: 20px 0; }
@@ -551,6 +557,17 @@ async def connect_plus():
         </style>
     </head>
     <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus" class="active">🔗 Connect++</a></li>
+                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
         <div class="container">
             <h1>🔗 Connect++ Module</h1>
             <div class="module-info">
@@ -610,8 +627,14 @@ async def commands_manager():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-            .container { max-width: 1200px; margin: 0 auto; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #e74c3c; }
+            .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
             .header { background: #e74c3c; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
             .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -632,6 +655,17 @@ async def commands_manager():
         </style>
     </head>
     <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/commands-manager" class="active">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
         <div class="container">
             <div class="header">
                 <h1>⚙️ Commands Manager</h1>
@@ -1341,8 +1375,14 @@ async def fleet_data_manager():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-            .container { max-width: 1400px; margin: 0 auto; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #27ae60; }
+            .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
             .header { background: #27ae60; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
             .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -1375,6 +1415,17 @@ async def fleet_data_manager():
         </style>
     </head>
     <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager" class="active">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
         <div class="container">
             <div class="header">
                 <h1>📊 Fleet Data Manager</h1>
@@ -2145,8 +2196,14 @@ async def fleet_config_manager():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-            .container { max-width: 1400px; margin: 0 auto; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #9b59b6; }
+            .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
             .header { background: #9b59b6; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
             .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -2185,6 +2242,17 @@ async def fleet_config_manager():
         </style>
     </head>
     <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager" class="active">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
         <div class="container">
             <div class="header">
                 <h1>⚙️ Fleet Config Manager</h1>
@@ -3647,8 +3715,14 @@ async def fleet_software_manager():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-            .container { max-width: 1400px; margin: 0 auto; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #34495e; }
+            .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
             .header { background: #34495e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
             .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -3688,6 +3762,17 @@ async def fleet_software_manager():
         </style>
     </head>
     <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager" class="active">💿 Fleet Software Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
         <div class="container">
             <div class="header">
                 <h1>💾 Fleet Software Manager</h1>

@@ -4,6 +4,15 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Global Navigation Menu - Seamless Module Switching
+  - **Added unified navigation menu to all 5 webGUI modules**
+  - Top navigation bar with all modules: Home, Connect++, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, API Docs
+  - Active module highlighted with color-coded theme matching each module's design
+  - Responsive design with icons and labels for each module
+  - One-click navigation between modules without returning to home page
+  - Consistent user experience across entire application
+  - Mobile-friendly horizontal menu with flex-wrap support
+
 - **September 30, 2025**: Universal JSON Tree Editor - Interactive Form-Based JSON Editing
   - **Replaced ALL textarea-based JSON editing with interactive visual tree editors**
   - Created reusable `JSONTreeEditor` JavaScript class supporting all JSON types (string, number, boolean, object, array)
