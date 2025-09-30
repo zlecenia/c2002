@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p /app/logs
+RUN mkdir -p /app/logs /app/static /app/modules
 
 # Expose port 5000
 EXPOSE 5000

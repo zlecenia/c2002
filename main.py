@@ -50,10 +50,13 @@ app.include_router(fleet_config_router, prefix=settings.api_v1_str)
 from backend.api.fleet_software_router import router as fleet_software_router
 app.include_router(fleet_software_router, prefix=settings.api_v1_str)
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files (check directory exists first)
+import os
+if os.path.exists("static") and os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 # Mount modules static files (separate path to avoid conflicts)
-app.mount("/modules", StaticFiles(directory="modules"), name="modules")
+if os.path.exists("modules") and os.path.isdir("modules"):
+    app.mount("/modules", StaticFiles(directory="modules"), name="modules")
 
 # Initialize sample data endpoint
 @app.post("/api/v1/init-data")
