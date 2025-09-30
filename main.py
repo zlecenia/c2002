@@ -983,10 +983,6 @@ async def commands_manager():
 
                         <button type="button" class="btn" onclick="createScenario()">Utwórz Scenariusz</button>
                     </form>
-
-                    <h4>🔍 API Endpoints Test</h4>
-                    <button class="btn btn-secondary" onclick="testScenariosAPI()">Test /scenarios</button>
-                    <button class="btn btn-secondary" onclick="testAuth()">Test Auth</button>
                 </div>
             </div>
 
@@ -1009,6 +1005,12 @@ async def commands_manager():
                     <select id="role-select" onchange="switchRole()">
                         <option value="">Wybierz rolę...</option>
                     </select>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #34495e; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #7f8c8d; padding-bottom: 8px;">🔍 API Endpoints Test</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px;" onclick="testScenariosAPI()">Test /scenarios</button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="testAuth()">Test Auth</button>
                 </div>
             </div>
         </div>
