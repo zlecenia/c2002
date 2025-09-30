@@ -5871,10 +5871,15 @@ async def fleet_software_manager():
             });
 
             async function loadDashboard() {
+                if (!getAuthToken()) {
+                    return; // Don't send request if not authenticated
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-software/dashboard/stats');
                     
                     if (response.status === 401 || response.status === 403) {
+                        clearAuthToken();
                         return;
                     }
 
@@ -5891,15 +5896,25 @@ async def fleet_software_manager():
             }
 
             async function loadSoftware() {
+                if (!getAuthToken()) {
+                    document.getElementById('software-list').innerHTML = `
+                        <div style="color: #95a5a6; padding: 10px;">
+                        💡 Zaloguj się aby zobaczyć oprogramowanie...
+                        </div>
+                    `;
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-software/software');
                     
                     if (response.status === 401 || response.status === 403) {
                         document.getElementById('software-list').innerHTML = `
                             <div style="color: #e74c3c; padding: 10px;">
-                            ❌ Brak autoryzacji. Zaloguj się jako Maker aby zobaczyć oprogramowanie.
+                            ❌ Brak autoryzacji - wymagana rola Maker
                             </div>
                         `;
+                        clearAuthToken();
                         return;
                     }
 
@@ -6284,15 +6299,25 @@ async def fleet_software_manager():
             }
 
             async function loadInstallations() {
+                if (!getAuthToken()) {
+                    document.getElementById('installations-list').innerHTML = `
+                        <div style="color: #95a5a6; padding: 10px;">
+                        💡 Zaloguj się aby zobaczyć historię instalacji...
+                        </div>
+                    `;
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-software/installations');
                     
                     if (response.status === 401 || response.status === 403) {
                         document.getElementById('installations-list').innerHTML = `
                             <div style="color: #e74c3c; padding: 10px;">
-                            ❌ Brak autoryzacji. Zaloguj się jako Maker aby zobaczyć instalacje.
+                            ❌ Brak autoryzacji - wymagana rola Maker
                             </div>
                         `;
+                        clearAuthToken();
                         return;
                     }
 
