@@ -552,16 +552,18 @@ async def connect_plus():
             .app-container { display: flex; min-height: calc(100vh - 52px); }
             .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
             .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
-            .sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-            .sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
-            .sidebar .login-section button { width: 100%; margin-bottom: 5px; }
-            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
-            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .sidebar .menu-section { margin-top: 20px; }
             .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
             .sidebar .menu-item:hover { background: #7f8c8d; }
             .sidebar .menu-item.active { background: #3498db; font-weight: bold; }
-            .main-content-area { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+            .main-content-area { width: 70%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+            .right-sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+            .right-sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+            .right-sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .right-sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+            .right-sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+            .right-sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+            .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .container { max-width: 100%; margin: 0; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             .api-test { margin: 20px 0; }
             button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
@@ -572,6 +574,7 @@ async def connect_plus():
                 .app-container { flex-direction: column; }
                 .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
                 .main-content-area { width: 100%; }
+                .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
             }
         </style>
     </head>
@@ -589,22 +592,6 @@ async def connect_plus():
         </nav>
         <div class="app-container">
             <div class="sidebar">
-                <h3>🔐 Logowanie</h3>
-                <div class="login-section">
-                    <input type="text" id="login-username" placeholder="Username">
-                    <input type="password" id="login-password" placeholder="Password">
-                    <button onclick="login()">Zaloguj</button>
-                    <button onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
-                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
-                </div>
-
-                <div class="role-switcher" id="role-switcher">
-                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
-                    <select id="role-select" onchange="switchRole()">
-                        <option value="">Wybierz rolę...</option>
-                    </select>
-                </div>
-
                 <h3>🔗 Menu Modułu</h3>
                 <div class="menu-section">
                     <div class="menu-item active">📊 Test API</div>
@@ -630,6 +617,24 @@ async def connect_plus():
                         <button onclick="testScenarios()">Test Scenarios</button>
                         <div id="result"></div>
                     </div>
+                </div>
+            </div>
+
+            <div class="right-sidebar">
+                <h3>🔐 Logowanie</h3>
+                <div class="login-section">
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button onclick="login()">Zaloguj</button>
+                    <button onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
             </div>
         </div>
