@@ -4,6 +4,16 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: JSON Templates System & Visual Editor Implementation
+  - Added JSON Templates database table with 5 predefiniowane szablony for different device types
+  - Implemented complete CRUD API for JSON templates in Fleet Config Manager
+  - Created visual JSON editor in Commands Manager with template selection
+  - Templates automatically filter by device type (mask_tester, pressure_sensor, flow_meter)
+  - Auto-fill JSON configuration from templates with inline editing capability
+  - Scenarios now support test_flow JSON configurations
+  - Fixed Pydantic validation errors in Fleet Config and Fleet Software APIs
+  - All modules tested and validated successfully
+
 - **September 30, 2025**: Professional Landing Page Implementation
   - Created responsive HTML landing page for root "/" endpoint
   - Beautiful gradient design with module cards and responsive layout
@@ -22,7 +32,7 @@ Comprehensive Fleet Management System based on Polish technical specifications, 
 
 ## Project Architecture
 - **Backend**: Python FastAPI with SQLAlchemy ORM running on port 5000
-- **Database**: PostgreSQL with 13 tables (Users, Devices, Software, Installations, etc.)
+- **Database**: PostgreSQL with 14 tables (Users, Devices, Software, Installations, JSON Templates, etc.)
 - **Authentication**: JWT tokens + QR code login system with role-based access
 - **API**: REST API with 50+ endpoints and OpenAPI 3.1 documentation
 - **Frontend**: 5 specialized webGUI modules for different user roles
@@ -75,6 +85,8 @@ Comprehensive Fleet Management System based on Polish technical specifications, 
 ### Fleet Configuration (Configurator)
 - `GET/POST/PUT/DELETE /api/v1/fleet-config/system-configs` - System configuration CRUD
 - `GET/POST/PUT/DELETE /api/v1/fleet-config/device-configs` - Device configuration CRUD
+- `GET/POST/PUT/DELETE /api/v1/fleet-config/json-templates` - JSON templates CRUD with filtering
+- `GET /api/v1/fleet-config/test-scenario-configs` - Test scenario configurations
 - `POST /api/v1/fleet-config/backup` - Configuration backup
 - `POST /api/v1/fleet-config/restore` - Configuration restore
 
