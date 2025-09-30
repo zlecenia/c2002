@@ -4817,6 +4817,14 @@ async def fleet_software_manager():
                     <div class="menu-item" onclick="showTab('versions-tab', this)">🔢 Wersje</div>
                     <div class="menu-item" onclick="showTab('installations-tab', this)">💾 Instalacje</div>
                 </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API Endpoints Test</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testSoftwareAPI()">Test Software API</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testVersionsAPI()">Test Versions API</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testInstallationsAPI()">Test Installations API</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
+                </div>
             </div>
 
             <div class="main-content-wrapper">
@@ -4993,14 +5001,6 @@ async def fleet_software_manager():
                             <button class="btn btn-secondary" onclick="hideInstallationForm()">Anuluj</button>
                         </div>
                     </div>
-                </div>
-
-                <div class="section">
-                    <h3>🔍 API Endpoints Test</h3>
-                    <button class="btn btn-secondary" onclick="testSoftwareAPI()">Test Software API</button>
-                    <button class="btn btn-secondary" onclick="testVersionsAPI()">Test Versions API</button>
-                    <button class="btn btn-secondary" onclick="testInstallationsAPI()">Test Installations API</button>
-                    <button class="btn btn-secondary" onclick="testDashboard()">Test Dashboard</button>
                 </div>
             </div>
 
