@@ -700,9 +700,19 @@ async def commands_manager():
                         </div>
 
                         <div class="form-group">
-                            <label>📝 Konfiguracja JSON (test_flow):</label>
-                            <textarea id="json-config" rows="8" style="font-family: monospace; font-size: 12px;" placeholder='{"pressure_min": 0, "pressure_max": 50, "duration": 60}'></textarea>
-                            <small style="color: #7f8c8d;">Edytuj JSON ręcznie lub wybierz szablon powyżej</small>
+                            <label>📝 Konfiguracja test_flow:</label>
+                            <div style="margin-bottom: 10px;">
+                                <button type="button" class="btn btn-secondary" onclick="jsonTreeEditor.addField()">+ Dodaj pole</button>
+                                <button type="button" class="btn btn-secondary" onclick="jsonTreeEditor.clear()">🗑️ Wyczyść</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleJSONView()">👁️ Podgląd JSON</button>
+                            </div>
+                            <div id="json-tree-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                <!-- Tree editor będzie tu renderowany -->
+                            </div>
+                            <div id="json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                <!-- JSON preview -->
+                            </div>
+                            <small style="color: #7f8c8d;">Edytuj konfigurację używając pól powyżej lub wybierz szablon</small>
                         </div>
 
                         <button type="button" class="btn" onclick="createScenario()">Utwórz Scenariusz</button>
@@ -838,6 +848,246 @@ async def commands_manager():
                 }
             }
 
+            // ========== UNIVERSAL JSON TREE EDITOR ==========
+            class JSONTreeEditor {
+                constructor(containerId) {
+                    this.container = document.getElementById(containerId);
+                    this.data = {};
+                    this.fieldCounter = 0;
+                }
+
+                init(jsonData = {}) {
+                    this.data = jsonData;
+                    this.render();
+                }
+
+                render() {
+                    this.container.innerHTML = '';
+                    if (Object.keys(this.data).length === 0) {
+                        this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
+                        return;
+                    }
+                    
+                    for (const [key, value] of Object.entries(this.data)) {
+                        this.renderField(key, value, this.container);
+                    }
+                }
+
+                renderField(key, value, parentElement, path = '') {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.style.cssText = 'margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd;';
+                    
+                    const currentPath = path ? `${path}.${key}` : key;
+                    const type = this.getType(value);
+                    
+                    // Field header with key name and controls
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; gap: 10px;';
+                    
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'text';
+                    keyInput.value = key;
+                    keyInput.style.cssText = 'flex: 0 0 180px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px; font-weight: bold;';
+                    keyInput.onchange = (e) => this.renameKey(path, key, e.target.value);
+                    
+                    const typeSelect = document.createElement('select');
+                    typeSelect.style.cssText = 'flex: 0 0 100px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    ['string', 'number', 'boolean', 'object', 'array'].forEach(t => {
+                        const option = document.createElement('option');
+                        option.value = t;
+                        option.textContent = t;
+                        option.selected = type === t;
+                        typeSelect.appendChild(option);
+                    });
+                    typeSelect.onchange = (e) => this.changeType(currentPath, e.target.value);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.className = 'btn btn-danger';
+                    deleteBtn.style.cssText = 'padding: 3px 8px; margin-left: auto;';
+                    deleteBtn.onclick = () => this.deleteField(currentPath);
+                    
+                    headerDiv.appendChild(keyInput);
+                    headerDiv.appendChild(typeSelect);
+                    headerDiv.appendChild(deleteBtn);
+                    fieldDiv.appendChild(headerDiv);
+                    
+                    // Value input based on type
+                    const valueDiv = document.createElement('div');
+                    
+                    if (type === 'object') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #3498db; margin-top: 10px;';
+                        for (const [childKey, childValue] of Object.entries(value)) {
+                            this.renderField(childKey, childValue, valueDiv, currentPath);
+                        }
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj pole do obiektu';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addFieldToObject(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'array') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #9b59b6; margin-top: 10px;';
+                        value.forEach((item, index) => {
+                            this.renderField(`[${index}]`, item, valueDiv, currentPath);
+                        });
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj element do array';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addArrayElement(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'boolean') {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = value;
+                        checkbox.style.cssText = 'width: 20px; height: 20px;';
+                        checkbox.onchange = (e) => this.setValue(currentPath, e.target.checked);
+                        valueDiv.appendChild(checkbox);
+                    } else if (type === 'number') {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, parseFloat(e.target.value));
+                        valueDiv.appendChild(input);
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, e.target.value);
+                        valueDiv.appendChild(input);
+                    }
+                    
+                    fieldDiv.appendChild(valueDiv);
+                    parentElement.appendChild(fieldDiv);
+                }
+
+                getType(value) {
+                    if (Array.isArray(value)) return 'array';
+                    if (value === null) return 'string';
+                    return typeof value;
+                }
+
+                setValue(path, value) {
+                    const keys = path.split('.').filter(k => k && !k.startsWith('['));
+                    const arrayIndices = path.match(/\[(\d+)\]/g);
+                    
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = value;
+                    this.render();
+                }
+
+                addField() {
+                    const newKey = `field_${this.fieldCounter++}`;
+                    this.data[newKey] = '';
+                    this.render();
+                }
+
+                addFieldToObject(path) {
+                    const obj = this.getValueByPath(path);
+                    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                        obj[`field_${this.fieldCounter++}`] = '';
+                        this.render();
+                    }
+                }
+
+                addArrayElement(path) {
+                    const arr = this.getValueByPath(path);
+                    if (arr && Array.isArray(arr)) {
+                        arr.push('');
+                        this.render();
+                    }
+                }
+
+                deleteField(path) {
+                    const keys = path.split('.').filter(k => k);
+                    if (keys.length === 1) {
+                        delete this.data[keys[0]];
+                    } else {
+                        let current = this.data;
+                        for (let i = 0; i < keys.length - 1; i++) {
+                            current = current[keys[i]];
+                        }
+                        delete current[keys[keys.length - 1]];
+                    }
+                    this.render();
+                }
+
+                renameKey(parentPath, oldKey, newKey) {
+                    if (oldKey === newKey) return;
+                    
+                    if (!parentPath) {
+                        this.data[newKey] = this.data[oldKey];
+                        delete this.data[oldKey];
+                    } else {
+                        const parent = this.getValueByPath(parentPath);
+                        parent[newKey] = parent[oldKey];
+                        delete parent[oldKey];
+                    }
+                    this.render();
+                }
+
+                changeType(path, newType) {
+                    const defaultValues = {
+                        'string': '',
+                        'number': 0,
+                        'boolean': false,
+                        'object': {},
+                        'array': []
+                    };
+                    
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = defaultValues[newType];
+                    this.render();
+                }
+
+                getValueByPath(path) {
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (const key of keys) {
+                        current = current[key];
+                    }
+                    return current;
+                }
+
+                clear() {
+                    this.data = {};
+                    this.render();
+                }
+
+                getJSON() {
+                    return this.data;
+                }
+
+                setJSON(jsonData) {
+                    this.data = jsonData;
+                    this.render();
+                }
+            }
+
+            // Initialize JSON Tree Editor
+            const jsonTreeEditor = new JSONTreeEditor('json-tree-editor');
+            jsonTreeEditor.init({});
+
+            function toggleJSONView() {
+                const preview = document.getElementById('json-preview');
+                if (preview.style.display === 'none') {
+                    preview.style.display = 'block';
+                    preview.textContent = JSON.stringify(jsonTreeEditor.getJSON(), null, 2);
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
             async function loadScenarios() {
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/scenarios/');
@@ -951,12 +1201,11 @@ async def commands_manager():
             function applyTemplate(templateId) {
                 const template = jsonTemplates.find(t => t.id === templateId);
                 if (template) {
-                    const jsonConfig = document.getElementById('json-config');
-                    jsonConfig.value = JSON.stringify(template.default_values, null, 2);
+                    jsonTreeEditor.setJSON(template.default_values);
                     
                     document.getElementById('result').innerHTML = `
                         <div class="result" style="background: #d4edda; border-color: #c3e6cb;">
-                        ✅ Szablon "${template.name}" zastosowany! Możesz edytować wartości JSON poniżej.
+                        ✅ Szablon "${template.name}" zastosowany! Możesz edytować pola poniżej.
                         </div>
                     `;
                     
@@ -968,22 +1217,11 @@ async def commands_manager():
                 const name = document.getElementById('scenario-name').value;
                 const description = document.getElementById('scenario-description').value;
                 const deviceType = document.getElementById('device-type').value;
-                const jsonConfigText = document.getElementById('json-config').value;
+                const testFlow = jsonTreeEditor.getJSON();
 
                 if (!name) {
                     alert('Podaj nazwę scenariusza');
                     return;
-                }
-
-                // Parse JSON config
-                let testFlow = null;
-                if (jsonConfigText.trim()) {
-                    try {
-                        testFlow = JSON.parse(jsonConfigText);
-                    } catch (e) {
-                        alert('Błąd parsowania JSON: ' + e.message);
-                        return;
-                    }
                 }
 
                 try {
@@ -993,7 +1231,7 @@ async def commands_manager():
                             name: name,
                             description: description,
                             device_type: deviceType,
-                            test_flow: testFlow,
+                            test_flow: Object.keys(testFlow).length > 0 ? testFlow : null,
                             is_active: true
                         })
                     });
@@ -1018,8 +1256,9 @@ async def commands_manager():
                     
                     // Clear form
                     document.getElementById('scenario-form').reset();
-                    document.getElementById('json-config').value = '';
+                    jsonTreeEditor.clear();
                     document.getElementById('templates-list').style.display = 'none';
+                    document.getElementById('json-preview').style.display = 'none';
                     
                     // Reload scenarios
                     loadScenarios();
