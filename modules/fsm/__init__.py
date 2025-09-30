@@ -16,7 +16,7 @@ MODULE_COLOR = "#27ae60"
 MODULE_PATH = "/fleet-software-manager"
 
 # Create module router
-router = APIRouter(prefix="/fleet-software-manager", tags=["Fleet Software Manager"])
+router = APIRouter(tags=["Fleet Software Manager"])
 
 # Setup templates directory
 templates_dir = Path(__file__).parent / "templates"

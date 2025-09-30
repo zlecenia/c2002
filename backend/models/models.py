@@ -247,3 +247,97 @@ class JsonTemplate(Base):
     
     # Relationships
     creator = relationship("User")
+
+# Fleet Workshop Manager Models
+
+class Repair(Base):
+    __tablename__ = "repairs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
+    repair_type = Column(String(100), nullable=False)  # corrective, preventive, upgrade
+    priority = Column(String(20), default='medium')  # low, medium, high, critical
+    status = Column(String(50), default='pending')  # pending, in_progress, completed, cancelled, failed
+    description = Column(Text, nullable=False)
+    problem_description = Column(Text)
+    solution_description = Column(Text)
+    parts_used = Column(JSON)  # list of part IDs and quantities
+    labor_hours = Column(Integer, default=0)
+    cost_estimate = Column(Integer)  # in cents
+    actual_cost = Column(Integer)  # in cents
+    technician_id = Column(Integer, ForeignKey("users.id"))
+    assigned_to = Column(Integer, ForeignKey("users.id"))
+    reported_by = Column(Integer, ForeignKey("users.id"))
+    started_at = Column(DateTime(timezone=True))
+    completed_at = Column(DateTime(timezone=True))
+    scheduled_date = Column(DateTime(timezone=True))
+    notes = Column(Text)
+    attachments = Column(JSON)  # file paths or URLs
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    device = relationship("Device")
+    technician = relationship("User", foreign_keys=[technician_id])
+    assigned_user = relationship("User", foreign_keys=[assigned_to])
+    reporter = relationship("User", foreign_keys=[reported_by])
+
+class Maintenance(Base):
+    __tablename__ = "maintenance"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
+    maintenance_type = Column(String(100), nullable=False)  # routine, scheduled, condition_based, predictive
+    schedule_type = Column(String(50))  # daily, weekly, monthly, quarterly, yearly, hours_based, cycles_based
+    frequency_value = Column(Integer)  # number of days/hours/cycles between maintenance
+    last_performed = Column(DateTime(timezone=True))
+    next_due = Column(DateTime(timezone=True))
+    status = Column(String(50), default='scheduled')  # scheduled, overdue, in_progress, completed, skipped
+    priority = Column(String(20), default='medium')  # low, medium, high, critical
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    checklist = Column(JSON)  # array of checklist items with completion status
+    parts_required = Column(JSON)  # list of part IDs and quantities
+    estimated_duration = Column(Integer)  # in minutes
+    actual_duration = Column(Integer)  # in minutes
+    technician_id = Column(Integer, ForeignKey("users.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+    completion_notes = Column(Text)
+    attachments = Column(JSON)  # file paths or URLs
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    device = relationship("Device")
+    technician = relationship("User", foreign_keys=[technician_id])
+    creator = relationship("User", foreign_keys=[created_by])
+
+class Part(Base):
+    __tablename__ = "parts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    part_number = Column(String(100), unique=True, nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    category = Column(String(100))  # electronic, mechanical, consumable, tool
+    manufacturer = Column(String(255))
+    supplier = Column(String(255))
+    unit_price = Column(Integer)  # in cents
+    currency = Column(String(3), default='PLN')
+    stock_quantity = Column(Integer, default=0)
+    min_stock_level = Column(Integer, default=0)
+    max_stock_level = Column(Integer)
+    location = Column(String(255))  # warehouse location
+    status = Column(String(50), default='active')  # active, discontinued, obsolete
+    compatible_devices = Column(JSON)  # array of device types/models
+    specifications = Column(JSON)  # technical specifications
+    datasheet_url = Column(String(500))
+    image_url = Column(String(500))
+    barcode = Column(String(100))
+    notes = Column(Text)
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    creator = relationship("User", foreign_keys=[created_by])

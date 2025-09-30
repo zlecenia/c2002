@@ -7,7 +7,7 @@ from backend.core.config import settings
 from backend.db.base import get_db, engine
 from backend.models.models import (Base, User, Device, Customer, TestScenario, TestStep, 
                                     Software, SoftwareVersion, DeviceSoftware, Configuration, 
-                                    TestReport, SystemLog)
+                                    TestReport, SystemLog, Repair, Maintenance, Part)
 from backend.api.auth_router import router as auth_router
 from backend.api.users_router import router as users_router
 from backend.auth.auth import get_password_hash, generate_qr_code
@@ -50,6 +50,9 @@ app.include_router(fleet_config_router, prefix=settings.api_v1_str)
 from backend.api.fleet_software_router import router as fleet_software_router
 app.include_router(fleet_software_router, prefix=settings.api_v1_str)
 
+# Import and include fleet workshop router
+from backend.api.fleet_workshop_router import router as fleet_workshop_router
+app.include_router(fleet_workshop_router, prefix=settings.api_v1_str)
 
 # Import and include module routes
 from modules.routes import include_module_routes
