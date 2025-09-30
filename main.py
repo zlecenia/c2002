@@ -458,6 +458,13 @@ async def root():
                     <span class="role">👤 Operator</span>
                 </a>
 
+                <a href="/connect-display" class="module-card">
+                    <span class="module-icon">🖥️</span>
+                    <h3>Connect Display</h3>
+                    <p>Ekran LCD IPS 7.9" (1280×400px). Kompaktowy wyświetlacz dotykowy dla testów urządzeń.</p>
+                    <span class="role">📺 Display</span>
+                </a>
+
                 <a href="/commands-manager" class="module-card">
                     <span class="module-icon">⚙️</span>
                     <h3>Commands Manager</h3>
@@ -484,6 +491,13 @@ async def root():
                     <h3>Fleet Software Manager</h3>
                     <p>Zarządzanie oprogramowaniem i wersjami. Instalacja i aktualizacje w całej flocie.</p>
                     <span class="role">🛠️ Maker</span>
+                </a>
+
+                <a href="/fleet-workshop-manager" class="module-card">
+                    <span class="module-icon">🔧</span>
+                    <h3>Fleet Workshop Manager</h3>
+                    <p>Zarządzanie naprawami, konserwacją i częściami zamiennymi. Warsztat serwisowy.</p>
+                    <span class="role">🔩 Workshop</span>
                 </a>
             </div>
 
@@ -587,6 +601,7 @@ async def connect_plus():
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
@@ -609,14 +624,7 @@ async def connect_plus():
                         <p><strong>Funkcje:</strong> Obsługa testów urządzeń</p>
                     </div>
                     
-                    <div class="api-test">
-                        <h3>Test API Endpoints:</h3>
-                        <button onclick="testUsers()">Test Users</button>
-                        <button onclick="testDevices()">Test Devices</button>
-                        <button onclick="testCustomers()">Test Customers</button>
-                        <button onclick="testScenarios()">Test Scenarios</button>
-                        <div id="result"></div>
-                    </div>
+                    <div id="result" style="margin-top: 20px;"></div>
                 </div>
             </div>
 
@@ -635,6 +643,14 @@ async def connect_plus():
                     <select id="role-select" onchange="switchRole()">
                         <option value="">Wybierz rolę...</option>
                     </select>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #3498db; padding-bottom: 8px;">🔍 Test API Endpoints</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testUsers()">Test Users</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testDevices()">Test Devices</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testCustomers()">Test Customers</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testScenarios()">Test Scenarios</button>
                 </div>
             </div>
         </div>
@@ -828,6 +844,223 @@ async def connect_plus():
     </html>
     """
 
+# Connect Display Module - LCD IPS 7.9" (1280x400px horizontal)
+@app.get("/connect-display", response_class=HTMLResponse)
+async def connect_display():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Connect Display - LCD IPS 7.9"</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=1280, height=400">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                background: #000; 
+                color: #fff; 
+                width: 1280px; 
+                height: 400px; 
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            .display-header { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                padding: 10px 20px; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center;
+                border-bottom: 3px solid #4a5568;
+            }
+            .display-header h1 { font-size: 24px; font-weight: 600; }
+            .display-header .status { 
+                display: flex; 
+                gap: 15px; 
+                align-items: center; 
+                font-size: 14px; 
+            }
+            .status-badge { 
+                background: #48bb78; 
+                padding: 4px 12px; 
+                border-radius: 12px; 
+                font-weight: 600; 
+            }
+            .main-display { 
+                flex: 1; 
+                display: grid; 
+                grid-template-columns: 2fr 1fr; 
+                gap: 10px; 
+                padding: 15px; 
+                background: #1a202c;
+            }
+            .test-panel { 
+                background: #2d3748; 
+                border-radius: 8px; 
+                padding: 15px; 
+                display: flex; 
+                flex-direction: column; 
+            }
+            .test-panel h2 { 
+                font-size: 18px; 
+                margin-bottom: 15px; 
+                color: #63b3ed; 
+                border-bottom: 2px solid #4a5568; 
+                padding-bottom: 8px; 
+            }
+            .test-buttons { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 10px; 
+                flex: 1; 
+            }
+            .test-btn { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                border: none; 
+                border-radius: 6px; 
+                color: white; 
+                font-size: 16px; 
+                font-weight: 600; 
+                cursor: pointer; 
+                transition: all 0.3s; 
+                padding: 15px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 8px;
+            }
+            .test-btn:hover { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); 
+            }
+            .test-btn:active { transform: scale(0.95); }
+            .info-panel { 
+                background: #2d3748; 
+                border-radius: 8px; 
+                padding: 15px; 
+                display: flex; 
+                flex-direction: column; 
+                gap: 12px; 
+            }
+            .info-card { 
+                background: #1a202c; 
+                padding: 12px; 
+                border-radius: 6px; 
+                border-left: 4px solid #63b3ed; 
+            }
+            .info-card .label { 
+                font-size: 12px; 
+                color: #a0aec0; 
+                margin-bottom: 4px; 
+            }
+            .info-card .value { 
+                font-size: 18px; 
+                font-weight: 600; 
+                color: #63b3ed; 
+            }
+            #result-display { 
+                margin-top: 10px; 
+                background: #1a202c; 
+                border-radius: 6px; 
+                padding: 12px; 
+                font-size: 13px; 
+                max-height: 120px; 
+                overflow-y: auto; 
+                border: 1px solid #4a5568; 
+            }
+            #result-display::-webkit-scrollbar { width: 6px; }
+            #result-display::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 3px; }
+        </style>
+    </head>
+    <body>
+        <div class="display-header">
+            <h1>🖥️ Fleet Management Display</h1>
+            <div class="status">
+                <span id="time-display">--:--:--</span>
+                <span class="status-badge" id="connection-status">ONLINE</span>
+            </div>
+        </div>
+        
+        <div class="main-display">
+            <div class="test-panel">
+                <h2>🔬 Testy API</h2>
+                <div class="test-buttons">
+                    <button class="test-btn" onclick="testAPI('demo/users', 'Users')">
+                        <span>👥</span> Users
+                    </button>
+                    <button class="test-btn" onclick="testAPI('devices', 'Devices')">
+                        <span>📱</span> Devices
+                    </button>
+                    <button class="test-btn" onclick="testAPI('customers', 'Customers')">
+                        <span>🏢</span> Customers
+                    </button>
+                    <button class="test-btn" onclick="testAPI('test-scenarios', 'Scenarios')">
+                        <span>🧪</span> Scenarios
+                    </button>
+                </div>
+                <div id="result-display">
+                    <div style="color: #a0aec0; text-align: center;">Wybierz test aby rozpocząć...</div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-card">
+                    <div class="label">Display</div>
+                    <div class="value">LCD IPS 7.9"</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Resolution</div>
+                    <div class="value">1280×400</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Mode</div>
+                    <div class="value">Horizontal</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Status</div>
+                    <div class="value" id="system-status">Ready</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                document.getElementById('time-display').textContent = timeStr;
+            }
+            
+            setInterval(updateTime, 1000);
+            updateTime();
+
+            async function testAPI(endpoint, name) {
+                document.getElementById('result-display').innerHTML = '<div style="color: #fbd38d;">⏳ Ładowanie...</div>';
+                document.getElementById('system-status').textContent = 'Testing...';
+                document.getElementById('connection-status').style.background = '#ed8936';
+                
+                try {
+                    const response = await fetch('/api/v1/' + endpoint);
+                    const data = await response.json();
+                    
+                    let resultHTML = `<div style="color: #48bb78; margin-bottom: 8px;"><strong>✅ ${name} API:</strong></div>`;
+                    resultHTML += `<pre style="color: #e2e8f0; font-size: 11px; line-height: 1.4;">${JSON.stringify(data, null, 2)}</pre>`;
+                    
+                    document.getElementById('result-display').innerHTML = resultHTML;
+                    document.getElementById('system-status').textContent = 'Success';
+                    document.getElementById('connection-status').style.background = '#48bb78';
+                } catch (error) {
+                    document.getElementById('result-display').innerHTML = 
+                        `<div style="color: #fc8181;"><strong>❌ Error:</strong> ${error.message}</div>`;
+                    document.getElementById('system-status').textContent = 'Error';
+                    document.getElementById('connection-status').style.background = '#fc8181';
+                }
+            }
+        </script>
+    </body>
+    </html>
+    """
+
 # Commands Manager Module
 @app.get("/commands-manager", response_class=HTMLResponse)
 async def commands_manager():
@@ -866,7 +1099,7 @@ async def commands_manager():
             .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .container { max-width: 100%; margin: 0; padding: 0; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
             .btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
             .btn:hover { background: #c0392b; }
             .btn-secondary { background: #95a5a6; }
@@ -899,6 +1132,7 @@ async def commands_manager():
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
@@ -1801,7 +2035,7 @@ async def fleet_data_manager():
             .stat-value { font-size: 2em; font-weight: bold; color: #27ae60; }
             .stat-label { color: #666; margin-top: 5px; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
             .tabs { display: flex; margin-bottom: 20px; }
             .tab { padding: 10px 20px; background: #bdc3c7; color: #333; cursor: pointer; border: none; }
             .tab.active { background: #27ae60; color: white; }
@@ -1838,10 +2072,12 @@ async def fleet_data_manager():
             <ul>
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/connect-display">🖥️ Connect Display</a></li>
                 <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
                 <li><a href="/fleet-data-manager" class="active">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
@@ -1853,12 +2089,6 @@ async def fleet_data_manager():
                     <h4>📊 Menu Modułu</h4>
                     <button class="tab active" onclick="showTab('devices')">📱 Urządzenia</button>
                     <button class="tab" onclick="showTab('customers')">👥 Klienci</button>
-                </div>
-                
-                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
-                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 Test API</h4>
-                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testFleetDataAPI()">Test Fleet Data API</button>
-                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
                 </div>
             </div>
             
@@ -2056,6 +2286,12 @@ async def fleet_data_manager():
                     <select id="role-select" onchange="switchRole()">
                         <option value="">Wybierz rolę...</option>
                     </select>
+                </div>
+
+                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 Test API</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testFleetDataAPI()">Test Fleet Data API</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
                 </div>
             </div>
         </div>
@@ -3183,7 +3419,7 @@ async def fleet_config_manager():
             .stat-value { font-size: 2em; font-weight: bold; color: #9b59b6; }
             .stat-label { color: #666; margin-top: 5px; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
             .tabs { display: flex; margin-bottom: 20px; flex-wrap: wrap; }
             .tab { padding: 8px 15px; background: #bdc3c7; color: #333; cursor: pointer; border: none; margin: 2px; font-size: 12px; }
             .tab.active { background: #9b59b6; color: white; }
@@ -3227,10 +3463,12 @@ async def fleet_config_manager():
             <ul>
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/connect-display">🖥️ Connect Display</a></li>
                 <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager" class="active">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
@@ -3245,12 +3483,6 @@ async def fleet_config_manager():
                     <button class="tab" onclick="showTab('test-config')">🧪 Scenariusze testowe</button>
                     <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
                     <button class="tab" onclick="showTab('backup')">💾 Backup/Restore</button>
-                </div>
-                
-                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
-                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍 Test API</h4>
-                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testConfigAPI()">Test Config API</button>
-                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">Test Dashboard</button>
                 </div>
             </div>
             
@@ -3578,6 +3810,12 @@ async def fleet_config_manager():
                     <select id="role-select" onchange="switchRole()">
                         <option value="">Wybierz rolę...</option>
                     </select>
+                </div>
+
+                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍 Test API</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testConfigAPI()">Test Config API</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">Test Dashboard</button>
                 </div>
             </div>
         </div>
@@ -5043,7 +5281,7 @@ async def fleet_software_manager():
             .stat-value { font-size: 2em; font-weight: bold; color: #34495e; }
             .stat-label { color: #666; margin-top: 5px; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
             .tabs { display: flex; margin-bottom: 20px; flex-wrap: wrap; }
             .tab { padding: 8px 15px; background: #bdc3c7; color: #333; cursor: pointer; border: none; margin: 2px; font-size: 12px; }
             .tab.active { background: #34495e; color: white; }
@@ -5087,6 +5325,7 @@ async def fleet_software_manager():
             <ul>
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/connect-display">🖥️ Connect Display</a></li>
                 <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
@@ -6205,6 +6444,248 @@ async def fleet_software_manager():
             </div>
             </div>
         </div>
+    </body>
+    </html>
+    """
+
+# Fleet Workshop Manager Module
+@app.get("/fleet-workshop-manager", response_class=HTMLResponse)
+async def fleet_workshop_manager():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Fleet Workshop Manager - Fleet Management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+            .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+            .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+            .nav-menu li { margin: 0; }
+            .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+            .nav-menu a:hover { background: #34495e; }
+            .nav-menu a.active { background: #d35400; }
+            .app-layout { display: flex; min-height: calc(100vh - 50px); }
+            .sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
+            .main-content-wrapper { width: 70%; padding: 20px; overflow-y: auto; }
+            .right-sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
+            .sidebar-menu h4 { font-size: 14px; margin-bottom: 15px; border-bottom: 2px solid #d35400; padding-bottom: 8px; }
+            .sidebar-menu .tab { display: block; width: 100%; background: #374151; color: white; border: none; padding: 12px; text-align: left; cursor: pointer; margin-bottom: 5px; border-radius: 4px; border-left: 3px solid transparent; transition: all 0.3s; }
+            .sidebar-menu .tab:hover { background: #4b5563; border-left-color: #d35400; }
+            .sidebar-menu .tab.active { background: #d35400; border-left-color: #e67e22; font-weight: bold; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
+            .btn { background: #d35400; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+            .btn:hover { background: #e67e22; }
+            .btn-secondary { background: #95a5a6; }
+            .btn-secondary:hover { background: #7f8c8d; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+            th { background: #d35400; color: white; }
+            tr:hover { background: #f5f5f5; }
+            .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+            .status-pending { background: #fbbf24; color: #78350f; }
+            .status-in-progress { background: #60a5fa; color: #1e3a8a; }
+            .status-completed { background: #34d399; color: #065f46; }
+            h1 { display: none; }
+            .module-info { display: none; }
+            
+            @media (max-width: 768px) {
+                .app-layout { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; }
+                .main-content-wrapper { width: 100%; }
+                .right-sidebar { width: 100%; height: auto; position: relative; }
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">🏠 Home</a></li>
+                <li><a href="/connect-plus">🔗 Connect++</a></li>
+                <li><a href="/connect-display">🖥️ Connect Display</a></li>
+                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+                <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+                <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+                <li><a href="/fleet-workshop-manager" class="active">🔧 Fleet Workshop Manager</a></li>
+                <li><a href="/docs">📚 API Docs</a></li>
+            </ul>
+        </nav>
+        
+        <div class="app-layout">
+            <div class="sidebar">
+                <div class="sidebar-menu">
+                    <h4>🔧 Menu Modułu</h4>
+                    <button class="tab active" onclick="showTab('repairs')">🔩 Naprawy</button>
+                    <button class="tab" onclick="showTab('maintenance')">⚙️ Konserwacja</button>
+                    <button class="tab" onclick="showTab('parts')">🔧 Części zamienne</button>
+                </div>
+            </div>
+            
+            <div class="main-content-wrapper">
+                <div class="container">
+                    <div class="header">
+                        <h1>🔧 Fleet Workshop Manager</h1>
+                    </div>
+                    
+                    <div class="module-info">
+                        <h3>Moduł warsztatowy</h3>
+                        <p><strong>Funkcje:</strong> Zarządzanie naprawami, konserwacją i częściami zamiennymi</p>
+                    </div>
+
+                    <div class="section">
+                        <div id="repairs-tab" class="tab-content active">
+                            <h3>🔩 Zarządzanie naprawami</h3>
+                            <button class="btn" onclick="addRepair()">Dodaj naprawę</button>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Urządzenie</th>
+                                        <th>Opis problemu</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repairs-list">
+                                    <tr><td colspan="5" style="text-align: center;">Zaloguj się aby zobaczyć naprawy...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="maintenance-tab" class="tab-content" style="display: none;">
+                            <h3>⚙️ Harmonogram konserwacji</h3>
+                            <button class="btn" onclick="addMaintenance()">Dodaj konserwację</button>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Urządzenie</th>
+                                        <th>Typ konserwacji</th>
+                                        <th>Następna data</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="maintenance-list">
+                                    <tr><td colspan="5" style="text-align: center;">Zaloguj się aby zobaczyć harmonogram...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="parts-tab" class="tab-content" style="display: none;">
+                            <h3>🔧 Magazyn części zamiennych</h3>
+                            <button class="btn" onclick="addPart()">Dodaj część</button>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Kod</th>
+                                        <th>Nazwa</th>
+                                        <th>Ilość</th>
+                                        <th>Lokalizacja</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parts-list">
+                                    <tr><td colspan="5" style="text-align: center;">Zaloguj się aby zobaczyć części...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <div class="right-sidebar">
+                <div style="background: #374151; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #d35400;">
+                    <h4 style="margin-top: 0; font-size: 14px;">🔐 Logowanie</h4>
+                    <input type="text" id="login-username" placeholder="Username" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box;">
+                    <input type="password" id="login-password" placeholder="Password" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box;">
+                    <button class="btn" style="width: 100%;" onclick="login()">Zaloguj</button>
+                    <button class="btn btn-secondary" style="width: 100%; display: none;" id="logout-btn" onclick="logout()">Wyloguj</button>
+                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let authToken = null;
+
+            function getAuthToken() {
+                if (!authToken) {
+                    authToken = localStorage.getItem('jwt_token');
+                }
+                return authToken;
+            }
+
+            function showTab(tabName) {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+                document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(tabName + '-tab').style.display = 'block';
+                event.target.classList.add('active');
+            }
+
+            function addRepair() {
+                document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fef3c7; border-radius: 4px;">⚠️ Funkcja w budowie - wkrótce dostępna</div>';
+            }
+
+            function addMaintenance() {
+                document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fef3c7; border-radius: 4px;">⚠️ Funkcja w budowie - wkrótce dostępna</div>';
+            }
+
+            function addPart() {
+                document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fef3c7; border-radius: 4px;">⚠️ Funkcja w budowie - wkrótce dostępna</div>';
+            }
+
+            async function login() {
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                if (!username || !password) {
+                    alert('Podaj username i hasło');
+                    return;
+                }
+
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        authToken = data.access_token;
+                        localStorage.setItem('jwt_token', authToken);
+                        document.getElementById('auth-message').innerHTML = '<span style="color: #34d399;">✅ Zalogowano</span>';
+                        document.getElementById('login-username').style.display = 'none';
+                        document.getElementById('login-password').style.display = 'none';
+                        document.querySelector('button[onclick="login()"]').style.display = 'none';
+                        document.getElementById('logout-btn').style.display = 'block';
+                    } else {
+                        document.getElementById('auth-message').innerHTML = '<span style="color: #fc8181;">❌ Błąd logowania</span>';
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = '<span style="color: #fc8181;">❌ Błąd: ' + error.message + '</span>';
+                }
+            }
+
+            function logout() {
+                authToken = null;
+                localStorage.removeItem('jwt_token');
+                document.getElementById('auth-message').innerHTML = '<span style="color: #a0aec0;">❌ Wylogowano</span>';
+                document.getElementById('login-username').style.display = 'block';
+                document.getElementById('login-password').style.display = 'block';
+                document.querySelector('button[onclick="login()"]').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'none';
+            }
+        </script>
     </body>
     </html>
     """

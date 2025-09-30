@@ -1,212 +1,46 @@
 # Fleet Management System
 
 ## Overview
-Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
+The Fleet Management System is a comprehensive enterprise application designed for testing device masks and managing fleet operations, based on Polish technical specifications. It aims to provide a full-featured solution for various roles involved in fleet management, from device testing to software and configuration management. The system is built with a focus on scalability and robust data handling.
 
-## Recent Changes
-- **September 30, 2025**: Complete CRUD Operations - Fixed Missing JavaScript Functions
-  - **Resolved critical CRUD functionality gaps** across all 4 modules with edit/delete operations
-  - **Fleet Data Manager**: Added missing editDevice(), updateDevice(), deleteDevice(), editCustomer(), updateCustomer(), deleteCustomer() functions
-  - **Commands Manager**: Added missing deleteScenario() function for test scenario removal
-  - **Fleet Config Manager**: Added missing editSystemConfig(), deleteSystemConfig(), editTestScenario(), deleteTestScenario() functions
-  - **Fleet Software Manager**: Added missing viewSoftware(), deleteSoftware(), viewVersion() functions
-  - **Total: 12 CRUD functions added** to complete full create, read, update, delete functionality
-  - All functions properly implement makeAuthenticatedRequest for JWT token handling
-  - Success/error messaging with user-friendly Polish language feedback
-  - Automatic list refresh after data modifications
-  - Dynamic form switching between create/update modes
-  - **Verified**: All modules tested with no JavaScript errors, full CRUD operations functional
-  - **Test API sections** consistently placed in left sidebar across Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
+## User Preferences
+I prefer iterative development with clear, concise explanations at each step. Please ask for confirmation before implementing significant changes or architectural shifts. I value code readability and maintainability, so prioritize clean code and well-structured solutions. For any UI/UX suggestions, please provide mockups or detailed descriptions before implementation.
 
-- **September 30, 2025**: Fixed Login Layout Consistency Across All Modules
-  - **Resolved duplicate auth sections issue** in Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
-  - Removed legacy `.auth-section` HTML blocks with old login fields (login-username-old, login-password-old, etc.)
-  - All 5 modules now display login section **exclusively in right sidebar (15% width)**
-  - **Consistent 3-column layout verified**: Sidebar (15% - module menu) + Main Content (70%) + Right Sidebar (15% - login/role switcher)
-  - No duplicate login forms visible anywhere in the application
-  - Screenshots confirm layout consistency across Connect++, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
-  - Architect-validated fix maintains responsive design and mobile compatibility
+## System Architecture
+The system is composed of a Python FastAPI backend running on port 5000, a PostgreSQL database, and multiple specialized web GUI modules for the frontend.
 
-- **September 30, 2025**: Comprehensive Documentation Suite
-  - **Created complete documentation package** for developers and users
-  - **USERS.md**: Default login credentials, role system explanation, multi-role authentication guide
-  - **README.md**: Full setup instructions, Docker configuration, troubleshooting, API overview
-  - **CHANGELOG.md**: Complete v1.0.0 history with features, known issues (Fleet Software Manager partial implementation)
-  - **TODO.md**: Prioritized task list with Q4 2025 roadmap
-  - **Dockerfile + docker-compose.yml**: Development environment with PostgreSQL 15
-  - **docs/ARCHITECTURE.md**: System architecture, module design, authentication flow, deployment strategy
-  - **docs/API.md**: Complete API documentation with 58 endpoints breakdown by router (auth: 5, fleet_config: 19, fleet_data: 11, fleet_software: 10, scenarios: 8, users: 5)
-  - **docs/DATABASE.md**: Database schema with 14 tables, relationships, JSON fields, accurate field names from backend/models/models.py
-  - **Architect-validated**: All documentation accurate and aligned with actual implementation
+**UI/UX Decisions:**
+- **Consistent Layout**: A 3-column layout (15% sidebar + 70% main content + 15% right sidebar for login/role switcher) is used across all modules.
+- **Global Navigation**: A unified top navigation bar allows seamless switching between modules.
+- **Responsive Design**: The application is designed to be fully responsive, adapting to mobile devices with sidebars stacking vertically and content re-flowing.
+- **Visual JSON Editors**: Interactive visual tree editors replace textarea-based JSON inputs across the system for improved user experience and error prevention.
+- **Module Theming**: Each module has a color-coded theme.
+- **Connect Display**: A dedicated module for LCD IPS 7.9" (1280×400px) touchscreen devices.
 
-- **September 30, 2025**: Sidebar Layout + Multi-Role Authentication + Responsive Design
-  - **Implemented 15% sidebar layout across ALL 5 modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager, Commands Manager, Connect++)
-  - Sidebar contains login section with username/password inputs and logout button
-  - Module-specific navigation menu in sidebar for easy tab switching
-  - Hidden .header and .module-info elements via CSS for clean design
-  - **Multi-role JWT authentication**: Extended JWT tokens to include roles array and active_role field
-  - Added `/api/v1/auth/switch-role` endpoint for switching roles without re-login
-  - Updated maker1 user with all 6 roles (maker, operator, admin, superuser, manager, configurator)
-  - **Responsive design**: Added @media (max-width: 768px) queries to all 5 modules
-  - Mobile layout stacks sidebar above content (flex-direction: column)
-  - Sidebar becomes 100% width on mobile devices
-  - Grid layouts switch to single column on mobile
-  - Tested and validated on desktop and mobile breakpoints
+**Technical Implementations:**
+- **Backend**: Python FastAPI with SQLAlchemy ORM.
+- **Authentication**: JWT tokens for session management and QR code login. Includes multi-role authentication with an `/api/v1/auth/switch-role` endpoint.
+- **Authorization**: Role-based access control (RBAC) with 6 distinct roles: operator, admin, superuser, manager, configurator, maker.
+- **API**: A comprehensive REST API with over 50 endpoints, documented with OpenAPI 3.1.
+- **Frontend**: Specialized webGUI modules built with HTML, CSS, and JavaScript. Utilizes URL hash tracking for navigation within multi-tab modules.
+- **CRUD Operations**: Full Create, Read, Update, Delete functionality implemented across all modules, with user-friendly Polish language feedback and automatic list refreshes.
 
-- **September 30, 2025**: URL Hash Navigation & Visual JSON Editors in Fleet Config Manager
-  - **Added URL hash tracking to all 3 multi-tab modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager)
-  - Browser URL now reflects current tab (e.g., `/fleet-config-manager#system-config`)
-  - Users can bookmark specific tabs and share direct links to module sections
-  - Browser back/forward buttons work correctly with tab navigation
-  - Hash changes automatically switch to corresponding tab
-  - **Visual JSON Editors in Fleet Config Manager**: Replaced ALL textarea-based JSON editing with interactive visual tree editors
-  - System Config form: `config-value` now uses visual JSON tree editor
-  - Test Scenario form: `test-parameters` and `expected-results` use visual JSON tree editors
-  - Backup/Restore: `restore-data` uses visual JSON tree editor
-  - All editors properly reset to default values when forms are closed or after successful operations
-  - Eliminates JSON syntax errors with intuitive form-based interface
-  - Architect-validated implementation with proper state management
+**Feature Specifications:**
+- **Seven WebGUI Modules**: Connect++, Connect Display, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, and Fleet Workshop Manager.
+- **Test API Sections**: Integrated into the right column of Fleet Data Manager, Fleet Config Manager, and Connect++.
+- **JSON Templates System**: CRUD operations for JSON templates with filtering by type and category, integrated with visual editors.
+- **Comprehensive Documentation**: Includes `USERS.md`, `README.md`, `CHANGELOG.md`, `TODO.md`, `Dockerfile`, `docker-compose.yml`, `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/DATABASE.md`.
+- **Professional Landing Page**: A responsive HTML landing page for the root endpoint.
 
-- **September 30, 2025**: Global Navigation Menu - Seamless Module Switching
-  - **Added unified navigation menu to all 5 webGUI modules**
-  - Top navigation bar with all modules: Home, Connect++, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, API Docs
-  - Active module highlighted with color-coded theme matching each module's design
-  - Responsive design with icons and labels for each module
-  - One-click navigation between modules without returning to home page
-  - Consistent user experience across entire application
-  - Mobile-friendly horizontal menu with flex-wrap support
+**System Design Choices:**
+- **Modular Architecture**: The system is divided into distinct modules, each catering to specific functionalities and user roles.
+- **Database Schema**: PostgreSQL with 14 tables, supporting complex relationships and JSON fields.
+- **Deployment**: Production-ready autoscale configuration, optimized for Replit's cloud environment.
 
-- **September 30, 2025**: Universal JSON Tree Editor - Interactive Form-Based JSON Editing
-  - **Replaced ALL textarea-based JSON editing with interactive visual tree editors**
-  - Created reusable `JSONTreeEditor` JavaScript class supporting all JSON types (string, number, boolean, object, array)
-  - Dynamic form rendering with type-specific input fields (text, number, checkbox)
-  - Interactive tree structure with expandable/collapsible nested objects and arrays
-  - Real-time field management: add/remove fields, rename keys, change types
-  - JSON preview toggle for verification
-  - **Commands Manager**: Scenarios now use visual JSON tree editor for test_flow configurations
-  - **Fleet Config Manager**: JSON Templates tab now uses visual JSON tree editor for default_values
-  - Eliminated manual JSON syntax errors with intuitive form-based interface
-  - Consistent UX across all modules with copy-paste JSON eliminated
-
-- **September 30, 2025**: JSON Templates Visual Editor in Fleet Config Manager
-  - Added new "📋 Szablony JSON" tab to Fleet Config Manager with full CRUD interface
-  - Complete template management: create, read, update, delete, view
-  - Filtering by template type (test_flow, device_config, system_config) and category
-  - Schema field now optional for flexibility
-  - Beautiful table view with action buttons (👁️ Podgląd, ✏️ Edytuj, 🗑️ Usuń)
-  - All CRUD operations tested and working perfectly
-
-- **September 30, 2025**: JSON Templates System & Visual Editor Implementation
-  - Added JSON Templates database table with 5 predefiniowane szablony for different device types
-  - Implemented complete CRUD API for JSON templates in Fleet Config Manager
-  - Created visual JSON editor in Commands Manager with template selection
-  - Templates automatically filter by device type (mask_tester, pressure_sensor, flow_meter)
-  - Auto-fill JSON configuration from templates with inline editing capability
-  - Scenarios now support test_flow JSON configurations
-  - Fixed Pydantic validation errors in Fleet Config and Fleet Software APIs
-  - All modules tested and validated successfully
-
-- **September 30, 2025**: Professional Landing Page Implementation
-  - Created responsive HTML landing page for root "/" endpoint
-  - Beautiful gradient design with module cards and responsive layout
-  - Mobile-optimized interface with all 5 modules accessible from home
-  - Fixed deployment configuration for Autoscale publication
-  - System ready for production deployment
-  
-- **September 29, 2025**: Complete Fleet Management System implementation
-  - Built from scratch: Python FastAPI + PostgreSQL + JWT authentication
-  - Implemented all 5 webGUI modules according to Polish technical specifications
-  - Created comprehensive REST API with 50+ endpoints
-  - Added JWT + QR code authentication system
-  - Configured role-based access control (operator, admin, superuser, manager, configurator, maker)
-  - Set up deployment configuration for production autoscale
-  - **COMPLETED**: All 5 modules fully operational and architect-validated
-
-## Project Architecture
-- **Backend**: Python FastAPI with SQLAlchemy ORM running on port 5000
-- **Database**: PostgreSQL with 14 tables (Users, Devices, Software, Installations, JSON Templates, etc.)
-- **Authentication**: JWT tokens + QR code login system with role-based access
-- **API**: REST API with 50+ endpoints and OpenAPI 3.1 documentation
-- **Frontend**: 5 specialized webGUI modules for different user roles
-- **Deployment**: Production-ready autoscale configuration
-
-## Key Features
-- JWT + QR code authentication system
-- Role-based access control (6 roles: operator, admin, superuser, manager, configurator, maker)
-- 5 specialized webGUI modules for comprehensive fleet management
-- Comprehensive CRUD API with 50+ endpoints
-- PostgreSQL database with full relational schema (13 tables)
-- OpenAPI documentation with Swagger UI
-- Production deployment configuration
-
-## Modules Implemented (100% Complete)
-1. **Connect++** (`/connect-plus`) - Operator - Device testing interface
-2. **Commands Manager** (`/commands-manager`) - Superuser - Test scenario management
-3. **Fleet Data Manager** (`/fleet-data-manager`) - Manager - Device & customer data
-4. **Fleet Config Manager** (`/fleet-config-manager`) - Configurator - System configuration
-5. **Fleet Software Manager** (`/fleet-software-manager`) - Maker - Software management
-6. **API Documentation** (`/docs`) - Complete Swagger documentation
-7. **Authentication System** - JWT + QR code login endpoints
-
-## Structure
-```
-/
-├── main.py                 # Main FastAPI application
-├── requirements.txt        # Python dependencies
-├── backend/               # Backend components
-│   ├── models/           # SQLAlchemy database models
-│   ├── auth/             # Authentication & JWT handling
-│   ├── api/              # API routers (auth, users)
-│   ├── core/             # Configuration settings
-│   └── db/               # Database connection
-├── frontend/             # Frontend modules (future expansion)
-└── replit.md             # This documentation
-```
-
-## API Endpoints (50+ endpoints)
-### Authentication
-- `POST /api/v1/auth/login` - Username/password authentication
-- `POST /api/v1/auth/login/qr` - QR code authentication  
-- `GET /api/v1/auth/me` - Current user information
-
-### Fleet Data Management (Manager)
-- `GET/POST/PUT/DELETE /api/v1/fleet-data/devices` - Device CRUD operations
-- `GET/POST/PUT/DELETE /api/v1/fleet-data/customers` - Customer CRUD operations
-- `GET /api/v1/fleet-data/dashboard` - Fleet data statistics
-
-### Fleet Configuration (Configurator)
-- `GET/POST/PUT/DELETE /api/v1/fleet-config/system-configs` - System configuration CRUD
-- `GET/POST/PUT/DELETE /api/v1/fleet-config/device-configs` - Device configuration CRUD
-- `GET/POST/PUT/DELETE /api/v1/fleet-config/json-templates` - JSON templates CRUD with filtering
-- `GET /api/v1/fleet-config/test-scenario-configs` - Test scenario configurations
-- `POST /api/v1/fleet-config/backup` - Configuration backup
-- `POST /api/v1/fleet-config/restore` - Configuration restore
-
-### Fleet Software Management (Maker)
-- `GET/POST/PUT/DELETE /api/v1/fleet-software/software` - Software CRUD operations
-- `GET/POST /api/v1/fleet-software/software/{id}/versions` - Version management
-- `GET/POST /api/v1/fleet-software/installations` - Installation management
-- `GET /api/v1/fleet-software/dashboard/stats` - Software statistics
-
-### Test Scenarios (Superuser)
-- `GET/POST/PUT/DELETE /api/v1/scenarios/` - Test scenario CRUD operations
-
-## Current State
-🎉 **SYSTEM 100% COMPLETE** 🎉
-
-The Fleet Management System is fully implemented according to Polish technical specifications with all 5 modules operational:
-
-✅ **Connect++** - Device testing interface for operators
-✅ **Commands Manager** - Test scenario management for superusers  
-✅ **Fleet Data Manager** - Device/customer data management for managers
-✅ **Fleet Config Manager** - System configuration management for configurators
-✅ **Fleet Software Manager** - Software installation management for makers
-
-All modules include:
-- Complete CRUD API endpoints with role-based access control
-- Professional web interfaces with authentication
-- Real database persistence with PostgreSQL
-- Dashboard statistics and reporting
-- Architect-validated implementation
-
-The system is production-ready for autoscale deployment and optimized for Replit's cloud environment.
+## External Dependencies
+- **PostgreSQL**: Relational database for persistent data storage.
+- **FastAPI**: Python web framework for building the backend API.
+- **SQLAlchemy**: Python SQL toolkit and Object-Relational Mapper.
+- **JWT (JSON Web Tokens)**: For secure authentication and session management.
+- **Swagger UI**: For interactive API documentation (via OpenAPI 3.1).
+- **Docker/docker-compose**: For development environment setup and containerization.
