@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fleet Config Manager - Fleet Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+        .nav-menu li { margin: 0; }
+        .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+        .nav-menu a:hover { background: #34495e; }
+        .nav-menu a.active { background: #34495e; }
+        .header { display: none; }
+        .module-info { background: #e8f5e9; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .auth-section { display: none; }
+        .app-layout { display: flex; min-height: calc(100vh - 52px); }
+        .sidebar { width: 20%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .sidebar h4 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #9b59b6; padding-bottom: 10px; }
+        .sidebar-menu { }
+        .sidebar-menu .tab { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; border: none; width: 100%; text-align: left; font-size: 14px; }
+        .sidebar-menu .tab:hover { background: #7f8c8d; }
+        .sidebar-menu .tab.active { background: #9b59b6; font-weight: bold; }
+        .main-content-wrapper { width: 60%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .right-sidebar { width: 20%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .sidebar-auth { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .sidebar-auth h4 { margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px; }
+        .sidebar-auth input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+        .sidebar-auth button { width: 100%; margin-bottom: 5px; }
+        .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+        .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
+        .container { max-width: 100%; margin: 0; padding: 0; }
+        .header h1 { margin: 0; padding: 20px 0 10px 0; color: #2c3e50; border-bottom: 3px solid #9b59b6; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 1.8em; font-weight: bold; color: #9b59b6; }
+        .stat-label { color: #666; margin-top: 5px; font-size: 12px; }
+        .main-content { }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .tabs { display: flex; margin-bottom: 20px; flex-wrap: wrap; display: none; }
+        .tab { padding: 8px 15px; background: #bdc3c7; color: #333; cursor: pointer; border: none; margin: 2px; font-size: 12px; }
+        .tab.active { background: #9b59b6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .btn { background: #9b59b6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
+        .btn:hover { background: #8e44ad; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #229954; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        .data-table th, .data-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .data-table th { background-color: #f8f9fa; font-weight: bold; }
+        .data-table tr:hover { background-color: #f5f5f5; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #9b59b6; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .result.error { border-left-color: #e74c3c; background: #fdf2f2; }
+        .config-card { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .config-header { font-weight: bold; color: #9b59b6; margin-bottom: 10px; }
+        .config-value { background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto; white-space: pre; }
+        .backup-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .backup-section h5 { margin-top: 0; color: #9b59b6; }
+        
+        @media (max-width: 768px) {
+            .app-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+            .main-content-wrapper { width: 100%; }
+            .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/connect-plus">🔗 Connect++</a></li>
+            <li><a href="/connect-display">🖥️ Connect Display</a></li>
+            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager" class="active">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+            <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    
+    <div class="app-layout">
+        <!-- Sidebar with module menu -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <h4>⚙️ Menu Modułu</h4>
+                <button class="tab active" onclick="showTab('system-config')">🔧 Konfiguracja systemu</button>
+                <button class="tab" onclick="showTab('device-config')">📱 Konfiguracja urządzeń</button>
+                <button class="tab" onclick="showTab('test-config')">🧪 Scenariusze testowe</button>
+                <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
+                <button class="tab" onclick="showTab('backup')">💾 Backup/Restore</button>
+            </div>
+        </div>
+        
+        <!-- Main content area -->
+        <div class="main-content-wrapper">
+            <div class="container">
+                <div class="header">
+                    <h1>⚙️ Fleet Config Manager</h1>
+                </div>
+                
+                <div class="module-info">
+                    <h3>Moduł dla Configurator</h3>
+                    <p><strong>Port:</strong> 5000</p>
+                    <p><strong>Rola:</strong> Configurator</p>
+                    <p><strong>Funkcje:</strong> Zarządzanie konfiguracją systemu, urządzeń i scenariuszy testowych</p>
+                </div>
+
+                <!-- Dashboard Statistics -->
+                <div id="dashboard-section" style="display: none;">
+                    <h3>📈 Configuration Dashboard</h3>
+                    <div class="dashboard" id="dashboard-stats">
+                        <!-- Stats will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <div class="section">
+                        <div class="tabs" style="display: none;">
+                            <button class="tab active" onclick="showTab('system-config')">Konfiguracja systemu</button>
+                            <button class="tab" onclick="showTab('device-config')">Konfiguracja urządzeń</button>
+                            <button class="tab" onclick="showTab('test-config')">Scenariusze testowe</button>
+                            <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
+                            <button class="tab" onclick="showTab('backup')">Backup/Restore</button>
+                        </div>
+
+                <!-- System Configuration Tab -->
+                <div id="system-config-tab" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>🔧 Konfiguracja systemu</h4>
+                        <button class="btn" onclick="showAddSystemConfigForm()">Dodaj konfigurację</button>
+                    </div>
+                    
+                    <div id="system-configs-list">
+                        <p>Zaloguj się aby zobaczyć konfigurację systemu...</p>
+                    </div>
+                </div>
+
+                <!-- Device Configuration Tab -->
+                <div id="device-config-tab" class="tab-content">
+                    <h4>📱 Konfiguracja urządzeń</h4>
+                    
+                    <table class="data-table" id="device-configs-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Numer urządzenia</th>
+                                <th>Typ</th>
+                                <th>Status</th>
+                                <th>Konfiguracja</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6">Zaloguj się aby zobaczyć konfigurację urządzeń...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Test Configuration Tab -->
+                <div id="test-config-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>🧪 Scenariusze testowe</h4>
+                        <button class="btn" onclick="showAddTestScenarioForm()">Dodaj scenariusz</button>
+                    </div>
+                    
+                    <table class="data-table" id="test-scenarios-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nazwa</th>
+                                <th>Typ testu</th>
+                                <th>Parametry</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5">Zaloguj się aby zobaczyć scenariusze...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- JSON Templates Tab -->
+                <div id="json-templates-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>📋 Szablony JSON</h4>
+                        <button class="btn" onclick="showAddTemplateForm()">Dodaj szablon</button>
+                    </div>
+                    
+                    <div style="margin: 20px 0;">
+                        <label style="margin-right: 10px;">Filtruj po typie:</label>
+                        <select id="template-type-filter" onchange="loadJsonTemplates()" style="padding: 5px; margin-right: 15px;">
+                            <option value="">Wszystkie typy</option>
+                            <option value="test_flow">Test Flow</option>
+                            <option value="device_config">Konfiguracja urządzenia</option>
+                            <option value="system_config">Konfiguracja systemu</option>
+                        </select>
+                        
+                        <label style="margin-right: 10px;">Kategoria:</label>
+                        <select id="template-category-filter" onchange="loadJsonTemplates()" style="padding: 5px;">
+                            <option value="">Wszystkie kategorie</option>
+                            <option value="mask_tester">Tester masek</option>
+                            <option value="pressure_sensor">Czujnik ciśnienia</option>
+                            <option value="flow_meter">Przepływomierz</option>
+                        </select>
+                    </div>
+                    
+                    <table class="data-table" id="json-templates-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nazwa</th>
+                                <th>Typ</th>
+                                <th>Kategoria</th>
+                                <th>Opis</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6">Zaloguj się aby zobaczyć szablony...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Backup/Restore Tab -->
+                <div id="backup-tab" class="tab-content">
+                    <h4>💾 Backup i Restore konfiguracji</h4>
+                    
+                    <div class="backup-section">
+                        <h5>Backup konfiguracji</h5>
+                        <p>Utwórz kopię zapasową wszystkich konfiguracji systemu:</p>
+                        <button class="btn btn-success" onclick="createBackup()">Utwórz Backup</button>
+                    </div>
+
+                    <div class="backup-section">
+                        <h5>Restore konfiguracji</h5>
+                        <p>Przywróć konfigurację z pliku backup:</p>
+                        <div id="restore-data-editor" style="margin-bottom: 10px;"></div>
+                        <button class="btn btn-danger" onclick="restoreBackup()">Przywróć z Backup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <div class="section">
+                <h3 id="form-title">Formularz konfiguracji</h3>
+                
+                <!-- Add System Config Form -->
+                <div id="add-system-config-form" style="display: none;">
+                    <h4>Dodaj konfigurację systemu</h4>
+                    <form id="system-config-form">
+                        <div class="form-group">
+                            <label>Nazwa konfiguracji:</label>
+                            <input type="text" id="config-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Typ konfiguracji:</label>
+                            <select id="config-type" required>
+                                <option value="">Wybierz typ</option>
+                                <option value="device_settings">Ustawienia urządzeń</option>
+                                <option value="test_parameters">Parametry testów</option>
+                                <option value="system_limits">Limity systemu</option>
+                                <option value="network_config">Konfiguracja sieci</option>
+                                <option value="security_config">Konfiguracja bezpieczeństwa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Wartości konfiguracji (JSON):</label>
+                            <div id="config-value-editor"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Opis:</label>
+                            <textarea id="config-description" rows="3"></textarea>
+                        </div>
+                        <button type="button" class="btn" onclick="createSystemConfig()">Dodaj konfigurację</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideSystemConfigForm()">Anuluj</button>
+                    </form>
+                </div>
+
+                <!-- Add Test Scenario Form -->
+                <div id="add-test-scenario-form" style="display: none;">
+                    <h4>Dodaj scenariusz testowy</h4>
+                    <form id="test-scenario-form">
+                        <div class="form-group">
+                            <label>Nazwa scenariusza:</label>
+                            <input type="text" id="scenario-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Typ testu:</label>
+                            <select id="test-type" required>
+                                <option value="">Wybierz typ</option>
+                                <option value="mask_leak_test">Test nieszczelności maski</option>
+                                <option value="pressure_test">Test ciśnienia</option>
+                                <option value="flow_test">Test przepływu</option>
+                                <option value="calibration_test">Test kalibracji</option>
+                                <option value="functional_test">Test funkcjonalny</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Parametry (JSON):</label>
+                            <div id="test-parameters-editor"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Oczekiwane wyniki (JSON):</label>
+                            <div id="expected-results-editor"></div>
+                        </div>
+                        <button type="button" class="btn" onclick="createTestScenario()">Dodaj scenariusz</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideTestScenarioForm()">Anuluj</button>
+                    </form>
+                </div>
+
+                <!-- Device Config Form -->
+                <div id="device-config-form" style="display: none;">
+                    <h4>Konfiguracja urządzenia</h4>
+                    <form id="device-config-edit-form">
+                        <div class="form-group">
+                            <label>ID urządzenia:</label>
+                            <input type="number" id="device-config-id" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Konfiguracja (JSON):</label>
+                            <textarea id="device-configuration" rows="8" placeholder='{"baudrate": 9600, "timeout": 5}'></textarea>
+                        </div>
+                        <button type="button" class="btn" onclick="updateDeviceConfig()">Aktualizuj konfigurację</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideDeviceConfigForm()">Anuluj</button>
+                    </form>
+                </div>
+
+                <!-- Add/Edit JSON Template Form -->
+                <div id="add-template-form" style="display: none;">
+                    <h4 id="template-form-title">Dodaj szablon JSON</h4>
+                    <form id="json-template-form">
+                        <input type="hidden" id="template-id">
+                        
+                        <div class="form-group">
+                            <label>Nazwa szablonu:</label>
+                            <input type="text" id="template-name" required placeholder="np. Test Szczelności Maski">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Typ szablonu:</label>
+                            <select id="template-type" required>
+                                <option value="">Wybierz typ</option>
+                                <option value="test_flow">Test Flow</option>
+                                <option value="device_config">Konfiguracja urządzenia</option>
+                                <option value="system_config">Konfiguracja systemu</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Kategoria:</label>
+                            <select id="template-category">
+                                <option value="">Wybierz kategorię (opcjonalnie)</option>
+                                <option value="mask_tester">Tester masek</option>
+                                <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                <option value="flow_meter">Przepływomierz</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Opis:</label>
+                            <textarea id="template-description" rows="2" placeholder="Krótki opis szablonu"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📝 Wartości domyślne (JSON):</label>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                                <button type="button" class="btn btn-secondary" onclick="templateJsonEditor.addField()">➕ Dodaj pole</button>
+                                <button type="button" class="btn btn-secondary" onclick="clearTemplateJSON()">🗑️ Wyczyść</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleTemplateJSONView()">👁️ Podgląd JSON</button>
+                            </div>
+                            <div id="template-json-tree-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                <!-- Tree editor będzie tu renderowany -->
+                            </div>
+                            <div id="template-json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                <!-- JSON preview -->
+                            </div>
+                            <small style="color: #7f8c8d;">
+                                Edytuj wartości domyślne używając pól powyżej
+                            </small>
+                            <div id="json-validation-result" style="margin-top: 5px;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Schema JSON (opcjonalnie):</label>
+                            <textarea id="template-schema" rows="6" style="font-family: monospace; font-size: 12px;" 
+                                placeholder='{"type": "object", "properties": {...}}'></textarea>
+                            <small style="color: #7f8c8d;">
+                                JSON Schema dla walidacji (opcjonalnie)
+                            </small>
+                        </div>
+                        
+                        <button type="button" class="btn" onclick="saveTemplate()">💾 Zapisz szablon</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideTemplateForm()">Anuluj</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+        
+        <!-- Right sidebar with login -->
+        <div class="right-sidebar">
+            <div class="sidebar-auth">
+                <h4>🔐 Logowanie</h4>
+                <input type="text" id="login-username" placeholder="Username">
+                <input type="password" id="login-password" placeholder="Password">
+                <button class="btn" onclick="login()">Zaloguj</button>
+                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                <div id="auth-message"></div>
+            </div>
+
+            <div class="role-switcher" id="role-switcher">
+                <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                <select id="role-select" onchange="switchRole()">
+                    <option value="">Wybierz rolę...</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍 Test API</h4>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testConfigAPI()">Test Config API</button>
+                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">Test Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentToken = null;
+        let currentUser = null;
+        let systemConfigsJsonEditor = null;
+        let deviceConfigsJsonEditor = null;
+        let testScenariosJsonEditor = null;
+        let templateJsonEditor = null;
+        let configValueJsonEditor = null;
+        let testParametersJsonEditor = null;
+        let expectedResultsJsonEditor = null;
+        let backupDataJsonEditor = null;
+        let restoreDataJsonEditor = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            loadDashboard();
+            initializeJsonEditors();
+        });
+
+        // Auth functions
+        function checkAuthStatus() {
+            const token = localStorage.getItem('fleet_token');
+            const userData = localStorage.getItem('fleet_user');
+            
+            if (token && userData) {
+                currentToken = token;
+                currentUser = JSON.parse(userData);
+                showAuthenticatedUI();
+                loadUserRoles();
+            } else {
+                showLoginUI();
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                showMessage('Wprowadź login i hasło', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.access_token;
+                    
+                    // Get user info
+                    const userResponse = await fetch('/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    });
+                    
+                    if (userResponse.ok) {
+                        currentUser = await userResponse.json();
+                        localStorage.setItem('fleet_token', currentToken);
+                        localStorage.setItem('fleet_user', JSON.stringify(currentUser));
+                        showAuthenticatedUI();
+                        loadUserRoles();
+                        loadDashboard();
+                        showMessage('Zalogowano pomyślnie!', 'success');
+                    }
+                } else {
+                    showMessage('Błąd logowania. Sprawdź dane.', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd połączenia: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            currentToken = null;
+            currentUser = null;
+            localStorage.removeItem('fleet_token');
+            localStorage.removeItem('fleet_user');
+            showLoginUI();
+            showMessage('Wylogowano pomyślnie', 'info');
+        }
+
+        function showAuthenticatedUI() {
+            document.getElementById('login-username').style.display = 'none';
+            document.getElementById('login-password').style.display = 'none';
+            document.querySelector('.sidebar-auth .btn:not(#logout-btn)').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'block';
+            document.getElementById('auth-message').innerHTML = `<small>Zalogowany jako: <strong>${currentUser?.username}</strong></small>`;
+            document.getElementById('role-switcher').style.display = 'block';
+        }
+
+        function showLoginUI() {
+            document.getElementById('login-username').style.display = 'block';
+            document.getElementById('login-password').style.display = 'block';
+            document.querySelector('.sidebar-auth .btn:not(#logout-btn)').style.display = 'block';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('auth-message').innerHTML = '';
+            document.getElementById('role-switcher').style.display = 'none';
+        }
+
+        async function loadUserRoles() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/auth/roles', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const roles = await response.json();
+                    const roleSelect = document.getElementById('role-select');
+                    roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                    
+                    roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.name;
+                        option.textContent = role.description || role.name;
+                        roleSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading roles:', error);
+            }
+        }
+
+        async function switchRole() {
+            const selectedRole = document.getElementById('role-select').value;
+            if (!selectedRole || !currentToken) return;
+
+            try {
+                const response = await fetch('/api/auth/switch-role', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: selectedRole })
+                });
+
+                if (response.ok) {
+                    showMessage(`Przełączono na rolę: ${selectedRole}`, 'success');
+                    loadDashboard(); // Refresh dashboard with new role
+                } else {
+                    showMessage('Błąd przełączania roli', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all content divs
+            document.querySelectorAll('.content > div').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // Show selected tab content
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+            }
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar ul li a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Set active link
+            const activeLink = document.querySelector(`[onclick="showTab('${tabName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Load appropriate data
+            switch(tabName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'system-configs':
+                    loadSystemConfigs();
+                    break;
+                case 'device-configs':
+                    loadDeviceConfigs();
+                    break;
+                case 'test-scenarios':
+                    loadTestScenarios();
+                    break;
+                case 'json-templates':
+                    loadJsonTemplates();
+                    break;
+                case 'backup-restore':
+                    // Backup/Restore tab doesn't need initial loading
+                    break;
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboard() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/fleet-config/dashboard', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboardStats(data);
+                } else {
+                    console.error('Failed to load dashboard');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function updateDashboardStats(data) {
+            document.getElementById('system-configs-count').textContent = data.system_configs_count || 0;
+            document.getElementById('device-configs-count').textContent = data.device_configs_count || 0;
+            document.getElementById('test-scenarios-count').textContent = data.test_scenarios_count || 0;
+            document.getElementById('json-templates-count').textContent = data.json_templates_count || 0;
+        }
+
+        // System Configs functions
+        async function loadSystemConfigs() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/fleet-config/system-configs', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const configs = await response.json();
+                    displaySystemConfigs(configs);
+                } else {
+                    showMessage('Błąd ładowania konfiguracji systemowych', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        function displaySystemConfigs(configs) {
+            const container = document.getElementById('system-configs-list');
+            if (!container) return;
+
+            if (configs.length === 0) {
+                container.innerHTML = '<p>Brak konfiguracji systemowych.</p>';
+                return;
+            }
+
+            const html = configs.map(config => `
+                <div class="config-item" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                    <h5>${config.name}</h5>
+                    <p><strong>Typ:</strong> ${config.type}</p>
+                    <p><strong>Opis:</strong> ${config.description || 'Brak opisu'}</p>
+                    <div style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; margin: 8px 0;">
+                        ${JSON.stringify(config.value, null, 2)}
+                    </div>
+                    <button class="btn btn-secondary" onclick="editSystemConfig(${config.id})">Edytuj</button>
+                    <button class="btn btn-danger" onclick="deleteSystemConfig(${config.id})">Usuń</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function showSystemConfigForm() {
+            document.getElementById('add-system-config-form').style.display = 'block';
+            if (configValueJsonEditor) {
+                configValueJsonEditor.setData({});
+            }
+        }
+
+        function hideSystemConfigForm() {
+            document.getElementById('add-system-config-form').style.display = 'none';
+            document.getElementById('system-config-form').reset();
+        }
+
+        async function createSystemConfig() {
+            if (!currentToken) return;
+
+            const name = document.getElementById('config-name').value;
+            const type = document.getElementById('config-type').value;
+            const description = document.getElementById('config-description').value;
+            const value = configValueJsonEditor ? configValueJsonEditor.getData() : {};
+
+            if (!name || !type) {
+                showMessage('Wypełnij wymagane pola', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/fleet-config/system-configs', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, type, description, value })
+                });
+
+                if (response.ok) {
+                    showMessage('Konfiguracja dodana pomyślnie', 'success');
+                    hideSystemConfigForm();
+                    loadSystemConfigs();
+                } else {
+                    const error = await response.json();
+                    showMessage('Błąd: ' + (error.detail || 'Nie można dodać konfiguracji'), 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSystemConfig(configId) {
+            if (!currentToken) return;
+
+            if (!confirm('Czy na pewno chcesz usunąć tę konfigurację?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/fleet-config/system-configs/${configId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    showMessage('Konfiguracja usunięta pomyślnie', 'success');
+                    loadSystemConfigs();
+                } else {
+                    showMessage('Błąd usuwania konfiguracji', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        // Device Configs functions
+        async function loadDeviceConfigs() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/devices', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const devices = await response.json();
+                    displayDeviceConfigs(devices);
+                } else {
+                    showMessage('Błąd ładowania urządzeń', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        function displayDeviceConfigs(devices) {
+            const container = document.getElementById('device-configs-list');
+            if (!container) return;
+
+            if (devices.length === 0) {
+                container.innerHTML = '<p>Brak urządzeń.</p>';
+                return;
+            }
+
+            const html = devices.map(device => `
+                <div class="device-item" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                    <h5>Urządzenie ID: ${device.id}</h5>
+                    <p><strong>Status:</strong> <span class="status ${device.status}">${device.status}</span></p>
+                    <p><strong>Ostatnia aktywność:</strong> ${new Date(device.last_seen).toLocaleString()}</p>
+                    <div style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; margin: 8px 0;">
+                        ${JSON.stringify(device.configuration || {}, null, 2)}
+                    </div>
+                    <button class="btn btn-secondary" onclick="editDeviceConfig(${device.id})">Edytuj konfigurację</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function editDeviceConfig(deviceId) {
+            document.getElementById('device-config-id').value = deviceId;
+            document.getElementById('device-config-form').style.display = 'block';
+            
+            // Load current configuration
+            loadDeviceConfiguration(deviceId);
+        }
+
+        async function loadDeviceConfiguration(deviceId) {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch(`/api/devices/${deviceId}`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const device = await response.json();
+                    document.getElementById('device-configuration').value = 
+                        JSON.stringify(device.configuration || {}, null, 2);
+                }
+            } catch (error) {
+                showMessage('Błąd ładowania konfiguracji urządzenia: ' + error.message, 'error');
+            }
+        }
+
+        function hideDeviceConfigForm() {
+            document.getElementById('device-config-form').style.display = 'none';
+            document.getElementById('device-config-edit-form').reset();
+        }
+
+        async function updateDeviceConfig() {
+            if (!currentToken) return;
+
+            const deviceId = document.getElementById('device-config-id').value;
+            const configurationText = document.getElementById('device-configuration').value;
+
+            try {
+                const configuration = JSON.parse(configurationText);
+                
+                const response = await fetch(`/api/devices/${deviceId}/configuration`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ configuration })
+                });
+
+                if (response.ok) {
+                    showMessage('Konfiguracja urządzenia zaktualizowana', 'success');
+                    hideDeviceConfigForm();
+                    loadDeviceConfigs();
+                } else {
+                    showMessage('Błąd aktualizacji konfiguracji', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd JSON lub połączenia: ' + error.message, 'error');
+            }
+        }
+
+        // Test Scenarios functions
+        async function loadTestScenarios() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/fleet-config/test-scenarios', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const scenarios = await response.json();
+                    displayTestScenarios(scenarios);
+                } else {
+                    showMessage('Błąd ładowania scenariuszy testowych', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        function displayTestScenarios(scenarios) {
+            const container = document.getElementById('test-scenarios-list');
+            if (!container) return;
+
+            if (scenarios.length === 0) {
+                container.innerHTML = '<p>Brak scenariuszy testowych.</p>';
+                return;
+            }
+
+            const html = scenarios.map(scenario => `
+                <div class="scenario-item" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                    <h5>${scenario.name}</h5>
+                    <p><strong>Typ testu:</strong> ${scenario.test_type}</p>
+                    <div style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; margin: 8px 0;">
+                        <strong>Parametry:</strong><br>
+                        ${JSON.stringify(scenario.parameters, null, 2)}
+                    </div>
+                    <div style="background: #f0f8ff; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; margin: 8px 0;">
+                        <strong>Oczekiwane wyniki:</strong><br>
+                        ${JSON.stringify(scenario.expected_results, null, 2)}
+                    </div>
+                    <button class="btn btn-secondary" onclick="editTestScenario(${scenario.id})">Edytuj</button>
+                    <button class="btn btn-danger" onclick="deleteTestScenario(${scenario.id})">Usuń</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function showTestScenarioForm() {
+            document.getElementById('add-test-scenario-form').style.display = 'block';
+            if (testParametersJsonEditor) {
+                testParametersJsonEditor.setData({});
+            }
+            if (expectedResultsJsonEditor) {
+                expectedResultsJsonEditor.setData({});
+            }
+        }
+
+        function hideTestScenarioForm() {
+            document.getElementById('add-test-scenario-form').style.display = 'none';
+            document.getElementById('test-scenario-form').reset();
+        }
+
+        async function createTestScenario() {
+            if (!currentToken) return;
+
+            const name = document.getElementById('scenario-name').value;
+            const testType = document.getElementById('test-type').value;
+            const parameters = testParametersJsonEditor ? testParametersJsonEditor.getData() : {};
+            const expectedResults = expectedResultsJsonEditor ? expectedResultsJsonEditor.getData() : {};
+
+            if (!name || !testType) {
+                showMessage('Wypełnij wymagane pola', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/fleet-config/test-scenarios', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        test_type: testType,
+                        parameters,
+                        expected_results: expectedResults
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('Scenariusz testowy dodany pomyślnie', 'success');
+                    hideTestScenarioForm();
+                    loadTestScenarios();
+                } else {
+                    const error = await response.json();
+                    showMessage('Błąd: ' + (error.detail || 'Nie można dodać scenariusza'), 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteTestScenario(scenarioId) {
+            if (!currentToken) return;
+
+            if (!confirm('Czy na pewno chcesz usunąć ten scenariusz testowy?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/fleet-config/test-scenarios/${scenarioId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    showMessage('Scenariusz testowy usunięty pomyślnie', 'success');
+                    loadTestScenarios();
+                } else {
+                    showMessage('Błąd usuwania scenariusza', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        // JSON Templates functions
+        async function loadJsonTemplates() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/fleet-config/json-templates', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const templates = await response.json();
+                    displayJsonTemplates(templates);
+                } else {
+                    showMessage('Błąd ładowania szablonów JSON', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        function displayJsonTemplates(templates) {
+            const container = document.getElementById('json-templates-list');
+            if (!container) return;
+
+            if (templates.length === 0) {
+                container.innerHTML = '<p>Brak szablonów JSON.</p>';
+                return;
+            }
+
+            const html = templates.map(template => `
+                <div class="template-item" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                    <h5>${template.name}</h5>
+                    <p><strong>Typ:</strong> ${template.type}</p>
+                    <p><strong>Kategoria:</strong> ${template.category || 'Brak'}</p>
+                    <p><strong>Opis:</strong> ${template.description || 'Brak opisu'}</p>
+                    <div style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; margin: 8px 0; max-height: 200px; overflow-y: auto;">
+                        ${JSON.stringify(template.default_values, null, 2)}
+                    </div>
+                    <button class="btn btn-secondary" onclick="editTemplate(${template.id})">Edytuj</button>
+                    <button class="btn btn-secondary" onclick="useTemplate(${template.id})">Użyj</button>
+                    <button class="btn btn-danger" onclick="deleteTemplate(${template.id})">Usuń</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function showTemplateForm() {
+            document.getElementById('add-template-form').style.display = 'block';
+            document.getElementById('template-form-title').textContent = 'Dodaj szablon JSON';
+            document.getElementById('template-id').value = '';
+            document.getElementById('json-template-form').reset();
+            
+            if (templateJsonEditor) {
+                templateJsonEditor.setData({});
+            }
+        }
+
+        function hideTemplateForm() {
+            document.getElementById('add-template-form').style.display = 'none';
+            document.getElementById('json-template-form').reset();
+        }
+
+        async function saveTemplate() {
+            if (!currentToken) return;
+
+            const templateId = document.getElementById('template-id').value;
+            const name = document.getElementById('template-name').value;
+            const type = document.getElementById('template-type').value;
+            const category = document.getElementById('template-category').value;
+            const description = document.getElementById('template-description').value;
+            const schema = document.getElementById('template-schema').value;
+            const defaultValues = templateJsonEditor ? templateJsonEditor.getData() : {};
+
+            if (!name || !type) {
+                showMessage('Wypełnij wymagane pola', 'error');
+                return;
+            }
+
+            let parsedSchema = null;
+            if (schema.trim()) {
+                try {
+                    parsedSchema = JSON.parse(schema);
+                } catch (error) {
+                    showMessage('Błąd w JSON Schema: ' + error.message, 'error');
+                    return;
+                }
+            }
+
+            const templateData = {
+                name,
+                type,
+                category: category || null,
+                description: description || null,
+                default_values: defaultValues,
+                schema: parsedSchema
+            };
+
+            try {
+                const url = templateId ? 
+                    `/api/fleet-config/json-templates/${templateId}` : 
+                    '/api/fleet-config/json-templates';
+                const method = templateId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(templateData)
+                });
+
+                if (response.ok) {
+                    showMessage(`Szablon ${templateId ? 'zaktualizowany' : 'dodany'} pomyślnie`, 'success');
+                    hideTemplateForm();
+                    loadJsonTemplates();
+                } else {
+                    const error = await response.json();
+                    showMessage('Błąd: ' + (error.detail || 'Nie można zapisać szablonu'), 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteTemplate(templateId) {
+            if (!currentToken) return;
+
+            if (!confirm('Czy na pewno chcesz usunąć ten szablon?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/fleet-config/json-templates/${templateId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    showMessage('Szablon usunięty pomyślnie', 'success');
+                    loadJsonTemplates();
+                } else {
+                    showMessage('Błąd usuwania szablonu', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        // Backup/Restore functions
+        async function createBackup() {
+            if (!currentToken) return;
+
+            try {
+                const response = await fetch('/api/fleet-config/backup', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const backupData = await response.json();
+                    
+                    if (backupDataJsonEditor) {
+                        backupDataJsonEditor.setData(backupData);
+                    }
+                    
+                    // Also create downloadable backup file
+                    const blob = new Blob([JSON.stringify(backupData, null, 2)], 
+                        { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `fleet-config-backup-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showMessage('Backup utworzony i pobrany pomyślnie', 'success');
+                } else {
+                    showMessage('Błąd tworzenia backupu', 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        async function restoreBackup() {
+            if (!currentToken) return;
+
+            const backupData = restoreDataJsonEditor ? restoreDataJsonEditor.getData() : {};
+            
+            if (Object.keys(backupData).length === 0) {
+                showMessage('Wprowadź dane backup do przywrócenia', 'error');
+                return;
+            }
+
+            if (!confirm('Czy na pewno chcesz przywrócić konfigurację? To może nadpisać istniejące dane.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/fleet-config/restore', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(backupData)
+                });
+
+                if (response.ok) {
+                    showMessage('Konfiguracja przywrócona pomyślnie', 'success');
+                    // Refresh current view
+                    const currentTab = document.querySelector('.sidebar ul li a.active');
+                    if (currentTab) {
+                        currentTab.click();
+                    }
+                    loadDashboard();
+                } else {
+                    const error = await response.json();
+                    showMessage('Błąd przywracania: ' + (error.detail || 'Nieznany błąd'), 'error');
+                }
+            } catch (error) {
+                showMessage('Błąd: ' + error.message, 'error');
+            }
+        }
+
+        // Utility functions
+        function showMessage(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            resultDiv.innerHTML = `<div class="message ${className}">${message}</div>`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (resultDiv.innerHTML.includes(message)) {
+                    resultDiv.innerHTML = '';
+                }
+            }, 5000);
+        }
+
+        // JSON Tree Editor Implementation
+        class SimpleJsonEditor {
+            constructor(containerId) {
+                this.containerId = containerId;
+                this.data = {};
+                this.container = document.getElementById(containerId);
+            }
+
+            setData(data) {
+                this.data = data || {};
+                this.render();
+            }
+
+            getData() {
+                return this.data;
+            }
+
+            render() {
+                if (!this.container) return;
+                this.container.innerHTML = this.renderObject(this.data, []);
+            }
+
+            renderObject(obj, path = []) {
+                const entries = Object.entries(obj || {});
+                
+                if (entries.length === 0) {
+                    return `<div class="json-empty">
+                        <button type="button" onclick="addField('${this.containerId}', [${path.map(p => `'${p}'`).join(',')}])">➕ Dodaj pole</button>
+                    </div>`;
+                }
+
+                return entries.map(([key, value]) => {
+                    const currentPath = [...path, key];
+                    const pathStr = currentPath.map(p => `'${p}'`).join(',');
+                    
+                    return `<div class="json-field" style="margin: 5px 0; padding: 5px; border: 1px solid #eee;">
+                        <input type="text" value="${key}" onchange="updateKey('${this.containerId}', [${pathStr}], this.value)" style="margin-right: 10px;">
+                        ${this.renderValue(value, currentPath)}
+                        <button type="button" onclick="removeField('${this.containerId}', [${pathStr}])" style="margin-left: 10px;">❌</button>
+                    </div>`;
+                }).join('');
+            }
+
+            renderValue(value, path) {
+                const pathStr = path.map(p => `'${p}'`).join(',');
+                
+                if (typeof value === 'object' && value !== null) {
+                    return `<div style="margin-left: 20px;">
+                        ${this.renderObject(value, path)}
+                        <button type="button" onclick="addField('${this.containerId}', [${pathStr}])">➕ Dodaj pole</button>
+                    </div>`;
+                } else {
+                    const inputType = typeof value === 'number' ? 'number' : 'text';
+                    return `<input type="${inputType}" value="${value}" onchange="updateValue('${this.containerId}', [${pathStr}], this.value)">`;
+                }
+            }
+
+            addField() {
+                const newKey = prompt('Nazwa pola:');
+                if (newKey) {
+                    this.data[newKey] = '';
+                    this.render();
+                }
+            }
+        }
+
+        // Global JSON editor functions
+        function addField(editorId, path = []) {
+            const editor = getJsonEditor(editorId);
+            if (editor) {
+                const newKey = prompt('Nazwa pola:');
+                if (newKey) {
+                    let target = editor.data;
+                    for (let i = 0; i < path.length; i++) {
+                        target = target[path[i]];
+                    }
+                    target[newKey] = '';
+                    editor.render();
+                }
+            }
+        }
+
+        function removeField(editorId, path) {
+            const editor = getJsonEditor(editorId);
+            if (editor && path.length > 0) {
+                let target = editor.data;
+                for (let i = 0; i < path.length - 1; i++) {
+                    target = target[path[i]];
+                }
+                delete target[path[path.length - 1]];
+                editor.render();
+            }
+        }
+
+        function updateKey(editorId, path, newKey) {
+            const editor = getJsonEditor(editorId);
+            if (editor && path.length > 0) {
+                const oldKey = path[path.length - 1];
+                let target = editor.data;
+                for (let i = 0; i < path.length - 1; i++) {
+                    target = target[path[i]];
+                }
+                const value = target[oldKey];
+                delete target[oldKey];
+                target[newKey] = value;
+                editor.render();
+            }
+        }
+
+        function updateValue(editorId, path, newValue) {
+            const editor = getJsonEditor(editorId);
+            if (editor) {
+                let target = editor.data;
+                for (let i = 0; i < path.length - 1; i++) {
+                    target = target[path[i]];
+                }
+                // Try to parse as number if possible
+                const numValue = parseFloat(newValue);
+                target[path[path.length - 1]] = isNaN(numValue) ? newValue : numValue;
+            }
+        }
+
+        function getJsonEditor(editorId) {
+            switch(editorId) {
+                case 'config-value-editor': return configValueJsonEditor;
+                case 'test-parameters-editor': return testParametersJsonEditor;
+                case 'expected-results-editor': return expectedResultsJsonEditor;
+                case 'template-json-tree-editor': return templateJsonEditor;
+                case 'backup-data-editor': return backupDataJsonEditor;
+                case 'restore-data-editor': return restoreDataJsonEditor;
+                default: return null;
+            }
+        }
+
+        // Initialize JSON editors
+        function initializeJsonEditors() {
+            configValueJsonEditor = new SimpleJsonEditor('config-value-editor');
+            testParametersJsonEditor = new SimpleJsonEditor('test-parameters-editor');
+            expectedResultsJsonEditor = new SimpleJsonEditor('expected-results-editor');
+            templateJsonEditor = new SimpleJsonEditor('template-json-tree-editor');
+            backupDataJsonEditor = new SimpleJsonEditor('backup-data-editor');
+            restoreDataJsonEditor = new SimpleJsonEditor('restore-data-editor');
+        }
+
+        // API Test functions
+        async function testConfigAPI() {
+            if (!currentToken) {
+                showMessage('Musisz być zalogowany aby testować API', 'error');
+                return;
+            }
+
+            const tests = [
+                { name: 'Dashboard', url: '/api/fleet-config/dashboard' },
+                { name: 'System Configs', url: '/api/fleet-config/system-configs' },
+                { name: 'Test Scenarios', url: '/api/fleet-config/test-scenarios' },
+                { name: 'JSON Templates', url: '/api/fleet-config/json-templates' }
+            ];
+
+            let results = ['=== Test API Fleet Config Manager ==='];
+
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url, {
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    });
+                    
+                    const status = response.ok ? '✅ OK' : `❌ ERROR (${response.status})`;
+                    results.push(`${test.name}: ${status}`);
+                } catch (error) {
+                    results.push(`${test.name}: ❌ ERROR (${error.message})`);
+                }
+            }
+
+            showMessage(results.join('\n'), 'info');
+        }
+
+        async function testConfigDashboard() {
+            if (!currentToken) {
+                showMessage('Musisz być zalogowany aby testować dashboard', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/fleet-config/dashboard', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const results = [
+                        '=== Test Dashboard ===',
+                        `System Configs: ${data.system_configs_count || 0}`,
+                        `Device Configs: ${data.device_configs_count || 0}`,
+                        `Test Scenarios: ${data.test_scenarios_count || 0}`,
+                        `JSON Templates: ${data.json_templates_count || 0}`
+                    ];
+                    showMessage(results.join('\n'), 'success');
+                } else {
+                    showMessage(`Błąd dashboard: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Błąd: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

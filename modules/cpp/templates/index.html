@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connect++ - Fleet Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+        .nav-menu li { margin: 0; }
+        .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+        .nav-menu a:hover { background: #34495e; }
+        .nav-menu a.active { background: #3498db; }
+        h1 { display: none; }
+        .module-info { display: none; }
+        .app-container { display: flex; min-height: calc(100vh - 52px); }
+        .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .sidebar .menu-section { margin-top: 20px; }
+        .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
+        .sidebar .menu-item:hover { background: #7f8c8d; }
+        .sidebar .menu-item.active { background: #3498db; font-weight: bold; }
+        .main-content-area { width: 70%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .right-sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .right-sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .right-sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .right-sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+        .right-sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+        .right-sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+        .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
+        .container { max-width: 100%; margin: 0; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .api-test { margin: 20px 0; }
+        button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        .result { margin: 10px 0; padding: 10px; background: #d5edda; border-radius: 5px; border: 1px solid #c3e6cb; }
+        
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+            .main-content-area { width: 100%; }
+            .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/connect-plus" class="active">🔗 Connect++</a></li>
+            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+            <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    <div class="app-container">
+        <div class="sidebar">
+            <h3>🔗 Menu Modułu</h3>
+            <div class="menu-section">
+                <div class="menu-item active">📊 Test API</div>
+                <div class="menu-item">🔧 Ustawienia</div>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+            <div class="container">
+                <h1>🔗 Connect++ Module</h1>
+                <div class="module-info">
+                    <h3>Moduł dla Operatorów</h3>
+                    <p><strong>Port:</strong> 5000</p>
+                    <p><strong>Rola:</strong> Operator</p>
+                    <p><strong>Funkcje:</strong> Obsługa testów urządzeń</p>
+                </div>
+                
+                <div id="result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <div class="right-sidebar">
+            <h3>🔐 Logowanie</h3>
+            <div class="login-section">
+                <input type="text" id="login-username" placeholder="Username">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="login()">Zaloguj</button>
+                <button onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+            </div>
+
+            <div class="role-switcher" id="role-switcher">
+                <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                <select id="role-select" onchange="switchRole()">
+                    <option value="">Wybierz rolę...</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #374151; border-radius: 8px;">
+                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #3498db; padding-bottom: 8px;">🔍 Test API Endpoints</h4>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testUsers()">Test Users</button>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testDevices()">Test Devices</button>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testCustomers()">Test Customers</button>
+                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testScenarios()">Test Scenarios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        function getAuthToken() {
+            if (!authToken) {
+                authToken = localStorage.getItem('jwt_token');
+            }
+            return authToken;
+        }
+
+        function setAuthToken(token) {
+            authToken = token;
+            localStorage.setItem('jwt_token', token);
+            updateAuthUI();
+        }
+
+        function clearAuthToken() {
+            authToken = null;
+            localStorage.removeItem('jwt_token');
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const isLoggedIn = !!getAuthToken();
+            document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+            document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+            
+            if (isLoggedIn) {
+                const userRoles = getUserRoles();
+                const activeRole = getActiveRole();
+                
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #3498db;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                
+                if (userRoles && userRoles.length > 1) {
+                    const roleSelect = document.getElementById('role-select');
+                    roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                    userRoles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role;
+                        option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                        if (role === activeRole) {
+                            option.selected = true;
+                        }
+                        roleSelect.appendChild(option);
+                    });
+                    document.getElementById('role-switcher').style.display = 'block';
+                } else {
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+            } else {
+                document.getElementById('auth-message').innerHTML = 
+                    '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                document.getElementById('role-switcher').style.display = 'none';
+            }
+        }
+
+        function getUserRoles() {
+            const token = getAuthToken();
+            if (!token) return [];
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.roles || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getActiveRole() {
+            const token = getAuthToken();
+            if (!token) return '';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.active_role || payload.role || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        async function switchRole() {
+            const selectedRole = document.getElementById('role-select').value;
+            if (!selectedRole) return;
+
+            try {
+                const response = await fetch('/api/v1/auth/switch-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify({ new_role: selectedRole })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #3498db;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                } else {
+                    const error = await response.json();
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                alert('Podaj username i hasło');
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('login-password').value = '';
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #3498db;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
+                } else {
+                    const error = await response.json();
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        function logout() {
+            clearAuthToken();
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        async function testAPI(endpoint, name) {
+            try {
+                const response = await fetch('/api/v1/' + endpoint);
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                        <strong>${name} API Response:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result" style="background: #f8d7da; border-color: #f5c6cb;">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function testUsers() { testAPI('demo/users', 'Users'); }
+        function testDevices() { testAPI('devices', 'Devices'); }
+        function testCustomers() { testAPI('customers', 'Customers'); }
+        function testScenarios() { testAPI('test-scenarios', 'Test Scenarios'); }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthUI();
+        });
+    </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connect Manager - Fleet Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+        .nav-menu li { margin: 0; }
+        .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+        .nav-menu a:hover { background: #34495e; }
+        .nav-menu a.active { background: #e74c3c; }
+        .header { display: none; }
+        .module-info { display: none; }
+        .auth-section { display: none; }
+        .app-container { display: flex; min-height: calc(100vh - 52px); }
+        .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .sidebar .menu-section { margin-top: 20px; }
+        .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
+        .sidebar .menu-item:hover { background: #7f8c8d; }
+        .sidebar .menu-item.active { background: #e74c3c; font-weight: bold; }
+        .main-content-area { width: 70%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .right-sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+        .right-sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .right-sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .right-sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+        .right-sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+        .right-sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+        .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
+        .container { max-width: 100%; margin: 0; padding: 0; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
+        .btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .scenarios-list { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; }
+        .scenario-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .scenario-item:hover { background-color: #f8f9fa; }
+        .scenario-item.active { background-color: #e74c3c; color: white; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #e74c3c; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+        .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+        
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+            .main-content-area { width: 100%; }
+            .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/connect-plus">🔗 Connect++</a></li>
+            <li><a href="/connect-manager" class="active">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+            <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    <div class="app-container">
+        <div class="sidebar">
+            <h3>⚙️ Menu Modułu</h3>
+            <div class="menu-section">
+                <div class="menu-item active" onclick="showScenarios()">📋 Lista Scenariuszy</div>
+                <div class="menu-item" onclick="showCreateForm()">➕ Nowy Scenariusz</div>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+        <div class="container">
+        <div class="header">
+            <h1>⚙️ Connect Manager</h1>
+        </div>
+        
+        <div class="module-info">
+            <h3>Moduł dla Superuser</h3>
+            <p><strong>Port:</strong> 5000</p>
+            <p><strong>Rola:</strong> Superuser</p>
+            <p><strong>Funkcje:</strong> Tworzenie i zarządzanie scenariuszami testowymi</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h3>📋 Lista Scenariuszy Testowych</h3>
+                <button class="btn" onclick="loadScenarios()">Odśwież listę</button>
+                <div id="scenarios-list" class="scenarios-list">
+                    <p>Kliknij "Odśwież listę" aby załadować scenariusze...</p>
+                </div>
+                
+                <h4>🔍 Szczegóły Scenariusza</h4>
+                <div id="scenario-details">
+                    <p>Wybierz scenariusz z listy powyżej...</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>➕ Tworzenie Nowego Scenariusza</h3>
+                <form id="scenario-form">
+                    <div class="form-group">
+                        <label>Nazwa scenariusza:</label>
+                        <input type="text" id="scenario-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Opis:</label>
+                        <textarea id="scenario-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Typ urządzenia:</label>
+                        <select id="device-type" onchange="loadTemplatesForType()">
+                            <option value="">Wybierz typ urządzenia</option>
+                            <option value="mask_tester">Tester masek</option>
+                            <option value="pressure_sensor">Czujnik ciśnienia</option>
+                            <option value="flow_meter">Przepływomierz</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📋 Szablon JSON (opcjonalnie):</label>
+                        <button type="button" class="btn btn-secondary" onclick="showTemplates()">🔽 Wybierz szablon JSON</button>
+                        <div id="templates-list" style="display: none; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 4px;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 Konfiguracja test_flow:</label>
+                        <div style="margin-bottom: 10px;">
+                            <button type="button" class="btn btn-secondary" onclick="jsonTreeEditor.addField()">+ Dodaj pole</button>
+                            <button type="button" class="btn btn-secondary" onclick="jsonTreeEditor.clear()">🗑️ Wyczyść</button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleJSONView()">👁️ Podgląd JSON</button>
+                        </div>
+                        <div id="json-tree-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                            <!-- Tree editor będzie tu renderowany -->
+                        </div>
+                        <div id="json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                            <!-- JSON preview -->
+                        </div>
+                        <small style="color: #7f8c8d;">Edytuj konfigurację używając pól powyżej lub wybierz szablon</small>
+                    </div>
+
+                    <button type="button" class="btn" onclick="createScenario()">Utwórz Scenariusz</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="result" style="margin-top: 20px;"></div>
+        </div>
+        </div>
+
+        <div class="right-sidebar">
+            <h3>🔐 Logowanie</h3>
+            <div class="login-section">
+                <input type="text" id="login-username" placeholder="Username">
+                <input type="password" id="login-password" placeholder="Password">
+                <button class="btn btn-success" onclick="login()">Zaloguj</button>
+                <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+            </div>
+
+            <div class="role-switcher" id="role-switcher">
+                <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                <select id="role-select" onchange="switchRole()">
+                    <option value="">Wybierz rolę...</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #34495e; border-radius: 8px;">
+                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #7f8c8d; padding-bottom: 8px;">🔍 API Endpoints Test</h4>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px;" onclick="testScenariosAPI()">Test /scenarios</button>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="testAuth()">Test Auth</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScenarioId = null;
+        let scenarios = [];
+
+        let authToken = null;
+
+        function getAuthToken() {
+            if (!authToken) {
+                authToken = localStorage.getItem('jwt_token');
+            }
+            return authToken;
+        }
+
+        function setAuthToken(token) {
+            authToken = token;
+            localStorage.setItem('jwt_token', token);
+            updateAuthUI();
+        }
+
+        function clearAuthToken() {
+            authToken = null;
+            localStorage.removeItem('jwt_token');
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const isLoggedIn = !!getAuthToken();
+            document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+            document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+            
+            if (isLoggedIn) {
+                const userRoles = getUserRoles();
+                const activeRole = getActiveRole();
+                
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: green;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                
+                // Show role switcher if user has multiple roles
+                if (userRoles && userRoles.length > 1) {
+                    const roleSelect = document.getElementById('role-select');
+                    roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                    userRoles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role;
+                        option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                        if (role === activeRole) {
+                            option.selected = true;
+                        }
+                        roleSelect.appendChild(option);
+                    });
+                    document.getElementById('role-switcher').style.display = 'block';
+                } else {
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+            } else {
+                document.getElementById('auth-message').innerHTML = 
+                    '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                document.getElementById('role-switcher').style.display = 'none';
+            }
+        }
+
+        function getUserRoles() {
+            const token = getAuthToken();
+            if (!token) return [];
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.roles || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getActiveRole() {
+            const token = getAuthToken();
+            if (!token) return '';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.active_role || payload.role || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        async function switchRole() {
+            const selectedRole = document.getElementById('role-select').value;
+            if (!selectedRole) return;
+
+            try {
+                const response = await fetch('/api/v1/auth/switch-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify({ new_role: selectedRole })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: green;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                    
+                    // Reload scenarios with new role
+                    loadScenarios();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        function showCreateForm() {
+            const formSection = document.getElementById('scenario-form');
+            if (formSection) {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function showScenarios() {
+            const scenariosSection = document.getElementById('scenarios-list');
+            if (scenariosSection) {
+                scenariosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                alert('Podaj username i hasło');
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('login-password').value = '';
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
+                        </div>
+                    `;
+                    loadScenarios(); // Reload scenarios after login
+                } else {
+                    const error = await response.json();
+                    const errorMsg = error.detail || 'Nieznany błąd';
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        function logout() {
+            clearAuthToken();
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('scenarios-list').innerHTML = 
+                '<p>Zaloguj się aby zobaczyć scenariusze...</p>';
+            document.getElementById('scenario-details').innerHTML = 
+                '<p>Wybierz scenariusz z listy powyżej...</p>';
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                ℹ️ Wylogowano pomyślnie
+                </div>
+            `;
+        }
+
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const token = getAuthToken();
+            
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { 'Authorization': `Bearer ${token}` }),
+                        ...options.headers
+                    }
+                });
+                return response;
+            } catch (error) {
+                console.error('Request failed:', error);
+                throw error;
+            }
+        }
+
+        // ========== UNIVERSAL JSON TREE EDITOR ==========
+        class JSONTreeEditor {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.data = {};
+                this.fieldCounter = 0;
+            }
+
+            init(jsonData = {}) {
+                this.data = jsonData;
+                this.render();
+            }
+
+            render() {
+                this.container.innerHTML = '';
+                if (Object.keys(this.data).length === 0) {
+                    this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
+                    return;
+                }
+                
+                for (const [key, value] of Object.entries(this.data)) {
+                    this.renderField(key, value, this.container);
+                }
+            }
+
+            renderField(key, value, parentElement, path = '') {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.style.cssText = 'margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd;';
+                
+                const currentPath = path ? `${path}.${key}` : key;
+                const type = this.getType(value);
+                
+                // Field header with key name and controls
+                const headerDiv = document.createElement('div');
+                headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; gap: 10px;';
+                
+                const keyInput = document.createElement('input');
+                keyInput.type = 'text';
+                keyInput.value = key;
+                keyInput.style.cssText = 'flex: 0 0 180px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px; font-weight: bold;';
+                keyInput.onchange = (e) => this.renameKey(path, key, e.target.value);
+                
+                const typeSelect = document.createElement('select');
+                typeSelect.style.cssText = 'flex: 0 0 100px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                ['string', 'number', 'boolean', 'object', 'array'].forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    option.selected = type === t;
+                    typeSelect.appendChild(option);
+                });
+                typeSelect.onchange = (e) => this.changeType(currentPath, e.target.value);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.style.cssText = 'padding: 3px 8px; margin-left: auto;';
+                deleteBtn.onclick = () => this.deleteField(currentPath);
+                
+                headerDiv.appendChild(keyInput);
+                headerDiv.appendChild(typeSelect);
+                headerDiv.appendChild(deleteBtn);
+                fieldDiv.appendChild(headerDiv);
+                
+                // Value input based on type
+                const valueDiv = document.createElement('div');
+                
+                if (type === 'object') {
+                    valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #3498db; margin-top: 10px;';
+                    for (const [childKey, childValue] of Object.entries(value)) {
+                        this.renderField(childKey, childValue, valueDiv, currentPath);
+                    }
+                    const addBtn = document.createElement('button');
+                    addBtn.textContent = '+ Dodaj pole do obiektu';
+                    addBtn.className = 'btn btn-secondary';
+                    addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                    addBtn.onclick = () => this.addFieldToObject(currentPath);
+                    valueDiv.appendChild(addBtn);
+                } else if (type === 'array') {
+                    valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #9b59b6; margin-top: 10px;';
+                    value.forEach((item, index) => {
+                        this.renderField(`[${index}]`, item, valueDiv, currentPath);
+                    });
+                    const addBtn = document.createElement('button');
+                    addBtn.textContent = '+ Dodaj element do array';
+                    addBtn.className = 'btn btn-secondary';
+                    addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                    addBtn.onclick = () => this.addArrayElement(currentPath);
+                    valueDiv.appendChild(addBtn);
+                } else if (type === 'boolean') {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = value;
+                    checkbox.style.cssText = 'width: 20px; height: 20px;';
+                    checkbox.onchange = (e) => this.setValue(currentPath, e.target.checked);
+                    valueDiv.appendChild(checkbox);
+                } else if (type === 'number') {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = value;
+                    input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    input.onchange = (e) => this.setValue(currentPath, parseFloat(e.target.value));
+                    valueDiv.appendChild(input);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = value;
+                    input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    input.onchange = (e) => this.setValue(currentPath, e.target.value);
+                    valueDiv.appendChild(input);
+                }
+                
+                fieldDiv.appendChild(valueDiv);
+                parentElement.appendChild(fieldDiv);
+            }
+
+            getType(value) {
+                if (Array.isArray(value)) return 'array';
+                if (value === null) return 'string';
+                return typeof value;
+            }
+
+            setValue(path, value) {
+                const keys = path.split('.').filter(k => k && !k.startsWith('['));
+                const arrayIndices = path.match(/\[(\d+)\]/g);
+                
+                let current = this.data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = value;
+                this.render();
+            }
+
+            addField() {
+                const newKey = `field_${this.fieldCounter++}`;
+                this.data[newKey] = '';
+                this.render();
+            }
+
+            addFieldToObject(path) {
+                const obj = this.getValueByPath(path);
+                if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                    obj[`field_${this.fieldCounter++}`] = '';
+                    this.render();
+                }
+            }
+
+            addArrayElement(path) {
+                const arr = this.getValueByPath(path);
+                if (arr && Array.isArray(arr)) {
+                    arr.push('');
+                    this.render();
+                }
+            }
+
+            deleteField(path) {
+                const keys = path.split('.').filter(k => k);
+                if (keys.length === 1) {
+                    delete this.data[keys[0]];
+                } else {
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    delete current[keys[keys.length - 1]];
+                }
+                this.render();
+            }
+
+            renameKey(parentPath, oldKey, newKey) {
+                if (oldKey === newKey) return;
+                
+                if (!parentPath) {
+                    this.data[newKey] = this.data[oldKey];
+                    delete this.data[oldKey];
+                } else {
+                    const parent = this.getValueByPath(parentPath);
+                    parent[newKey] = parent[oldKey];
+                    delete parent[oldKey];
+                }
+                this.render();
+            }
+
+            changeType(path, newType) {
+                const defaultValues = {
+                    'string': '',
+                    'number': 0,
+                    'boolean': false,
+                    'object': {},
+                    'array': []
+                };
+                
+                const keys = path.split('.').filter(k => k);
+                let current = this.data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = defaultValues[newType];
+                this.render();
+            }
+
+            getValueByPath(path) {
+                const keys = path.split('.').filter(k => k);
+                let current = this.data;
+                for (const key of keys) {
+                    current = current[key];
+                }
+                return current;
+            }
+
+            clear() {
+                this.data = {};
+                this.render();
+            }
+
+            getJSON() {
+                return this.data;
+            }
+
+            setJSON(jsonData) {
+                this.data = jsonData;
+                this.render();
+            }
+        }
+
+        // Initialize JSON Tree Editor
+        const jsonTreeEditor = new JSONTreeEditor('json-tree-editor');
+        jsonTreeEditor.init({});
+
+        function toggleJSONView() {
+            const preview = document.getElementById('json-preview');
+            if (preview.style.display === 'none') {
+                preview.style.display = 'block';
+                preview.textContent = JSON.stringify(jsonTreeEditor.getJSON(), null, 2);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        async function loadScenarios() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/v1/scenarios/');
+                
+                if (response.status === 401 || response.status === 403) {
+                    document.getElementById('scenarios-list').innerHTML = `
+                        <div style="color: #e74c3c; padding: 10px;">
+                        ❌ Brak autoryzacji. Zaloguj się jako Superuser aby zobaczyć scenariusze.
+                        <br><br>
+                        Status: ${response.status} - ${response.statusText}
+                        </div>
+                    `;
+                    return;
+                }
+
+                scenarios = await response.json();
+                displayScenarios(scenarios);
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    <strong>Błąd ładowania scenariuszy:</strong>
+                    ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayScenarios(scenarios) {
+            const container = document.getElementById('scenarios-list');
+            if (scenarios.length === 0) {
+                container.innerHTML = '<p>Brak scenariuszy testowych. Utwórz pierwszy scenariusz.</p>';
+                return;
+            }
+
+            container.innerHTML = scenarios.map(scenario => 
+                `<div class="scenario-item" onclick="selectScenario(${scenario.id})">
+                    <strong>${scenario.name}</strong>
+                    <br>
+                    <small>Typ: ${scenario.device_type || 'Nie określono'} | Aktywny: ${scenario.is_active ? 'Tak' : 'Nie'}</small>
+                </div>`
+            ).join('');
+        }
+
+        function selectScenario(scenarioId) {
+            currentScenarioId = scenarioId;
+            const scenario = scenarios.find(s => s.id === scenarioId);
+            
+            // Update UI
+            document.querySelectorAll('.scenario-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.scenario-item').classList.add('active');
+
+            // Show scenario details
+            document.getElementById('scenario-details').innerHTML = `
+                <h5>${scenario.name}</h5>
+                <p><strong>Opis:</strong> ${scenario.description || 'Brak opisu'}</p>
+                <p><strong>Typ urządzenia:</strong> ${scenario.device_type || 'Nie określono'}</p>
+                <p><strong>Utworzono:</strong> ${new Date(scenario.created_at).toLocaleString()}</p>
+                <button class="btn btn-secondary" onclick="deleteScenario(${scenarioId})">Usuń scenariusz</button>
+            `;
+        }
+
+        let jsonTemplates = [];
+
+        async function loadTemplatesForType() {
+            const deviceType = document.getElementById('device-type').value;
+            if (!deviceType) {
+                document.getElementById('templates-list').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await makeAuthenticatedRequest(
+                    `/api/v1/fleet-config/json-templates?template_type=test_flow&category=${deviceType}`
+                );
+                
+                if (response.ok) {
+                    jsonTemplates = await response.json();
+                    if (jsonTemplates.length > 0) {
+                        document.getElementById('templates-list').innerHTML = `
+                            <p style="margin-bottom: 10px;"><strong>Dostępne szablony dla ${deviceType}:</strong></p>
+                            ${jsonTemplates.map(t => `
+                                <div style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" 
+                                     onclick="applyTemplate(${t.id})">
+                                    <strong>${t.name}</strong>
+                                    <br><small style="color: #7f8c8d;">${t.description || 'Brak opisu'}</small>
+                                </div>
+                            `).join('')}
+                        `;
+                    } else {
+                        document.getElementById('templates-list').innerHTML = 
+                            '<p style="color: #7f8c8d;">Brak dostępnych szablonów dla tego typu urządzenia</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
+        }
+
+        function showTemplates() {
+            const templatesList = document.getElementById('templates-list');
+            if (templatesList.style.display === 'none') {
+                templatesList.style.display = 'block';
+                loadTemplatesForType();
+            } else {
+                templatesList.style.display = 'none';
+            }
+        }
+
+        function applyTemplate(templateId) {
+            const template = jsonTemplates.find(t => t.id === templateId);
+            if (template) {
+                jsonTreeEditor.setJSON(template.default_values);
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="result" style="background: #d4edda; border-color: #c3e6cb;">
+                    ✅ Szablon "${template.name}" zastosowany! Możesz edytować pola poniżej.
+                    </div>
+                `;
+                
+                document.getElementById('templates-list').style.display = 'none';
+            }
+        }
+
+        async function createScenario() {
+            const name = document.getElementById('scenario-name').value;
+            const description = document.getElementById('scenario-description').value;
+            const deviceType = document.getElementById('device-type').value;
+            const testFlow = jsonTreeEditor.getJSON();
+
+            if (!name) {
+                alert('Podaj nazwę scenariusza');
+                return;
+            }
+
+            try {
+                const response = await makeAuthenticatedRequest('/api/v1/scenarios/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        device_type: deviceType,
+                        test_flow: Object.keys(testFlow).length > 0 ? testFlow : null,
+                        is_active: true
+                    })
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Brak autoryzacji. Zaloguj się jako Superuser aby tworzyć scenariusze.
+                        Status: ${response.status}
+                        </div>
+                    `;
+                    return;
+                }
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    ✅ Scenariusz utworzony pomyślnie: ${result.name}
+                    ${testFlow ? '<br><small>Z konfiguracją JSON</small>' : ''}
+                    </div>
+                `;
+                
+                // Clear form
+                document.getElementById('scenario-form').reset();
+                jsonTreeEditor.clear();
+                document.getElementById('templates-list').style.display = 'none';
+                document.getElementById('json-preview').style.display = 'none';
+                
+                // Reload scenarios
+                loadScenarios();
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    ❌ Błąd tworzenia scenariusza: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function deleteScenario(scenarioId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten scenariusz?')) {
+                return;
+            }
+
+            try {
+                const response = await makeAuthenticatedRequest(`/api/v1/scenarios/${scenarioId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ✅ ${result.message || 'Scenariusz został usunięty'}
+                        </div>
+                    `;
+                    loadScenarios();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd: ${error.detail}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    ❌ Błąd usuwania scenariusza: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testScenariosAPI() {
+            try {
+                const response = await fetch('/api/v1/scenarios/');
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    <strong>Test /api/v1/scenarios/ Response:</strong>
+                    Status: ${response.status}
+                    ${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    <strong>Error testing scenarios API:</strong>
+                    ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testAuth() {
+            try {
+                const response = await fetch('/api/v1/auth/me');
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    <strong>Test Auth Response:</strong>
+                    Status: ${response.status}
+                    ${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result">
+                    <strong>Error testing auth:</strong>
+                    ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load scenarios on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthUI(); // Check if already logged in
+            if (getAuthToken()) {
+                loadScenarios();
+            } else {
+                document.getElementById('scenarios-list').innerHTML = 
+                    '<p>Zaloguj się aby zobaczyć scenariusze...</p>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fleet Data Manager - Fleet Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+        .nav-menu li { margin: 0; }
+        .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
+        .nav-menu a:hover { background: #34495e; }
+        .nav-menu a.active { background: #27ae60; }
+        
+        /* Hide header, module-info and old auth-section */
+        .header { display: none !important; }
+        .module-info { display: none !important; }
+        .auth-section { display: none !important; }
+        
+        /* New app layout with sidebar */
+        .app-layout { display: flex; min-height: calc(100vh - 50px); }
+        .sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
+        .main-content-wrapper { width: 70%; padding: 20px; overflow-y: auto; }
+        .right-sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
+        
+        /* Right sidebar auth section */
+        .right-sidebar .sidebar-auth { background: #374151; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #27ae60; }
+        .right-sidebar .sidebar-auth h4 { margin-top: 0; font-size: 14px; }
+        .right-sidebar .sidebar-auth input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box; }
+        .right-sidebar .sidebar-auth button { width: 100%; }
+        .right-sidebar .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
+        
+        /* Role switcher */
+        .right-sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #374151; border-radius: 8px; display: none; }
+        .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #4b5563; border-radius: 4px; background: #1f2a37; color: white; }
+        
+        /* Sidebar module menu */
+        .sidebar-menu { margin-top: 20px; }
+        .sidebar-menu h4 { font-size: 14px; margin-bottom: 15px; border-bottom: 2px solid #27ae60; padding-bottom: 8px; }
+        .sidebar-menu .tab { display: block; width: 100%; background: #374151; color: white; border: none; padding: 12px; text-align: left; cursor: pointer; margin-bottom: 5px; border-radius: 4px; border-left: 3px solid transparent; transition: all 0.3s; }
+        .sidebar-menu .tab:hover { background: #4b5563; border-left-color: #27ae60; }
+        .sidebar-menu .tab.active { background: #27ae60; border-left-color: #16a34a; font-weight: bold; }
+        
+        .container { max-width: 100%; margin: 0; padding: 0; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #27ae60; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-height: calc(100vh - 150px); overflow-y: auto; }
+        .tabs { display: flex; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: #bdc3c7; color: #333; cursor: pointer; border: none; }
+        .tab.active { background: #27ae60; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #229954; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .data-table th { background-color: #f8f9fa; font-weight: bold; }
+        .data-table tr:hover { background-color: #f8f9fa; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #27ae60; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+        .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+        .filter-section { background: #e8f5e8; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        
+        @media (max-width: 768px) {
+            .app-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 2px solid #34495e; }
+            .main-content-wrapper { width: 100%; }
+            .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/connect-plus">🔗 Connect++</a></li>
+            <li><a href="/connect-display">🖥️ Connect Display</a></li>
+            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager" class="active">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+            <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    
+    <div class="app-layout">
+        <!-- Sidebar with module menu -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <h4>📊 Menu Modułu</h4>
+                <button class="tab active" onclick="showTab('devices')">📱 Urządzenia</button>
+                <button class="tab" onclick="showTab('customers')">👥 Klienci</button>
+            </div>
+        </div>
+        
+        <!-- Main content area -->
+        <div class="main-content-wrapper">
+            <div class="container">
+                <div class="header">
+                    <h1>📊 Fleet Data Manager</h1>
+                </div>
+                
+                <div class="module-info">
+                    <h3>Moduł dla Manager</h3>
+                    <p><strong>Port:</strong> 5000</p>
+                    <p><strong>Rola:</strong> Manager</p>
+                    <p><strong>Funkcje:</strong> Zarządzanie danymi urządzeń i klientów</p>
+                </div>
+
+                <!-- Dashboard Statistics -->
+                <div id="dashboard-section" style="display: none;">
+                    <h3>📈 Dashboard</h3>
+                    <div class="dashboard" id="dashboard-stats">
+                        <!-- Stats will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <div class="section">
+                        <div class="tabs" style="display: none;">
+                            <button class="tab active" onclick="showTab('devices')">Urządzenia</button>
+                            <button class="tab" onclick="showTab('customers')">Klienci</button>
+                        </div>
+
+                <!-- Devices Tab -->
+                <div id="devices-tab" class="tab-content active">
+                    <div class="filter-section">
+                        <h4>🔍 Filtry</h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="device-type-filter">
+                                <option value="">Wszystkie typy</option>
+                                <option value="mask_tester">Tester masek</option>
+                                <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                <option value="flow_meter">Przepływomierz</option>
+                            </select>
+                            <select id="device-status-filter">
+                                <option value="">Wszystkie statusy</option>
+                                <option value="active">Aktywne</option>
+                                <option value="inactive">Nieaktywne</option>
+                                <option value="maintenance">Konserwacja</option>
+                                <option value="decommissioned">Wycofane</option>
+                            </select>
+                            <button class="btn" onclick="loadDevices()">Filtruj</button>
+                            <button class="btn btn-secondary" onclick="clearFilters()">Wyczyść</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>📱 Lista Urządzeń</h4>
+                        <button class="btn" onclick="showAddDeviceForm()">Dodaj urządzenie</button>
+                    </div>
+                    
+                    <table class="data-table" id="devices-table">
+                        <thead>
+                            <tr>
+                                <th>Numer urządzenia</th>
+                                <th>Typ</th>
+                                <th>Status</th>
+                                <th>Klient</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5">Zaloguj się aby zobaczyć urządzenia...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Customers Tab -->
+                <div id="customers-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>🏢 Lista Klientów</h4>
+                        <button class="btn" onclick="showAddCustomerForm()">Dodaj klienta</button>
+                    </div>
+                    
+                    <table class="data-table" id="customers-table">
+                        <thead>
+                            <tr>
+                                <th>Nazwa</th>
+                                <th>Informacje kontaktowe</th>
+                                <th>Data utworzenia</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4">Zaloguj się aby zobaczyć klientów...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3 id="form-title">Formularz</h3>
+                
+                <!-- Add Device Form -->
+                <div id="add-device-form" style="display: none;">
+                    <h4>Dodaj nowe urządzenie</h4>
+                    <form id="device-form">
+                        <div class="form-group">
+                            <label>Numer urządzenia:</label>
+                            <input type="text" id="device-number" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Typ urządzenia:</label>
+                            <select id="device-type" required>
+                                <option value="">Wybierz typ</option>
+                                <option value="mask_tester">Tester masek</option>
+                                <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                <option value="flow_meter">Przepływomierz</option>
+                                <option value="generic_device">Urządzenie ogólne</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rodzaj urządzenia:</label>
+                            <input type="text" id="kind-of-device">
+                        </div>
+                        <div class="form-group">
+                            <label>Numer seryjny:</label>
+                            <input type="text" id="serial-number">
+                        </div>
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <select id="device-status">
+                                <option value="active">Aktywne</option>
+                                <option value="inactive">Nieaktywne</option>
+                                <option value="maintenance">Konserwacja</option>
+                                <option value="decommissioned">Wycofane</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Klient:</label>
+                            <select id="device-customer">
+                                <option value="">Brak przypisania</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn" id="device-submit-btn" onclick="saveDevice()">Dodaj urządzenie</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideDeviceForm()">Anuluj</button>
+                    </form>
+                </div>
+
+                <!-- Add Customer Form -->
+                <div id="add-customer-form" style="display: none;">
+                    <h4>Dodaj nowego klienta</h4>
+                    <form id="customer-form">
+                        <div class="form-group">
+                            <label>Nazwa klienta:</label>
+                            <input type="text" id="customer-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📋 Informacje kontaktowe (JSON):</label>
+                            <div style="margin-bottom: 10px;">
+                                <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.addField()">+ Dodaj pole</button>
+                                <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.clear()">🗑️ Wyczyść</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleCustomerJSONView()">👁️ Podgląd JSON</button>
+                            </div>
+                            <div id="customer-json-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                <!-- Tree editor -->
+                            </div>
+                            <div id="customer-json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                <!-- JSON preview -->
+                            </div>
+                        </div>
+                        <button type="button" class="btn" id="customer-submit-btn" onclick="saveCustomer()">Dodaj klienta</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideCustomerForm()">Anuluj</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- Right sidebar with login -->
+        <div class="right-sidebar">
+            <div class="sidebar-auth">
+                <h4>🔐 Logowanie</h4>
+                <input type="text" id="login-username" placeholder="Username">
+                <input type="password" id="login-password" placeholder="Password">
+                <button class="btn" onclick="login()">Zaloguj</button>
+                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                <div id="auth-message"></div>
+            </div>
+
+            <div class="role-switcher" id="role-switcher">
+                <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                <select id="role-select" onchange="switchRole()">
+                    <option value="">Wybierz rolę...</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 Test API</h4>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testFleetDataAPI()">Test Fleet Data API</button>
+                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let devices = [];
+        let customers = [];
+        let currentEditingDevice = null;
+        let currentEditingCustomer = null;
+
+        function getAuthToken() {
+            if (!authToken) {
+                authToken = localStorage.getItem('jwt_token');
+            }
+            return authToken;
+        }
+
+        function setAuthToken(token) {
+            authToken = token;
+            localStorage.setItem('jwt_token', token);
+            updateAuthUI();
+        }
+
+        function clearAuthToken() {
+            authToken = null;
+            localStorage.removeItem('jwt_token');
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const isLoggedIn = !!getAuthToken();
+            document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+            document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+            document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+            document.getElementById('dashboard-section').style.display = isLoggedIn ? 'block' : 'none';
+            
+            if (isLoggedIn) {
+                const userRoles = getUserRoles();
+                const activeRole = getActiveRole();
+                
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #2980b9;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                
+                if (userRoles && userRoles.length > 1) {
+                    const roleSelect = document.getElementById('role-select');
+                    roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                    userRoles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role;
+                        option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                        if (role === activeRole) {
+                            option.selected = true;
+                        }
+                        roleSelect.appendChild(option);
+                    });
+                    document.getElementById('role-switcher').style.display = 'block';
+                } else {
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+                
+                loadDashboard();
+                loadDevices();
+                loadCustomers();
+                loadCustomersForSelect();
+            } else {
+                document.getElementById('auth-message').innerHTML = 
+                    '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                document.getElementById('role-switcher').style.display = 'none';
+                clearTables();
+            }
+        }
+
+        function getUserRoles() {
+            const token = getAuthToken();
+            if (!token) return [];
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.roles || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getActiveRole() {
+            const token = getAuthToken();
+            if (!token) return '';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.active_role || payload.role || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        async function switchRole() {
+            const selectedRole = document.getElementById('role-select').value;
+            if (!selectedRole) return;
+
+            try {
+                const response = await fetch('/api/v1/auth/switch-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify({ new_role: selectedRole })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #2980b9;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                    
+                    loadDevices();
+                    loadCustomers();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        function clearTables() {
+            document.getElementById('devices-table').getElementsByTagName('tbody')[0].innerHTML = 
+                '<tr><td colspan="5">Zaloguj się aby zobaczyć urządzenia...</td></tr>';
+            document.getElementById('customers-table').getElementsByTagName('tbody')[0].innerHTML = 
+                '<tr><td colspan="4">Zaloguj się aby zobaczyć klientów...</td></tr>';
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                alert('Podaj username i hasło');
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAuthToken(data.access_token);
+                    document.getElementById('login-password').value = '';
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    const errorMsg = error.detail || 'Nieznany błąd';
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('auth-message').innerHTML = 
+                    `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+            }
+        }
+
+        function logout() {
+            clearAuthToken();
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                ℹ️ Wylogowano pomyślnie
+                </div>
+            `;
+        }
+
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const token = getAuthToken();
+            
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { 'Authorization': `Bearer ${token}` }),
+                        ...options.headers
+                    }
+                });
+                return response;
+            } catch (error) {
+                console.error('Request failed:', error);
+                throw error;
+            }
+        }
+
+        // ========== UNIVERSAL JSON TREE EDITOR ==========
+        class JSONTreeEditor {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.data = {};
+                this.fieldCounter = 0;
+            }
+
+            init(jsonData = {}) {
+                this.data = jsonData;
+                this.render();
+            }
+
+            render() {
+                this.container.innerHTML = '';
+                if (Object.keys(this.data).length === 0) {
+                    this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
+                    return;
+                }
+                
+                for (const [key, value] of Object.entries(this.data)) {
+                    this.renderField(key, value, this.container);
+                }
+            }
+
+            renderField(key, value, parentElement, path = '') {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.style.cssText = 'margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd;';
+                
+                const currentPath = path ? `${path}.${key}` : key;
+                const type = this.getType(value);
+                
+                const headerDiv = document.createElement('div');
+                headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; gap: 10px;';
+                
+                const keyInput = document.createElement('input');
+                keyInput.type = 'text';
+                keyInput.value = key;
+                keyInput.style.cssText = 'flex: 0 0 180px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px; font-weight: bold;';
+                keyInput.onchange = (e) => this.renameKey(path, key, e.target.value);
+                
+                const typeSelect = document.createElement('select');
+                typeSelect.style.cssText = 'flex: 0 0 100px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                ['string', 'number', 'boolean', 'object', 'array'].forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    option.selected = type === t;
+                    typeSelect.appendChild(option);
+                });
+                typeSelect.onchange = (e) => this.changeType(currentPath, e.target.value);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.style.cssText = 'padding: 3px 8px; margin-left: auto;';
+                deleteBtn.onclick = () => this.deleteField(currentPath);
+                
+                headerDiv.appendChild(keyInput);
+                headerDiv.appendChild(typeSelect);
+                headerDiv.appendChild(deleteBtn);
+                fieldDiv.appendChild(headerDiv);
+                
+                const valueDiv = document.createElement('div');
+                
+                if (type === 'object') {
+                    valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #3498db; margin-top: 10px;';
+                    for (const [childKey, childValue] of Object.entries(value)) {
+                        this.renderField(childKey, childValue, valueDiv, currentPath);
+                    }
+                    const addBtn = document.createElement('button');
+                    addBtn.textContent = '+ Dodaj pole do obiektu';
+                    addBtn.className = 'btn btn-secondary';
+                    addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                    addBtn.onclick = () => this.addFieldToObject(currentPath);
+                    valueDiv.appendChild(addBtn);
+                } else if (type === 'array') {
+                    valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #9b59b6; margin-top: 10px;';
+                    value.forEach((item, index) => {
+                        this.renderField(`[${index}]`, item, valueDiv, currentPath);
+                    });
+                    const addBtn = document.createElement('button');
+                    addBtn.textContent = '+ Dodaj element do array';
+                    addBtn.className = 'btn btn-secondary';
+                    addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                    addBtn.onclick = () => this.addArrayElement(currentPath);
+                    valueDiv.appendChild(addBtn);
+                } else if (type === 'boolean') {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = value;
+                    checkbox.style.cssText = 'width: 20px; height: 20px;';
+                    checkbox.onchange = (e) => this.setValue(currentPath, e.target.checked);
+                    valueDiv.appendChild(checkbox);
+                } else if (type === 'number') {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = value;
+                    input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    input.onchange = (e) => this.setValue(currentPath, parseFloat(e.target.value));
+                    valueDiv.appendChild(input);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = value;
+                    input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    input.onchange = (e) => this.setValue(currentPath, e.target.value);
+                    valueDiv.appendChild(input);
+                }
+                
+                fieldDiv.appendChild(valueDiv);
+                parentElement.appendChild(fieldDiv);
+            }
+
+            getType(value) {
+                if (Array.isArray(value)) return 'array';
+                if (value === null) return 'string';
+                return typeof value;
+            }
+
+            setValue(path, value) {
+                const keys = path.split('.').filter(k => k && !k.startsWith('['));
+                const arrayIndices = path.match(/\[(\d+)\]/g);
+                
+                let current = this.data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = value;
+                this.render();
+            }
+
+            addField() {
+                const newKey = `field_${this.fieldCounter++}`;
+                this.data[newKey] = '';
+                this.render();
+            }
+
+            addFieldToObject(path) {
+                const obj = this.getValueByPath(path);
+                if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                    obj[`field_${this.fieldCounter++}`] = '';
+                    this.render();
+                }
+            }
+
+            addArrayElement(path) {
+                const arr = this.getValueByPath(path);
+                if (arr && Array.isArray(arr)) {
+                    arr.push('');
+                    this.render();
+                }
+            }
+
+            deleteField(path) {
+                const keys = path.split('.').filter(k => k);
+                if (keys.length === 1) {
+                    delete this.data[keys[0]];
+                } else {
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    delete current[keys[keys.length - 1]];
+                }
+                this.render();
+            }
+
+            renameKey(parentPath, oldKey, newKey) {
+                if (oldKey === newKey) return;
+                
+                if (!parentPath) {
+                    this.data[newKey] = this.data[oldKey];
+                    delete this.data[oldKey];
+                } else {
+                    const parent = this.getValueByPath(parentPath);
+                    parent[newKey] = parent[oldKey];
+                    delete parent[oldKey];
+                }
+                this.render();
+            }
+
+            changeType(path, newType) {
+                const defaultValues = {
+                    'string': '',
+                    'number': 0,
+                    'boolean': false,
+                    'object': {},
+                    'array': []
+                };
+                
+                const keys = path.split('.').filter(k => k);
+                let current = this.data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = defaultValues[newType];
+                this.render();
+            }
+
+            getValueByPath(path) {
+                const keys = path.split('.').filter(k => k);
+                let current = this.data;
+                for (const key of keys) {
+                    current = current[key];
+                }
+                return current;
+            }
+
+            clear() {
+                this.data = {};
+                this.render();
+            }
+
+            getData() {
+                return this.data;
+            }
+
+            setData(jsonData) {
+                this.data = jsonData;
+                this.render();
+            }
+        }
+
+        let customerJsonEditor;
+
+        // ========== TAB FUNCTIONS ==========
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.style.display = 'none');
+            
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // ========== DASHBOARD FUNCTIONS ==========
+        async function loadDashboard() {
+            try {
+                const response = await makeAuthenticatedRequest('/api/v1/fleet-data/dashboard');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderDashboard(data);
+                } else {
+                    document.getElementById('dashboard-stats').innerHTML = 
+                        '<p style="color: #e74c3c;">❌ Błąd ładowania dashboardu</p>';
+                }
+            } catch (error) {
+                document.getElementById('dashboard-stats').innerHTML = 
+                    '<p style="color: #e74c3c;">❌ Błąd połączenia z API</p>';
+            }
+        }
+
+        function renderDashboard(data) {
+            const stats = data.stats || {};
+            document.getElementById('dashboard-stats').innerHTML = `
+                <div class="stat-card">
+                    <h4>📱 Urządzenia</h4>
+                    <div class="stat-number">${stats.total_devices || 0}</div>
+                    <div class="stat-detail">Aktywne: ${stats.active_devices || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>👥 Klienci</h4>
+                    <div class="stat-number">${stats.total_customers || 0}</div>
+                    <div class="stat-detail">Z urządzeniami: ${stats.customers_with_devices || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>🔧 Konserwacje</h4>
+                    <div class="stat-number">${stats.maintenance_devices || 0}</div>
+                    <div class="stat-detail">Wymagają uwagi</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                    <h4>⚡ Status systemu</h4>
+                    <div class="stat-number" style="color: white;">✅</div>
+                    <div class="stat-detail" style="color: #ecf0f1;">Działający</div>
+                </div>
+            `;
+        }
+
+        // ========== DEVICE FUNCTIONS ==========
+        async function loadDevices() {
+            const typeFilter = document.getElementById('device-type-filter').value;
+            const statusFilter = document.getElementById('device-status-filter').value;
+            
+            try {
+                let url = '/api/v1/fleet-data/devices';
+                const params = new URLSearchParams();
+                if (typeFilter) params.append('device_type', typeFilter);
+                if (statusFilter) params.append('status', statusFilter);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await makeAuthenticatedRequest(url);
+                
+                if (response.ok) {
+                    devices = await response.json();
+                    renderDevicesTable();
+                } else {
+                    const tbody = document.getElementById('devices-table').getElementsByTagName('tbody')[0];
+                    tbody.innerHTML = '<tr><td colspan="5">❌ Błąd ładowania urządzeń</td></tr>';
+                }
+            } catch (error) {
+                const tbody = document.getElementById('devices-table').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '<tr><td colspan="5">❌ Błąd połączenia z API</td></tr>';
+            }
+        }
+
+        function renderDevicesTable() {
+            const tbody = document.getElementById('devices-table').getElementsByTagName('tbody')[0];
+            
+            if (devices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">📝 Brak urządzeń do wyświetlenia</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = devices.map(device => `
+                <tr>
+                    <td><strong>${device.device_number}</strong></td>
+                    <td>
+                        <span class="device-type-badge ${device.device_type}">
+                            ${getDeviceTypeDisplay(device.device_type)}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${device.status}">
+                            ${getStatusDisplay(device.status)}
+                        </span>
+                    </td>
+                    <td>${device.customer_name || 'Nieprzypisane'}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="editDevice('${device.id}')">✏️ Edytuj</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteDevice('${device.id}')">🗑️ Usuń</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getDeviceTypeDisplay(type) {
+            const types = {
+                'mask_tester': 'Tester masek',
+                'pressure_sensor': 'Czujnik ciśnienia',
+                'flow_meter': 'Przepływomierz',
+                'generic_device': 'Urządzenie ogólne'
+            };
+            return types[type] || type;
+        }
+
+        function getStatusDisplay(status) {
+            const statuses = {
+                'active': '🟢 Aktywne',
+                'inactive': '🔴 Nieaktywne',
+                'maintenance': '🟡 Konserwacja',
+                'decommissioned': '⚫ Wycofane'
+            };
+            return statuses[status] || status;
+        }
+
+        function clearFilters() {
+            document.getElementById('device-type-filter').value = '';
+            document.getElementById('device-status-filter').value = '';
+            loadDevices();
+        }
+
+        function showAddDeviceForm() {
+            currentEditingDevice = null;
+            document.getElementById('form-title').textContent = 'Dodај nowe urządzenie';
+            document.getElementById('device-submit-btn').textContent = 'Dodај urządzenie';
+            document.getElementById('device-submit-btn').onclick = saveDevice;
+            
+            // Clear form
+            document.getElementById('device-number').value = '';
+            document.getElementById('device-type').value = '';
+            document.getElementById('kind-of-device').value = '';
+            document.getElementById('serial-number').value = '';
+            document.getElementById('device-status').value = 'active';
+            document.getElementById('device-customer').value = '';
+            
+            document.getElementById('add-device-form').style.display = 'block';
+            document.getElementById('add-customer-form').style.display = 'none';
+        }
+
+        function hideDeviceForm() {
+            document.getElementById('add-device-form').style.display = 'none';
+            currentEditingDevice = null;
+        }
+
+        async function editDevice(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+
+            currentEditingDevice = device;
+            document.getElementById('form-title').textContent = 'Edytuj urządzenie';
+            document.getElementById('device-submit-btn').textContent = 'Zaktualizuj urządzenie';
+            document.getElementById('device-submit-btn').onclick = saveDevice;
+            
+            // Fill form
+            document.getElementById('device-number').value = device.device_number;
+            document.getElementById('device-type').value = device.device_type;
+            document.getElementById('kind-of-device').value = device.kind_of_device || '';
+            document.getElementById('serial-number').value = device.serial_number || '';
+            document.getElementById('device-status').value = device.status;
+            document.getElementById('device-customer').value = device.customer_id || '';
+            
+            document.getElementById('add-device-form').style.display = 'block';
+            document.getElementById('add-customer-form').style.display = 'none';
+        }
+
+        async function saveDevice() {
+            const deviceData = {
+                device_number: document.getElementById('device-number').value,
+                device_type: document.getElementById('device-type').value,
+                kind_of_device: document.getElementById('kind-of-device').value,
+                serial_number: document.getElementById('serial-number').value,
+                status: document.getElementById('device-status').value,
+                customer_id: document.getElementById('device-customer').value || null
+            };
+
+            if (!deviceData.device_number || !deviceData.device_type) {
+                alert('Wypełnij wymagane pola: numer urządzenia i typ');
+                return;
+            }
+
+            try {
+                let response;
+                if (currentEditingDevice) {
+                    response = await makeAuthenticatedRequest(`/api/v1/fleet-data/devices/${currentEditingDevice.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(deviceData)
+                    });
+                } else {
+                    response = await makeAuthenticatedRequest('/api/v1/fleet-data/devices', {
+                        method: 'POST',
+                        body: JSON.stringify(deviceData)
+                    });
+                }
+
+                if (response.ok) {
+                    const action = currentEditingDevice ? 'zaktualizowano' : 'dodano';
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ✅ Urządzenie ${action} pomyślnie
+                        </div>
+                    `;
+                    hideDeviceForm();
+                    loadDevices();
+                    loadDashboard();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                        ❌ Błąd: ${error.detail || 'Nieznany błąd'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                    ❌ Błąd połączenia: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function deleteDevice(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+
+            if (!confirm(`Czy na pewno chcesz usunąć urządzenie ${device.device_number}?`)) {
+                return;
+            }
+
+            try {
+                const response = await makeAuthenticatedRequest(`/api/v1/fleet-data/devices/${deviceId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ✅ Urządzenie usunięte pomyślnie
+                        </div>
+                    `;
+                    loadDevices();
+                    loadDashboard();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                        ❌ Błąd usuwania: ${error.detail || 'Nieznany błąd'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                    ❌ Błąd połączenia: ${error.message}
+                    </div>
+                `;
+            }
+        }
