@@ -1,0 +1,11 @@
+# Ignore all SQL backup files
+*.sql
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+
+# But track this .gitignore
+!.gitignore
+
+# Optional: Keep a README
+!README.md
