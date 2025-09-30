@@ -574,31 +574,35 @@ async def commands_manager():
                 }
 
                 try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
                     const response = await fetch('/api/v1/auth/login', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+                        body: formData
                     });
 
                     if (response.ok) {
                         const data = await response.json();
                         setAuthToken(data.access_token);
                         document.getElementById('login-password').value = '';
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
                         document.getElementById('result').innerHTML = `
                             <div class="result">
-                            ✅ Zalogowano pomyślnie jako ${username}
+                            ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
                             </div>
                         `;
                         loadScenarios(); // Reload scenarios after login
                     } else {
                         const error = await response.json();
+                        const errorMsg = error.detail || 'Nieznany błąd';
                         document.getElementById('auth-message').innerHTML = 
-                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
                     }
                 } catch (error) {
                     document.getElementById('auth-message').innerHTML = 
@@ -1118,30 +1122,34 @@ async def fleet_data_manager():
                 }
 
                 try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
                     const response = await fetch('/api/v1/auth/login', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+                        body: formData
                     });
 
                     if (response.ok) {
                         const data = await response.json();
                         setAuthToken(data.access_token);
                         document.getElementById('login-password').value = '';
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
                         document.getElementById('result').innerHTML = `
                             <div class="result">
-                            ✅ Zalogowano pomyślnie jako ${username}
+                            ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
                             </div>
                         `;
                     } else {
                         const error = await response.json();
+                        const errorMsg = error.detail || 'Nieznany błąd';
                         document.getElementById('auth-message').innerHTML = 
-                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
                     }
                 } catch (error) {
                     document.getElementById('auth-message').innerHTML = 
@@ -1945,30 +1953,34 @@ async def fleet_config_manager():
                 }
 
                 try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
                     const response = await fetch('/api/v1/auth/login', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+                        body: formData
                     });
 
                     if (response.ok) {
                         const data = await response.json();
                         setAuthToken(data.access_token);
                         document.getElementById('login-password').value = '';
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
                         document.getElementById('result').innerHTML = `
                             <div class="result">
-                            ✅ Zalogowano pomyślnie jako ${username}
+                            ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
                             </div>
                         `;
                     } else {
                         const error = await response.json();
+                        const errorMsg = error.detail || 'Nieznany błąd';
                         document.getElementById('auth-message').innerHTML = 
-                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
                     }
                 } catch (error) {
                     document.getElementById('auth-message').innerHTML = 
@@ -2839,30 +2851,34 @@ async def fleet_software_manager():
                 }
 
                 try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
                     const response = await fetch('/api/v1/auth/login', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+                        body: formData
                     });
 
                     if (response.ok) {
                         const data = await response.json();
                         setAuthToken(data.access_token);
                         document.getElementById('login-password').value = '';
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: green;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
                         document.getElementById('result').innerHTML = `
                             <div class="result">
-                            ✅ Zalogowano pomyślnie jako ${username}
+                            ✅ Zalogowano pomyślnie jako ${username} (${data.user.role})
                             </div>
                         `;
                     } else {
                         const error = await response.json();
+                        const errorMsg = error.detail || 'Nieznany błąd';
                         document.getElementById('auth-message').innerHTML = 
-                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${errorMsg}</span>`;
                     }
                 } catch (error) {
                     document.getElementById('auth-message').innerHTML = 
