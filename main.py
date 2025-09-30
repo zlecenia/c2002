@@ -1750,7 +1750,7 @@ async def fleet_data_manager():
                 }
             }
 
-            function showTab(tabName) {
+            function showTab(tabName, skipHashUpdate = false) {
                 // Hide all tabs
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -1761,12 +1761,45 @@ async def fleet_data_manager():
 
                 // Show selected tab
                 document.getElementById(tabName + '-tab').classList.add('active');
-                event.target.classList.add('active');
+                
+                // Find and activate corresponding button
+                const buttons = document.querySelectorAll('.tab');
+                buttons.forEach(btn => {
+                    if (btn.onclick && btn.onclick.toString().includes(tabName)) {
+                        btn.classList.add('active');
+                    }
+                });
 
                 // Hide forms
                 hideDeviceForm();
                 hideCustomerForm();
+                
+                // Update URL hash
+                if (!skipHashUpdate) {
+                    window.location.hash = tabName;
+                }
             }
+            
+            // Handle hash changes
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    const tabElement = document.getElementById(hash + '-tab');
+                    if (tabElement) {
+                        showTab(hash, true);
+                    }
+                }
+            });
+            
+            // Load tab from hash on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    showTab(hash, true);
+                } else {
+                    showTab('devices', false);
+                }
+            });
 
             async function loadDashboard() {
                 try {
@@ -2947,7 +2980,7 @@ async def fleet_config_manager():
                 }
             }
 
-            function showTab(tabName) {
+            function showTab(tabName, skipHashUpdate = false) {
                 // Hide all tabs
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -2958,11 +2991,44 @@ async def fleet_config_manager():
 
                 // Show selected tab
                 document.getElementById(tabName + '-tab').classList.add('active');
-                event.target.classList.add('active');
+                
+                // Find and activate corresponding button
+                const buttons = document.querySelectorAll('.tab');
+                buttons.forEach(btn => {
+                    if (btn.onclick && btn.onclick.toString().includes(tabName)) {
+                        btn.classList.add('active');
+                    }
+                });
 
                 // Hide all forms
                 hideAllForms();
+                
+                // Update URL hash
+                if (!skipHashUpdate) {
+                    window.location.hash = tabName;
+                }
             }
+            
+            // Handle hash changes
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    const tabElement = document.getElementById(hash + '-tab');
+                    if (tabElement) {
+                        showTab(hash, true);
+                    }
+                }
+            });
+            
+            // Load tab from hash on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    showTab(hash, true);
+                } else {
+                    showTab('system-config', false);
+                }
+            });
 
             function hideAllForms() {
                 document.getElementById('add-system-config-form').style.display = 'none';
@@ -4092,7 +4158,7 @@ async def fleet_software_manager():
                 }
             }
 
-            function showTab(tabId, tabButton) {
+            function showTab(tabId, tabButton, skipHashUpdate = false) {
                 // Hide all tab contents
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -4105,8 +4171,42 @@ async def fleet_software_manager():
                 
                 // Show selected tab and mark button as active
                 document.getElementById(tabId).classList.add('active');
-                tabButton.classList.add('active');
+                if (tabButton) {
+                    tabButton.classList.add('active');
+                } else {
+                    // Find button by onclick attribute
+                    const buttons = document.querySelectorAll('.tab');
+                    buttons.forEach(btn => {
+                        if (btn.onclick && btn.onclick.toString().includes(tabId)) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+                
+                // Update URL hash
+                if (!skipHashUpdate) {
+                    window.location.hash = tabId;
+                }
             }
+            
+            // Handle hash changes
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    const tabElement = document.getElementById(hash);
+                    if (tabElement && tabElement.classList.contains('tab-content')) {
+                        showTab(hash, null, true);
+                    }
+                }
+            });
+            
+            // Load tab from hash on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    showTab(hash, null, true);
+                }
+            });
 
             async function loadDashboard() {
                 try {
