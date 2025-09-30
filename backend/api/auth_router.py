@@ -47,7 +47,19 @@ def login_for_access_token(
             detail="Inactive user"
         )
     
-    access_token = create_access_token(subject=user.username)
+    # Get user roles - use roles JSON column or fall back to single role
+    user_roles_data = user.roles
+    if user_roles_data is not None and isinstance(user_roles_data, list) and len(user_roles_data) > 0:
+        user_roles = user_roles_data
+    else:
+        user_roles = [str(user.role)]
+    active_role = str(user.role)  # Default active role is the primary role
+    
+    access_token = create_access_token(
+        subject=user.username,
+        roles=user_roles,
+        active_role=active_role
+    )
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -55,6 +67,8 @@ def login_for_access_token(
             "id": user.id,
             "username": user.username,
             "role": user.role,
+            "roles": user_roles,
+            "active_role": active_role,
             "email": user.email
         }
     }
@@ -72,7 +86,19 @@ def login_with_qr(
             detail="Invalid QR code or inactive user"
         )
     
-    access_token = create_access_token(subject=user.username)
+    # Get user roles - use roles JSON column or fall back to single role
+    user_roles_data = user.roles
+    if user_roles_data is not None and isinstance(user_roles_data, list) and len(user_roles_data) > 0:
+        user_roles = user_roles_data
+    else:
+        user_roles = [str(user.role)]
+    active_role = str(user.role)  # Default active role is the primary role
+    
+    access_token = create_access_token(
+        subject=user.username,
+        roles=user_roles,
+        active_role=active_role
+    )
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -80,6 +106,8 @@ def login_with_qr(
             "id": user.id,
             "username": user.username,
             "role": user.role,
+            "roles": user_roles,
+            "active_role": active_role,
             "email": user.email
         }
     }
@@ -97,8 +125,63 @@ def read_current_user(current_user: User = Depends(get_current_user)):
 @router.post("/refresh")
 def refresh_token(current_user: User = Depends(get_current_user)):
     """Refresh access token."""
-    access_token = create_access_token(subject=current_user.username)
+    # Get user roles - use roles JSON column or fall back to single role
+    user_roles_data = current_user.roles
+    if user_roles_data is not None and isinstance(user_roles_data, list) and len(user_roles_data) > 0:
+        user_roles = user_roles_data
+    else:
+        user_roles = [str(current_user.role)]
+    active_role = getattr(current_user, 'token_active_role', None) or str(current_user.role)
+    
+    access_token = create_access_token(
+        subject=current_user.username,
+        roles=user_roles,
+        active_role=active_role
+    )
     return {
         "access_token": access_token,
         "token_type": "bearer"
+    }
+
+class SwitchRoleRequest(BaseModel):
+    new_role: str
+
+@router.post("/switch-role", response_model=Token)
+def switch_role(
+    role_request: SwitchRoleRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Switch active role without re-login."""
+    # Get user's available roles
+    user_roles_data = current_user.roles
+    if user_roles_data is not None and isinstance(user_roles_data, list) and len(user_roles_data) > 0:
+        user_roles = user_roles_data
+    else:
+        user_roles = [str(current_user.role)]
+    
+    # Verify the requested role is available to the user
+    if role_request.new_role not in user_roles and role_request.new_role != str(current_user.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Role '{role_request.new_role}' not available. Available roles: {', '.join(user_roles)}"
+        )
+    
+    # Create new token with the new active role
+    access_token = create_access_token(
+        subject=current_user.username,
+        roles=user_roles,
+        active_role=role_request.new_role
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "role": current_user.role,
+            "roles": user_roles,
+            "active_role": role_request.new_role,
+            "email": current_user.email
+        }
     }
