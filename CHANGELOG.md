@@ -58,11 +58,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed path resolution from `/static/modules/...` to `/modules/...`
   - Proper mounting of modules directory
 - **Module navigation** - Improved routing between modules
+- **Docker deployment** - Fixed critical Docker startup errors
+  - ✅ Resolved `RuntimeError: Directory 'static' does not exist`
+  - ✅ Added automatic directory creation in Dockerfile (`/app/static`, `/app/modules`)
+  - ✅ Added existence checks for directories before mounting in main.py
+  - ✅ Removed obsolete `version` attribute from docker-compose.yml
+  - ✅ Created `.gitkeep` file in static/ directory for Git tracking
 
 ### 📚 Documentation Updates
 - **Updated ARCHITECTURE.md** - Added detailed modular architecture section
 - **Updated TODO.md** - Marked completed tasks, added migration checklist
 - **Created E2E tests** - Test suite in `tests/` directory
+- **Created DOCKER.md** - Comprehensive Docker deployment documentation (600+ lines)
+  - Quick start guide
+  - Troubleshooting section
+  - Production deployment best practices
+  - Security hardening guidelines
+  - Container monitoring and logging
+- **Updated README.md** - Enhanced Docker setup section with fixed issues and links
 
 ---
 

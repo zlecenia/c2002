@@ -161,38 +161,63 @@ Serwer uruchomi się na: **http://localhost:5000**
 
 ## 🐳 Docker Setup
 
+Docker jest **zalecaną metodą** wdrożenia dla spójnego środowiska i łatwego zarządzania.
+
 ### Szybkie uruchomienie z Docker Compose
 
 #### 1. Build i uruchomienie
 
 ```bash
-docker-compose up -d
+# Build i uruchomienie wszystkich serwisów
+docker compose up --build
+
+# Lub w trybie detached (w tle)
+docker compose up -d --build
 ```
 
 #### 2. Sprawdź status
 
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 #### 3. Zobacz logi
 
 ```bash
-docker-compose logs -f
+# Wszystkie serwisy
+docker compose logs -f
+
+# Tylko API
+docker compose logs -f api
+
+# Tylko baza danych
+docker compose logs -f db
 ```
 
 #### 4. Zatrzymanie
 
 ```bash
-docker-compose down
+# Zatrzymaj i usuń kontenery
+docker compose down
+
+# Zatrzymaj, usuń kontenery i wolumeny (⚠️ usuwa dane)
+docker compose down -v
 ```
 
 ### Struktura Docker
 
 ```yaml
 services:
-  - api: Fleet Management API (Python FastAPI)
-  - db: PostgreSQL 15
+  api: Fleet Management API (Python FastAPI)
+    - Python 3.11-slim
+    - FastAPI + SQLAlchemy
+    - Auto-restart on failure
+    - Health checks
+  
+  db: PostgreSQL 15
+    - Alpine Linux (lightweight)
+    - Data persistence via volumes
+    - Health checks
 ```
 
 **Porty:**
@@ -201,6 +226,21 @@ services:
 
 **Volumes:**
 - `postgres_data`: Persystentna baza danych
+- `./logs`: Logi aplikacji
+
+### Naprawione problemy (v1.1.0)
+
+✅ **Naprawiono błąd `Directory 'static' does not exist`**
+- Dodano automatyczne tworzenie katalogów w Dockerfile
+- Dodano sprawdzanie istnienia katalogów w main.py
+- Usunięto przestarzały atrybut `version` z docker-compose.yml
+
+📖 **Szczegółowa dokumentacja:** Zobacz [DOCKER.md](DOCKER.md) dla:
+- Konfiguracji środowiska produkcyjnego
+- Troubleshooting i diagnostyka
+- Zaawansowane komendy Docker
+- Bezpieczeństwo i monitoring
+- Deployment na produkcję
 
 ---
 
