@@ -52,8 +52,8 @@ app.include_router(fleet_software_router, prefix=settings.api_v1_str)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# Mount modules static files
-app.mount("/static/modules", StaticFiles(directory="modules"), name="modules")
+# Mount modules static files (separate path to avoid conflicts)
+app.mount("/modules", StaticFiles(directory="modules"), name="modules")
 
 # Initialize sample data endpoint
 @app.post("/api/v1/init-data")
