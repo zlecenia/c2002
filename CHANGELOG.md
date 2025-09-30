@@ -48,7 +48,7 @@ Complete Fleet Management System implementation with 5 webGUI modules.
 - Simple operator-friendly design
 - Real-time API responses
 
-#### Module 2: Commands Manager (Superuser)
+#### Module 2: Connect Manager (Superuser)
 - Test scenario creation and management (CRUD)
 - **Visual JSON tree editor** for test_flow configurations
 - JSON templates integration with device type filtering

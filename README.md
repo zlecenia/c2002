@@ -238,7 +238,7 @@ System posiada 6 ról z różnymi uprawnieniami:
 |------|----------|----------|-------|------|
 | **Multi-role** | maker1 | pass | Wszystkie | Wszystkie 6 ról |
 | Operator | operator1 | pass | Connect++ | Testy urządzeń |
-| Superuser | admin | pass | Commands Manager | Scenariusze testowe |
+| Superuser | admin | pass | Connect Manager | Scenariusze testowe |
 | Manager | manager1 | pass | Fleet Data Manager | Dane floty |
 | Configurator | configurator | pass | Fleet Config Manager | Konfiguracja |
 | Maker | maker1 | pass | Fleet Software Manager | Oprogramowanie |
@@ -265,8 +265,8 @@ Użytkownik **maker1** może przełączać się między wszystkimi rolami bez po
 - Wykonywanie testów urządzeń
 - Prosty interfejs operatora
 
-### 2. ⚙️ Commands Manager (Superuser)
-**URL:** `http://localhost:5000/commands-manager`
+### 2. ⚙️ Connect Manager (Superuser)
+**URL:** `http://localhost:5000/connect-manager`
 
 - Tworzenie scenariuszy testowych
 - **Wizualny edytor JSON** dla test_flow

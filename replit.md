@@ -26,7 +26,7 @@ The system is composed of a Python FastAPI backend running on port 5000, a Postg
 - **CRUD Operations**: Full Create, Read, Update, Delete functionality implemented across all modules, with user-friendly Polish language feedback and automatic list refreshes.
 
 **Feature Specifications:**
-- **Seven WebGUI Modules**: Connect++, Connect Display, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, and Fleet Workshop Manager.
+- **Seven WebGUI Modules**: Connect++, Connect Display, Connect Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, and Fleet Workshop Manager.
 - **Test API Sections**: Integrated into the right column of Fleet Data Manager, Fleet Config Manager, and Connect++.
 - **JSON Templates System**: CRUD operations for JSON templates with filtering by type and category, integrated with visual editors.
 - **Comprehensive Documentation**: Includes `USERS.md`, `README.md`, `CHANGELOG.md`, `TODO.md`, `Dockerfile`, `docker-compose.yml`, `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/DATABASE.md`.

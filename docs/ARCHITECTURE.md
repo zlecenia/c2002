@@ -141,13 +141,13 @@ The system consists of 5 independent frontend modules, each with specific respon
 - Simple click-to-test interface
 - Real-time response display
 
-### 2. Commands Manager (Superuser Module)
+### 2. Connect Manager (Superuser Module)
 
 **Purpose:** Test scenario management with visual JSON editor
 
 ```
 ┌─────────────────────────────────────────┐
-│      Commands Manager Module            │
+│      Connect Manager Module            │
 │  ┌───────────────────────────────────┐  │
 │  │  Sidebar (15%)                    │  │
 │  │  - Login/logout                   │  │
@@ -427,7 +427,7 @@ See [API.md](API.md) for detailed API documentation.
 │   ├── installations       # GET/POST - Installation tracking
 │   └── dashboard/stats     # GET - Software statistics
 │
-└── scenarios/              # Commands Manager (superuser)
+└── scenarios/              # Connect Manager (superuser)
     ├── /                   # GET/POST - List/create scenarios
     ├── /{id}               # GET/PUT/DELETE - Scenario operations
     └── /{id}/steps         # GET/POST - Scenario steps

@@ -46,7 +46,7 @@ System Fleet Management używa zaawansowanego systemu ról z możliwością przy
   - Wykonywanie podstawowych operacji testowych
 
 #### 2. **Superuser** (`superuser`)
-- **Moduł:** Commands Manager
+- **Moduł:** Connect Manager
 - **Funkcje:**
   - Tworzenie i zarządzanie scenariuszami testowymi
   - Konfiguracja przepływów testowych (test_flow)
@@ -132,7 +132,7 @@ Użytkownik **maker1** ma **specjalne uprawnienia** - posiada wszystkie 6 ról i
 
 3. Przełącz na: superuser
    → Aktywna rola: superuser
-   → Dostęp do: Commands Manager
+   → Dostęp do: Connect Manager
 
 4. Przełącz na: operator
    → Aktywna rola: operator
