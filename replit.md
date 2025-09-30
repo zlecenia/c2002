@@ -4,6 +4,20 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: URL Hash Navigation & Visual JSON Editors in Fleet Config Manager
+  - **Added URL hash tracking to all 3 multi-tab modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager)
+  - Browser URL now reflects current tab (e.g., `/fleet-config-manager#system-config`)
+  - Users can bookmark specific tabs and share direct links to module sections
+  - Browser back/forward buttons work correctly with tab navigation
+  - Hash changes automatically switch to corresponding tab
+  - **Visual JSON Editors in Fleet Config Manager**: Replaced ALL textarea-based JSON editing with interactive visual tree editors
+  - System Config form: `config-value` now uses visual JSON tree editor
+  - Test Scenario form: `test-parameters` and `expected-results` use visual JSON tree editors
+  - Backup/Restore: `restore-data` uses visual JSON tree editor
+  - All editors properly reset to default values when forms are closed or after successful operations
+  - Eliminates JSON syntax errors with intuitive form-based interface
+  - Architect-validated implementation with proper state management
+
 - **September 30, 2025**: Global Navigation Menu - Seamless Module Switching
   - **Added unified navigation menu to all 5 webGUI modules**
   - Top navigation bar with all modules: Home, Connect++, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, API Docs
