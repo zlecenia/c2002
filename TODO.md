@@ -10,8 +10,8 @@
 - [ ] **Audit logging** for sensitive operations (role changes, config updates)
 
 ### Fleet Software Manager
-- [ ] **Implement `viewSoftware(id)` function** - Display software details modal
-- [ ] **Implement `deleteSoftware(id)` function** - Delete software with confirmation
+- [x] ~~**Implement `viewSoftware(id)` function**~~ - ✅ COMPLETED (2025-09-30) - Displays software details
+- [x] ~~**Implement `deleteSoftware(id)` function**~~ - ✅ COMPLETED (2025-09-30) - Deletes software with confirmation
 - [ ] **Fix sidebar navigation errors** - Ensure all menu items work correctly
 
 ### Database
@@ -162,8 +162,8 @@
 - None currently
 
 ### Medium
-- [x] ~~Fleet Software Manager: `viewSoftware()` not implemented~~ - TODO
-- [x] ~~Fleet Software Manager: `deleteSoftware()` not implemented~~ - TODO
+- [x] ~~Fleet Software Manager: `viewSoftware()` not implemented~~ - ✅ FIXED (2025-09-30)
+- [x] ~~Fleet Software Manager: `deleteSoftware()` not implemented~~ - ✅ FIXED (2025-09-30)
 - [ ] Browser console warnings about password fields (harmless but annoying)
 
 ### Low
