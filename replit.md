@@ -4,6 +4,15 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Fixed Login Layout Consistency Across All Modules
+  - **Resolved duplicate auth sections issue** in Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
+  - Removed legacy `.auth-section` HTML blocks with old login fields (login-username-old, login-password-old, etc.)
+  - All 5 modules now display login section **exclusively in right sidebar (15% width)**
+  - **Consistent 3-column layout verified**: Sidebar (15% - module menu) + Main Content (70%) + Right Sidebar (15% - login/role switcher)
+  - No duplicate login forms visible anywhere in the application
+  - Screenshots confirm layout consistency across Connect++, Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
+  - Architect-validated fix maintains responsive design and mobile compatibility
+
 - **September 30, 2025**: Comprehensive Documentation Suite
   - **Created complete documentation package** for developers and users
   - **USERS.md**: Default login credentials, role system explanation, multi-role authentication guide

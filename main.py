@@ -924,20 +924,6 @@ async def commands_manager():
                 <p><strong>Funkcje:</strong> Tworzenie i zarządzanie scenariuszami testowymi</p>
             </div>
 
-            <div class="auth-section">
-                <h4>🔐 Uwierzytelnianie</h4>
-                <div id="auth-status">
-                    <p>Zaloguj się jako Superuser aby uzyskać dostęp do funkcji:</p>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
-                        <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
-                        <button class="btn" onclick="login()">Zaloguj</button>
-                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
-                    </div>
-                    <div id="auth-message-old" style="margin-top: 10px;"></div>
-                </div>
-            </div>
-
             <div class="main-content">
                 <div class="section">
                     <h3>📋 Lista Scenariuszy Testowych</h3>
@@ -1844,20 +1830,6 @@ async def fleet_data_manager():
                         <p><strong>Port:</strong> 5000</p>
                         <p><strong>Rola:</strong> Manager</p>
                         <p><strong>Funkcje:</strong> Zarządzanie danymi urządzeń i klientów</p>
-                    </div>
-
-                    <div class="auth-section">
-                        <h4>🔐 Uwierzytelnianie</h4>
-                        <div id="auth-status">
-                            <p>Zaloguj się jako Manager aby uzyskać dostęp do funkcji:</p>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
-                                <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
-                                <button class="btn" onclick="login()">Zaloguj</button>
-                                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
-                            </div>
-                            <div id="auth-message-old" style="margin-top: 10px;"></div>
-                        </div>
                     </div>
 
                     <!-- Dashboard Statistics -->
@@ -3106,20 +3078,6 @@ async def fleet_config_manager():
                         <p><strong>Port:</strong> 5000</p>
                         <p><strong>Rola:</strong> Configurator</p>
                         <p><strong>Funkcje:</strong> Zarządzanie konfiguracją systemu, urządzeń i scenariuszy testowych</p>
-                    </div>
-
-                    <div class="auth-section">
-                        <h4>🔐 Uwierzytelnianie</h4>
-                        <div id="auth-status">
-                            <p>Zaloguj się jako Configurator aby uzyskać dostęp do funkcji:</p>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
-                                <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
-                                <button class="btn" onclick="login()">Zaloguj</button>
-                                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
-                            </div>
-                            <div id="auth-message-old" style="margin-top: 10px;"></div>
-                        </div>
                     </div>
 
                     <!-- Dashboard Statistics -->
@@ -4871,20 +4829,6 @@ async def fleet_software_manager():
                 <p><strong>Port:</strong> 5000</p>
                 <p><strong>Rola:</strong> Maker</p>
                 <p><strong>Funkcje:</strong> Zarządzanie oprogramowaniem urządzeń, instalacje, aktualizacje</p>
-            </div>
-
-            <div class="auth-section">
-                <h4>🔐 Uwierzytelnianie</h4>
-                <div id="auth-status">
-                    <p>Zaloguj się jako Maker aby uzyskać dostęp do funkcji:</p>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
-                        <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
-                        <button class="btn" onclick="login()">Zaloguj</button>
-                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
-                    </div>
-                    <div id="auth-message-old" style="margin-top: 10px;"></div>
-                </div>
             </div>
 
             <!-- Dashboard Statistics -->
