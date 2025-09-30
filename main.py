@@ -465,9 +465,9 @@ async def root():
                     <span class="role">📺 Display</span>
                 </a>
 
-                <a href="/commands-manager" class="module-card">
+                <a href="/connect-manager" class="module-card">
                     <span class="module-icon">⚙️</span>
-                    <h3>Commands Manager</h3>
+                    <h3>Connect Manager</h3>
                     <p>Tworzenie i zarządzanie scenariuszami testowymi. Pełna kontrola nad procedurami testowymi.</p>
                     <span class="role">🔑 Superuser</span>
                 </a>
@@ -597,7 +597,7 @@ async def connect_plus():
             <ul>
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus" class="active">🔗 Connect++</a></li>
-                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
@@ -1061,14 +1061,14 @@ async def connect_display():
     </html>
     """
 
-# Commands Manager Module
-@app.get("/commands-manager", response_class=HTMLResponse)
-async def commands_manager():
+# Connect Manager Module
+@app.get("/connect-manager", response_class=HTMLResponse)
+async def connect_manager():
     return """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Commands Manager - Fleet Management</title>
+        <title>Connect Manager - Fleet Management</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
@@ -1128,7 +1128,7 @@ async def commands_manager():
             <ul>
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
-                <li><a href="/commands-manager" class="active">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager" class="active">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
@@ -1148,7 +1148,7 @@ async def commands_manager():
             <div class="main-content-area">
             <div class="container">
             <div class="header">
-                <h1>⚙️ Commands Manager</h1>
+                <h1>⚙️ Connect Manager</h1>
             </div>
             
             <div class="module-info">
@@ -2073,7 +2073,7 @@ async def fleet_data_manager():
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
                 <li><a href="/connect-display">🖥️ Connect Display</a></li>
-                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager" class="active">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
@@ -3464,7 +3464,7 @@ async def fleet_config_manager():
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
                 <li><a href="/connect-display">🖥️ Connect Display</a></li>
-                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager" class="active">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
@@ -5326,7 +5326,7 @@ async def fleet_software_manager():
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
                 <li><a href="/connect-display">🖥️ Connect Display</a></li>
-                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager" class="active">💿 Fleet Software Manager</a></li>
@@ -6505,7 +6505,7 @@ async def fleet_workshop_manager():
                 <li><a href="/">🏠 Home</a></li>
                 <li><a href="/connect-plus">🔗 Connect++</a></li>
                 <li><a href="/connect-display">🖥️ Connect Display</a></li>
-                <li><a href="/commands-manager">⚙️ Commands Manager</a></li>
+                <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
                 <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
                 <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
                 <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
