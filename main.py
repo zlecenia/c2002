@@ -1819,6 +1819,12 @@ async def fleet_data_manager():
                     <button class="tab active" onclick="showTab('devices')">📱 Urządzenia</button>
                     <button class="tab" onclick="showTab('customers')">👥 Klienci</button>
                 </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 Test API</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testFleetDataAPI()">Test Fleet Data API</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
+                </div>
             </div>
             
             <!-- Main content area -->
@@ -1991,13 +1997,6 @@ async def fleet_data_manager():
                             <button type="button" class="btn" onclick="createCustomer()">Dodaj klienta</button>
                             <button type="button" class="btn btn-secondary" onclick="hideCustomerForm()">Anuluj</button>
                         </form>
-                    </div>
-
-                    <!-- API Test -->
-                    <div id="api-test-section">
-                        <h4>🔍 Test API</h4>
-                        <button class="btn btn-secondary" onclick="testFleetDataAPI()">Test Fleet Data API</button>
-                        <button class="btn btn-secondary" onclick="testDashboard()">Test Dashboard</button>
                     </div>
                 </div>
             </div>
@@ -3067,6 +3066,12 @@ async def fleet_config_manager():
                     <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
                     <button class="tab" onclick="showTab('backup')">💾 Backup/Restore</button>
                 </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                    <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍 Test API</h4>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testConfigAPI()">Test Config API</button>
+                    <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">Test Dashboard</button>
+                </div>
             </div>
             
             <!-- Main content area -->
@@ -3369,13 +3374,6 @@ async def fleet_config_manager():
                             <button type="button" class="btn" onclick="saveTemplate()">💾 Zapisz szablon</button>
                             <button type="button" class="btn btn-secondary" onclick="hideTemplateForm()">Anuluj</button>
                         </form>
-                    </div>
-
-                    <!-- API Test Section -->
-                    <div id="api-test-section">
-                        <h4>🔍 Test API</h4>
-                        <button class="btn btn-secondary" onclick="testConfigAPI()">Test Config API</button>
-                        <button class="btn btn-secondary" onclick="testConfigDashboard()">Test Dashboard</button>
                     </div>
                 </div>
             </div>
