@@ -25,21 +25,29 @@ def get_password_hash(password: str) -> str:
     return hashed.decode('utf-8')
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
+    subject: Union[str, Any], 
+    roles: Optional[list] = None,
+    active_role: Optional[str] = None,
+    expires_delta: Optional[timedelta] = None
 ) -> str:
-    """Create a JWT access token."""
+    """Create a JWT access token with roles support."""
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(
             minutes=settings.access_token_expire_minutes
         )
-    to_encode = {"exp": expire, "sub": str(subject)}
+    to_encode = {
+        "exp": expire, 
+        "sub": str(subject),
+        "roles": roles or [],
+        "active_role": active_role
+    }
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
 
-def verify_token(token: str) -> Optional[str]:
-    """Verify a JWT token and return the subject."""
+def verify_token(token: str) -> Optional[dict]:
+    """Verify a JWT token and return the payload with username, roles, and active_role."""
     try:
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
@@ -47,7 +55,11 @@ def verify_token(token: str) -> Optional[str]:
         username = payload.get("sub")
         if username is None:
             return None
-        return str(username)
+        return {
+            "username": str(username),
+            "roles": payload.get("roles", []),
+            "active_role": payload.get("active_role")
+        }
     except JWTError:
         return None
 
@@ -82,13 +94,17 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    username = verify_token(credentials.credentials)
-    if username is None:
+    token_data = verify_token(credentials.credentials)
+    if token_data is None:
         raise credentials_exception
     
-    user = db.query(User).filter(User.username == username).first()
+    user = db.query(User).filter(User.username == token_data["username"]).first()
     if user is None:
         raise credentials_exception
+    
+    # Attach token roles and active_role to user object for request context
+    user.token_roles = token_data.get("roles", [])
+    user.token_active_role = token_data.get("active_role")
     
     return user
 
