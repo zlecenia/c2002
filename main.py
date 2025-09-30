@@ -1750,18 +1750,19 @@ async def fleet_data_manager():
             /* New app layout with sidebar */
             .app-layout { display: flex; min-height: calc(100vh - 50px); }
             .sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
-            .main-content-wrapper { width: 85%; padding: 20px; overflow-y: auto; }
+            .main-content-wrapper { width: 70%; padding: 20px; overflow-y: auto; }
+            .right-sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
             
-            /* Sidebar auth section */
-            .sidebar-auth { background: #374151; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #27ae60; }
-            .sidebar-auth h4 { margin-top: 0; font-size: 14px; }
-            .sidebar-auth input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box; }
-            .sidebar-auth button { width: 100%; }
-            .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
+            /* Right sidebar auth section */
+            .right-sidebar .sidebar-auth { background: #374151; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #27ae60; }
+            .right-sidebar .sidebar-auth h4 { margin-top: 0; font-size: 14px; }
+            .right-sidebar .sidebar-auth input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box; }
+            .right-sidebar .sidebar-auth button { width: 100%; }
+            .right-sidebar .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
             
             /* Role switcher */
-            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #374151; border-radius: 8px; display: none; }
-            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #4b5563; border-radius: 4px; background: #1f2a37; color: white; }
+            .right-sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #374151; border-radius: 8px; display: none; }
+            .right-sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #4b5563; border-radius: 4px; background: #1f2a37; color: white; }
             
             /* Sidebar module menu */
             .sidebar-menu { margin-top: 20px; }
@@ -1803,6 +1804,7 @@ async def fleet_data_manager():
                 .app-layout { flex-direction: column; }
                 .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 2px solid #34495e; }
                 .main-content-wrapper { width: 100%; }
+                .right-sidebar { width: 100%; height: auto; position: relative; border-top: 2px solid #34495e; }
                 .main-content { grid-template-columns: 1fr; }
             }
         </style>
@@ -1821,24 +1823,8 @@ async def fleet_data_manager():
         </nav>
         
         <div class="app-layout">
-            <!-- Sidebar with login and module menu -->
+            <!-- Sidebar with module menu -->
             <div class="sidebar">
-                <div class="sidebar-auth">
-                    <h4>🔐 Logowanie</h4>
-                    <input type="text" id="login-username" placeholder="Username">
-                    <input type="password" id="login-password" placeholder="Password">
-                    <button class="btn" onclick="login()">Zaloguj</button>
-                    <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
-                    <div id="auth-message"></div>
-                </div>
-
-                <div class="role-switcher" id="role-switcher">
-                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
-                    <select id="role-select" onchange="switchRole()">
-                        <option value="">Wybierz rolę...</option>
-                    </select>
-                </div>
-                
                 <div class="sidebar-menu">
                     <h4>📊 Menu Modułu</h4>
                     <button class="tab active" onclick="showTab('devices')">📱 Urządzenia</button>
@@ -2042,6 +2028,25 @@ async def fleet_data_manager():
             </div>
 
             <div id="result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- Right sidebar with login -->
+            <div class="right-sidebar">
+                <div class="sidebar-auth">
+                    <h4>🔐 Logowanie</h4>
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button class="btn" onclick="login()">Zaloguj</button>
+                    <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
             </div>
         </div>
