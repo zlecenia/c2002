@@ -294,10 +294,15 @@ Użytkownik **maker1** może przełączać się między wszystkimi rolami bez po
 ### 5. 💿 Fleet Software Manager (Maker)
 **URL:** `http://localhost:5000/fleet-software-manager`
 
-- Zarządzanie oprogramowaniem
-- Wersjonowanie
-- Instalacje
-- Dashboard statystyk
+- Zarządzanie oprogramowaniem (CREATE funkcjonalny)
+- Wersjonowanie (READ funkcjonalny)
+- Instalacje (READ funkcjonalny)
+- Dashboard statystyk (READ funkcjonalny)
+
+**⚠️ Known Limitations:**
+- `viewSoftware(id)` function not yet implemented - Cannot view software details
+- `deleteSoftware(id)` function not yet implemented - Cannot delete software packages
+- See [TODO.md](TODO.md) for planned improvements
 
 ---
 

@@ -224,9 +224,30 @@ Complete Fleet Management System implementation with 5 webGUI modules.
 ## Known Issues
 
 ### v1.0.0
-- Fleet Software Manager: `viewSoftware()` and `deleteSoftware()` functions not yet implemented
-- Legacy auth sections still present in HTML (hidden via CSS)
-- Browser console warnings about password fields not in forms (harmless)
+
+#### Fleet Software Manager - Partial Implementation
+- **Missing Functions:**
+  - `viewSoftware(id)` - Cannot view individual software details in modal
+  - `deleteSoftware(id)` - Cannot delete software packages
+- **Working Features:**
+  - CREATE software (fully functional)
+  - LIST software (fully functional)
+  - UPDATE software (fully functional via form)
+  - Versions management (READ operations functional)
+  - Installations tracking (READ operations functional)
+  - Dashboard statistics (fully functional)
+- **Impact:** Medium - Core CRUD operations work, but detail view and delete are missing
+- **Workaround:** Use API directly at `/docs` for delete operations
+- **Planned Fix:** Q4 2025 (see TODO.md)
+
+#### UI/UX Minor Issues
+- Legacy auth sections still present in HTML (hidden via CSS, no functionality impact)
+- Browser console warnings about password fields not in forms (cosmetic, harmless)
+- Sidebar navigation errors in some modules (non-blocking)
+
+#### Documentation
+- Database schema documentation (docs/DATABASE.md) has been corrected to match actual implementation
+- All 14 tables documented with correct field names and relationships
 
 ---
 
