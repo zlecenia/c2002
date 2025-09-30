@@ -54,7 +54,7 @@ class TestScenarioResponse(BaseModel):
     test_flow: Optional[dict]
     created_by: Optional[int]
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
     is_active: bool
 
     class Config:
