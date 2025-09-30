@@ -109,12 +109,22 @@ def get_current_user(
     return user
 
 def require_role(required_role: str):
-    """Decorator to require specific user role."""
+    """Decorator to require specific user role. Checks active_role from token."""
     def role_checker(current_user: User = Depends(get_current_user)):
-        if str(current_user.role) != required_role and str(current_user.role) != "superuser":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions"
-            )
-        return current_user
+        # Get active role from token (set in get_current_user)
+        active_role = getattr(current_user, 'token_active_role', None) or str(current_user.role)
+        user_roles = getattr(current_user, 'token_roles', [])
+        if not user_roles:
+            user_roles = []
+        
+        # Allow if active role matches required role, or if user is superuser, or if required role is in user's roles
+        if (str(active_role) == str(required_role) or 
+            str(active_role) == "superuser" or 
+            str(required_role) in [str(r) for r in user_roles]):
+            return current_user
+        
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Not enough permissions. Required role: {required_role}, Active role: {active_role}"
+        )
     return role_checker
