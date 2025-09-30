@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fleet Management System{% endblock %}</title>
+    <link rel="stylesheet" href="/static/common/css/common.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/cpp">🔗 Connect++</a></li>
+            <li><a href="/connect-display">📺 Connect Display</a></li>
+            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
+            <li><a href="/fleet-workshop-manager">🔨 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    
+    <!-- 3-Column Layout -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            {% block left_sidebar %}
+            <h3>Menu</h3>
+            {% endblock %}
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content-wrapper">
+            {% block main_content %}
+            <h1>Fleet Management System</h1>
+            {% endblock %}
+        </main>
+        
+        <!-- Right Sidebar (Auth) -->
+        <aside class="right-sidebar">
+            <div class="sidebar-auth">
+                <h3>🔐 Logowanie</h3>
+                <div id="login-form">
+                    <input type="text" id="username" placeholder="Username">
+                    <input type="password" id="password" placeholder="Password">
+                    <button onclick="handleLogin()" class="btn-login">Zaloguj</button>
+                </div>
+                <div id="user-info" style="display: none;"></div>
+                <div id="auth-status" class="auth-status not-logged-in">❌ Niezalogowany</div>
+                <div id="login-result"></div>
+            </div>
+            {% block right_sidebar %}{% endblock %}
+        </aside>
+    </div>
+    
+    <!-- Common JavaScript -->
+    <script src="/static/common/js/auth.js"></script>
+    <script src="/static/common/js/utils.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
