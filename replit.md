@@ -4,6 +4,13 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Professional Landing Page Implementation
+  - Created responsive HTML landing page for root "/" endpoint
+  - Beautiful gradient design with module cards and responsive layout
+  - Mobile-optimized interface with all 5 modules accessible from home
+  - Fixed deployment configuration for Autoscale publication
+  - System ready for production deployment
+  
 - **September 29, 2025**: Complete Fleet Management System implementation
   - Built from scratch: Python FastAPI + PostgreSQL + JWT authentication
   - Implemented all 5 webGUI modules according to Polish technical specifications
