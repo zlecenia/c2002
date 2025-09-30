@@ -661,7 +661,7 @@ class JsonTemplateCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     template_type: str = Field(..., min_length=1, max_length=100)
     category: Optional[str] = Field(None, max_length=100)
-    schema: Dict[str, Any] = Field(...)
+    schema: Optional[Dict[str, Any]] = Field(None)
     default_values: Dict[str, Any] = Field(...)
     description: Optional[str] = None
     is_active: bool = Field(default=True)
@@ -693,7 +693,7 @@ class JsonTemplateResponse(BaseModel):
     name: str
     template_type: str
     category: Optional[str]
-    schema: Dict[str, Any]
+    schema: Optional[Dict[str, Any]]
     default_values: Dict[str, Any]
     description: Optional[str]
     is_active: bool

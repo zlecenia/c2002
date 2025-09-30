@@ -1986,6 +1986,7 @@ async def fleet_config_manager():
                         <button class="tab active" onclick="showTab('system-config')">Konfiguracja systemu</button>
                         <button class="tab" onclick="showTab('device-config')">Konfiguracja urządzeń</button>
                         <button class="tab" onclick="showTab('test-config')">Scenariusze testowe</button>
+                        <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
                         <button class="tab" onclick="showTab('backup')">Backup/Restore</button>
                     </div>
 
@@ -2041,6 +2042,48 @@ async def fleet_config_manager():
                             </thead>
                             <tbody>
                                 <tr><td colspan="5">Zaloguj się aby zobaczyć scenariusze...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- JSON Templates Tab -->
+                    <div id="json-templates-tab" class="tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4>📋 Szablony JSON</h4>
+                            <button class="btn" onclick="showAddTemplateForm()">Dodaj szablon</button>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <label style="margin-right: 10px;">Filtruj po typie:</label>
+                            <select id="template-type-filter" onchange="loadJsonTemplates()" style="padding: 5px; margin-right: 15px;">
+                                <option value="">Wszystkie typy</option>
+                                <option value="test_flow">Test Flow</option>
+                                <option value="device_config">Konfiguracja urządzenia</option>
+                                <option value="system_config">Konfiguracja systemu</option>
+                            </select>
+                            
+                            <label style="margin-right: 10px;">Kategoria:</label>
+                            <select id="template-category-filter" onchange="loadJsonTemplates()" style="padding: 5px;">
+                                <option value="">Wszystkie kategorie</option>
+                                <option value="mask_tester">Tester masek</option>
+                                <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                <option value="flow_meter">Przepływomierz</option>
+                            </select>
+                        </div>
+                        
+                        <table class="data-table" id="json-templates-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nazwa</th>
+                                    <th>Typ</th>
+                                    <th>Kategoria</th>
+                                    <th>Opis</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="6">Zaloguj się aby zobaczyć szablony...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2148,6 +2191,71 @@ async def fleet_config_manager():
                         </form>
                     </div>
 
+                    <!-- Add/Edit JSON Template Form -->
+                    <div id="add-template-form" style="display: none;">
+                        <h4 id="template-form-title">Dodaj szablon JSON</h4>
+                        <form id="json-template-form">
+                            <input type="hidden" id="template-id">
+                            
+                            <div class="form-group">
+                                <label>Nazwa szablonu:</label>
+                                <input type="text" id="template-name" required placeholder="np. Test Szczelności Maski">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Typ szablonu:</label>
+                                <select id="template-type" required>
+                                    <option value="">Wybierz typ</option>
+                                    <option value="test_flow">Test Flow</option>
+                                    <option value="device_config">Konfiguracja urządzenia</option>
+                                    <option value="system_config">Konfiguracja systemu</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Kategoria:</label>
+                                <select id="template-category">
+                                    <option value="">Wybierz kategorię (opcjonalnie)</option>
+                                    <option value="mask_tester">Tester masek</option>
+                                    <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                    <option value="flow_meter">Przepływomierz</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Opis:</label>
+                                <textarea id="template-description" rows="2" placeholder="Krótki opis szablonu"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>📝 Wartości domyślne (JSON):</label>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-secondary" onclick="formatTemplateJSON()">🎨 Formatuj JSON</button>
+                                    <button type="button" class="btn btn-secondary" onclick="validateTemplateJSON()">✔️ Waliduj JSON</button>
+                                    <button type="button" class="btn btn-secondary" onclick="clearTemplateJSON()">🗑️ Wyczyść</button>
+                                </div>
+                                <textarea id="template-default-values" rows="10" style="font-family: monospace; font-size: 13px;" 
+                                    placeholder='{"pressure_min": 0, "pressure_max": 50, "duration": 60, "tolerance": 2}'></textarea>
+                                <small style="color: #7f8c8d;">
+                                    Wpisz JSON z wartościami domyślnymi dla tego szablonu
+                                </small>
+                                <div id="json-validation-result" style="margin-top: 5px;"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Schema JSON (opcjonalnie):</label>
+                                <textarea id="template-schema" rows="6" style="font-family: monospace; font-size: 12px;" 
+                                    placeholder='{"type": "object", "properties": {...}}'></textarea>
+                                <small style="color: #7f8c8d;">
+                                    JSON Schema dla walidacji (opcjonalnie)
+                                </small>
+                            </div>
+                            
+                            <button type="button" class="btn" onclick="saveTemplate()">💾 Zapisz szablon</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTemplateForm()">Anuluj</button>
+                        </form>
+                    </div>
+
                     <!-- API Test Section -->
                     <div id="api-test-section">
                         <h4>🔍 Test API</h4>
@@ -2200,6 +2308,7 @@ async def fleet_config_manager():
                     loadSystemConfigs();
                     loadDeviceConfigs();
                     loadTestScenarios();
+                    loadJsonTemplates();
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
@@ -2312,6 +2421,7 @@ async def fleet_config_manager():
                 document.getElementById('add-system-config-form').style.display = 'none';
                 document.getElementById('add-test-scenario-form').style.display = 'none';
                 document.getElementById('device-config-form').style.display = 'none';
+                document.getElementById('add-template-form').style.display = 'none';
                 document.getElementById('form-title').textContent = 'Formularz konfiguracji';
             }
 
@@ -2786,6 +2896,253 @@ async def fleet_config_manager():
                         ${error.message}
                         </div>
                     `;
+                }
+            }
+
+            // ========== JSON TEMPLATES FUNCTIONS ==========
+            let jsonTemplates = [];
+            let editingTemplateId = null;
+
+            async function loadJsonTemplates() {
+                const typeFilter = document.getElementById('template-type-filter').value;
+                const categoryFilter = document.getElementById('template-category-filter').value;
+                
+                let url = '/api/v1/fleet-config/json-templates?';
+                if (typeFilter) url += `template_type=${typeFilter}&`;
+                if (categoryFilter) url += `category=${categoryFilter}&`;
+                
+                try {
+                    const response = await makeAuthenticatedRequest(url);
+                    
+                    if (response.ok) {
+                        jsonTemplates = await response.json();
+                        displayJsonTemplates(jsonTemplates);
+                    } else if (response.status === 401 || response.status === 403) {
+                        document.querySelector('#json-templates-table tbody').innerHTML = 
+                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd ładowania szablonów JSON: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function displayJsonTemplates(templates) {
+                const tbody = document.querySelector('#json-templates-table tbody');
+                if (templates.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">Brak szablonów JSON. Dodaj pierwszy szablon!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = templates.map(template => `
+                    <tr>
+                        <td>${template.id}</td>
+                        <td><strong>${template.name}</strong></td>
+                        <td><span style="background: #3498db; color: white; padding: 2px 8px; border-radius: 3px;">${template.template_type}</span></td>
+                        <td>${template.category || '-'}</td>
+                        <td>${template.description || '-'}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewTemplate(${template.id})">👁️ Podgląd</button>
+                            <button class="btn btn-secondary" onclick="editTemplate(${template.id})">✏️ Edytuj</button>
+                            <button class="btn btn-danger" onclick="deleteTemplate(${template.id})">🗑️ Usuń</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function showAddTemplateForm() {
+                hideAllForms();
+                editingTemplateId = null;
+                document.getElementById('template-form-title').textContent = 'Dodaj szablon JSON';
+                document.getElementById('add-template-form').style.display = 'block';
+                document.getElementById('json-template-form').reset();
+                document.getElementById('template-id').value = '';
+                document.getElementById('form-title').textContent = 'Nowy szablon JSON';
+            }
+
+            function hideTemplateForm() {
+                document.getElementById('add-template-form').style.display = 'none';
+                document.getElementById('json-template-form').reset();
+                editingTemplateId = null;
+                document.getElementById('form-title').textContent = 'Formularz konfiguracji';
+            }
+
+            function viewTemplate(templateId) {
+                const template = jsonTemplates.find(t => t.id === templateId);
+                if (template) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result" style="background: #e8f5e9; border-color: #4caf50;">
+                            <h4>📋 ${template.name}</h4>
+                            <p><strong>Typ:</strong> ${template.template_type} | <strong>Kategoria:</strong> ${template.category || 'Brak'}</p>
+                            <p><strong>Opis:</strong> ${template.description || 'Brak opisu'}</p>
+                            <h5>Wartości domyślne:</h5>
+                            <pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(template.default_values, null, 2)}</pre>
+                            ${template.schema ? `<h5>Schema:</h5><pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(template.schema, null, 2)}</pre>` : ''}
+                        </div>
+                    `;
+                }
+            }
+
+            function editTemplate(templateId) {
+                const template = jsonTemplates.find(t => t.id === templateId);
+                if (template) {
+                    hideAllForms();
+                    editingTemplateId = templateId;
+                    document.getElementById('template-form-title').textContent = 'Edytuj szablon JSON';
+                    document.getElementById('add-template-form').style.display = 'block';
+                    
+                    document.getElementById('template-id').value = template.id;
+                    document.getElementById('template-name').value = template.name;
+                    document.getElementById('template-type').value = template.template_type;
+                    document.getElementById('template-category').value = template.category || '';
+                    document.getElementById('template-description').value = template.description || '';
+                    document.getElementById('template-default-values').value = JSON.stringify(template.default_values, null, 2);
+                    document.getElementById('template-schema').value = template.schema ? JSON.stringify(template.schema, null, 2) : '';
+                    
+                    document.getElementById('form-title').textContent = 'Edycja szablonu JSON';
+                }
+            }
+
+            async function deleteTemplate(templateId) {
+                if (!confirm('Czy na pewno chcesz usunąć ten szablon JSON?')) {
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/v1/fleet-config/json-templates/${templateId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Szablon został usunięty
+                            </div>
+                        `;
+                        loadJsonTemplates();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd usuwania szablonu: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            async function saveTemplate() {
+                const templateData = {
+                    name: document.getElementById('template-name').value,
+                    template_type: document.getElementById('template-type').value,
+                    category: document.getElementById('template-category').value || null,
+                    description: document.getElementById('template-description').value || null
+                };
+
+                // Parse JSON fields
+                try {
+                    const defaultValuesText = document.getElementById('template-default-values').value;
+                    if (defaultValuesText.trim()) {
+                        templateData.default_values = JSON.parse(defaultValuesText);
+                    } else {
+                        alert('Wartości domyślne (JSON) są wymagane');
+                        return;
+                    }
+
+                    const schemaText = document.getElementById('template-schema').value;
+                    if (schemaText.trim()) {
+                        templateData.schema = JSON.parse(schemaText);
+                    }
+                } catch (e) {
+                    alert('Błąd parsowania JSON: ' + e.message);
+                    return;
+                }
+
+                if (!templateData.name || !templateData.template_type) {
+                    alert('Nazwa i typ szablonu są wymagane');
+                    return;
+                }
+
+                try {
+                    let response;
+                    if (editingTemplateId) {
+                        // Update existing template
+                        response = await makeAuthenticatedRequest(`/api/v1/fleet-config/json-templates/${editingTemplateId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify(templateData)
+                        });
+                    } else {
+                        // Create new template
+                        response = await makeAuthenticatedRequest('/api/v1/fleet-config/json-templates', {
+                            method: 'POST',
+                            body: JSON.stringify(templateData)
+                        });
+                    }
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ✅ Szablon "${result.name}" został ${editingTemplateId ? 'zaktualizowany' : 'utworzony'} pomyślnie
+                            </div>
+                        `;
+                        hideTemplateForm();
+                        loadJsonTemplates();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('result').innerHTML = `
+                            <div class="result">
+                            ❌ Błąd: ${error.detail}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Błąd zapisywania szablonu: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function formatTemplateJSON() {
+                const textarea = document.getElementById('template-default-values');
+                try {
+                    const json = JSON.parse(textarea.value);
+                    textarea.value = JSON.stringify(json, null, 2);
+                    document.getElementById('json-validation-result').innerHTML = 
+                        '<span style="color: green;">✔️ JSON sformatowany poprawnie</span>';
+                } catch (e) {
+                    document.getElementById('json-validation-result').innerHTML = 
+                        '<span style="color: red;">❌ Nieprawidłowy JSON: ' + e.message + '</span>';
+                }
+            }
+
+            function validateTemplateJSON() {
+                const textarea = document.getElementById('template-default-values');
+                try {
+                    JSON.parse(textarea.value);
+                    document.getElementById('json-validation-result').innerHTML = 
+                        '<span style="color: green;">✔️ JSON jest poprawny</span>';
+                } catch (e) {
+                    document.getElementById('json-validation-result').innerHTML = 
+                        '<span style="color: red;">❌ Błąd: ' + e.message + '</span>';
+                }
+            }
+
+            function clearTemplateJSON() {
+                if (confirm('Czy na pewno chcesz wyczyścić JSON?')) {
+                    document.getElementById('template-default-values').value = '';
+                    document.getElementById('json-validation-result').innerHTML = '';
                 }
             }
 

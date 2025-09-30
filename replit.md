@@ -4,6 +4,15 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: JSON Templates Visual Editor in Fleet Config Manager
+  - Added new "📋 Szablony JSON" tab to Fleet Config Manager with full CRUD interface
+  - Visual JSON editor with formatting, validation, and clear buttons
+  - Complete template management: create, read, update, delete, view
+  - Filtering by template type (test_flow, device_config, system_config) and category
+  - Schema field now optional for flexibility
+  - Beautiful table view with action buttons (👁️ Podgląd, ✏️ Edytuj, 🗑️ Usuń)
+  - All CRUD operations tested and working perfectly
+
 - **September 30, 2025**: JSON Templates System & Visual Editor Implementation
   - Added JSON Templates database table with 5 predefiniowane szablony for different device types
   - Implemented complete CRUD API for JSON templates in Fleet Config Manager
