@@ -4,14 +4,14 @@
     <title>Fleet Config Manager - Fleet Management</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Navigation Menu Styles -->
+    <link rel="stylesheet" href="/static/css/nav-menu.css">
+    
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        .nav-menu { background: #2c3e50; padding: 0; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .nav-menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
-        .nav-menu li { margin: 0; }
-        .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
-        .nav-menu a:hover { background: #34495e; }
-        .nav-menu a.active { background: #34495e; }
         .header { display: none; }
         .module-info { background: #e8f5e9; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .auth-section { display: none; }
@@ -76,19 +76,10 @@
     </style>
 </head>
 <body>
-    <nav class="nav-menu">
-        <ul>
-            <li><a href="/">🏠 Home</a></li>
-            <li><a href="/connect-plus">🔗 Connect++</a></li>
-            <li><a href="/connect-display">🖥️ Connect Display</a></li>
-            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
-            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
-            <li><a href="/fleet-config-manager" class="active">🔧 Fleet Config Manager</a></li>
-            <li><a href="/fleet-software-manager">💿 Fleet Software Manager</a></li>
-            <li><a href="/fleet-workshop-manager">🔧 Fleet Workshop Manager</a></li>
-            <li><a href="/docs">📚 API Docs</a></li>
-        </ul>
-    </nav>
+    <!-- Vue Navigation Menu Component -->
+    <div id="nav-menu-app">
+        <nav-menu current-path="/fleet-config-manager"></nav-menu>
+    </div>
     
     <div class="app-layout">
         <!-- Sidebar with module menu -->
@@ -1466,5 +1457,8 @@
             }
         }
     </script>
+
+    <!-- Navigation Menu Vue Component Script -->
+    <script src="/static/js/nav-menu.js"></script>
 </body>
 </html>
