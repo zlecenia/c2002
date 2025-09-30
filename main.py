@@ -991,7 +991,8 @@ async def commands_manager():
             </div>
 
             <div id="result" style="margin-top: 20px;"></div>
-        </div>
+            </div>
+            </div>
 
             <div class="right-sidebar">
                 <h3>🔐 Logowanie</h3>
