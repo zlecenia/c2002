@@ -24,6 +24,7 @@ The system is composed of a Python FastAPI backend running on port 5000, a Postg
 - **API**: A comprehensive REST API with over 50 endpoints, documented with OpenAPI 3.1.
 - **Frontend**: Specialized webGUI modules built with HTML, CSS, and JavaScript. Utilizes URL hash tracking for navigation within multi-tab modules.
 - **CRUD Operations**: Full Create, Read, Update, Delete functionality implemented across all modules, with user-friendly Polish language feedback and automatic list refreshes.
+- **Modular Architecture** (New 2025-09-30): Transition to `modules/` directory structure with common components and pilot modular FSM implementation.
 
 **Feature Specifications:**
 - **Seven WebGUI Modules**: Connect++, Connect Display, Connect Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager, and Fleet Workshop Manager.
@@ -33,9 +34,10 @@ The system is composed of a Python FastAPI backend running on port 5000, a Postg
 - **Professional Landing Page**: A responsive HTML landing page for the root endpoint.
 
 **System Design Choices:**
-- **Modular Architecture**: The system is divided into distinct modules, each catering to specific functionalities and user roles.
+- **Modular Architecture**: The system is divided into distinct modules, each catering to specific functionalities and user roles. New modular pattern in `modules/` directory with shared components in `modules/common/` (common.css, auth.js, utils.js).
 - **Database Schema**: PostgreSQL with 14 tables, supporting complex relationships and JSON fields.
 - **Deployment**: Production-ready autoscale configuration, optimized for Replit's cloud environment.
+- **Static Files**: Modules mounted at `/modules` path for better organization.
 
 ## External Dependencies
 - **PostgreSQL**: Relational database for persistent data storage.

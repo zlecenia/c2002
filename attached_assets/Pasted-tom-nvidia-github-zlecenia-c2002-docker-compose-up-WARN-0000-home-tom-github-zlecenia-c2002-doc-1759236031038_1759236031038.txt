@@ -1,0 +1,191 @@
+tom@nvidia:~/github/zlecenia/c2002$ docker compose up
+WARN[0000] /home/tom/github/zlecenia/c2002/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+[+] Building 48.0s (13/13) FINISHED                                                                                                                                                docker:default
+ => [api internal] load build definition from Dockerfile                                                                                                                                     0.0s
+ => => transferring dockerfile: 805B                                                                                                                                                         0.0s
+ => [api internal] load metadata for docker.io/library/python:3.11-slim                                                                                                                      0.0s
+ => [api internal] load .dockerignore                                                                                                                                                        0.0s
+ => => transferring context: 2B                                                                                                                                                              0.0s
+ => [api 1/7] FROM docker.io/library/python:3.11-slim                                                                                                                                        0.0s
+ => [api internal] load build context                                                                                                                                                        0.7s
+ => => transferring context: 115.28MB                                                                                                                                                        0.6s
+ => CACHED [api 2/7] WORKDIR /app                                                                                                                                                            0.0s
+ => [api 3/7] RUN apt-get update && apt-get install -y     postgresql-client     libpq-dev     gcc     && rm -rf /var/lib/apt/lists/*                                                       22.3s
+ => [api 4/7] COPY requirements.txt .                                                                                                                                                        0.1s 
+ => [api 5/7] RUN pip install --no-cache-dir -r requirements.txt                                                                                                                            23.8s 
+ => [api 6/7] COPY . .                                                                                                                                                                       0.5s 
+ => [api 7/7] RUN mkdir -p /app/logs                                                                                                                                                         0.2s 
+ => [api] exporting to image                                                                                                                                                                 0.9s 
+ => => exporting layers                                                                                                                                                                      0.9s 
+ => => writing image sha256:ab5da9bc784a79bc03e7a1a5d162b131057a44603f0c3f77628cf168cd60aba2                                                                                                 0.0s 
+ => => naming to docker.io/library/c2002-api                                                                                                                                                 0.0s 
+ => [api] resolving provenance for metadata file                                                                                                                                             0.0s
+[+] Running 5/5
+ ✔ api                             Built                                                                                                                                                     0.0s 
+ ✔ Network c2002_fleet_network     Created                                                                                                                                                   0.1s 
+ ✔ Volume "c2002_postgres_data"    Created                                                                                                                                                   0.0s 
+ ✔ Container fleet_management_db   Created                                                                                                                                                   0.0s 
+ ✔ Container fleet_management_api  Created                                                                                                                                                   0.0s 
+Attaching to fleet_management_api, fleet_management_db
+fleet_management_db   | The files belonging to this database system will be owned by user "postgres".
+fleet_management_db   | This user must also own the server process.
+fleet_management_db   | 
+fleet_management_db   | The database cluster will be initialized with locale "en_US.utf8".
+fleet_management_db   | The default database encoding has accordingly been set to "UTF8".
+fleet_management_db   | The default text search configuration will be set to "english".
+fleet_management_db   | 
+fleet_management_db   | Data page checksums are disabled.
+fleet_management_db   | 
+fleet_management_db   | fixing permissions on existing directory /var/lib/postgresql/data/pgdata ... ok
+fleet_management_db   | creating subdirectories ... ok
+fleet_management_db   | selecting dynamic shared memory implementation ... posix
+fleet_management_db   | selecting default max_connections ... 100
+fleet_management_db   | selecting default shared_buffers ... 128MB
+fleet_management_db   | selecting default time zone ... UTC
+fleet_management_db   | creating configuration files ... ok
+fleet_management_db   | running bootstrap script ... ok
+fleet_management_db   | sh: locale: not found
+fleet_management_db   | 2025-09-30 12:38:16.506 UTC [36] WARNING:  no usable system locales were found
+fleet_management_db   | performing post-bootstrap initialization ... ok
+fleet_management_db   | syncing data to disk ... ok
+fleet_management_db   | 
+fleet_management_db   | 
+fleet_management_db   | Success. You can now start the database server using:
+fleet_management_db   | 
+fleet_management_db   |     pg_ctl -D /var/lib/postgresql/data/pgdata -l logfile start
+fleet_management_db   | 
+fleet_management_db   | initdb: warning: enabling "trust" authentication for local connections
+fleet_management_db   | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+fleet_management_db   | waiting for server to start....2025-09-30 12:38:17.522 UTC [42] LOG:  starting PostgreSQL 15.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+fleet_management_db   | 2025-09-30 12:38:17.525 UTC [42] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+fleet_management_db   | 2025-09-30 12:38:17.532 UTC [45] LOG:  database system was shut down at 2025-09-30 12:38:16 UTC
+fleet_management_db   | 2025-09-30 12:38:17.537 UTC [42] LOG:  database system is ready to accept connections
+fleet_management_db   |  done
+fleet_management_db   | server started
+fleet_management_db   | CREATE DATABASE
+fleet_management_db   | 
+fleet_management_db   | 
+fleet_management_db   | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+fleet_management_db   | 
+fleet_management_db   | waiting for server to shut down....2025-09-30 12:38:17.658 UTC [42] LOG:  received fast shutdown request
+fleet_management_db   | 2025-09-30 12:38:17.661 UTC [42] LOG:  aborting any active transactions
+fleet_management_db   | 2025-09-30 12:38:17.663 UTC [42] LOG:  background worker "logical replication launcher" (PID 48) exited with exit code 1
+fleet_management_db   | 2025-09-30 12:38:17.663 UTC [43] LOG:  shutting down
+fleet_management_db   | 2025-09-30 12:38:17.665 UTC [43] LOG:  checkpoint starting: shutdown immediate
+fleet_management_db   | 2025-09-30 12:38:17.871 UTC [43] LOG:  checkpoint complete: wrote 921 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.014 s, sync=0.184 s, total=0.208 s; sync files=301, longest=0.003 s, average=0.001 s; distance=4239 kB, estimate=4239 kB
+fleet_management_db   | 2025-09-30 12:38:17.876 UTC [42] LOG:  database system is shut down
+fleet_management_db   |  done
+fleet_management_db   | server stopped
+fleet_management_db   | 
+fleet_management_db   | PostgreSQL init process complete; ready for start up.
+fleet_management_db   | 
+fleet_management_db   | 2025-09-30 12:38:17.980 UTC [1] LOG:  starting PostgreSQL 15.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+fleet_management_db   | 2025-09-30 12:38:17.980 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+fleet_management_db   | 2025-09-30 12:38:17.980 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+fleet_management_db   | 2025-09-30 12:38:17.985 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+fleet_management_db   | 2025-09-30 12:38:17.990 UTC [58] LOG:  database system was shut down at 2025-09-30 12:38:17 UTC
+fleet_management_db   | 2025-09-30 12:38:17.995 UTC [1] LOG:  database system is ready to accept connections
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 0                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+fleet_management_api  | /usr/local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:184: UserWarning: Field name "schema" shadows an attribute in parent "BaseModel"; 
+fleet_management_api  |   warnings.warn(
+fleet_management_api  | Traceback (most recent call last):
+fleet_management_api  |   File "/app/main.py", line 54, in <module>
+fleet_management_api  |     app.mount("/static", StaticFiles(directory="static"), name="static")
+fleet_management_api  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fleet_management_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/staticfiles.py", line 57, in __init__
+fleet_management_api  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+fleet_management_api  | RuntimeError: Directory 'static' does not exist
+fleet_management_api exited with code 1                                                                                                                                                           
+
+w Enable Watch

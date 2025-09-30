@@ -23,7 +23,7 @@
 ### Testing
 - [ ] **Add unit tests** for backend API (pytest)
 - [ ] **Add integration tests** for modules
-- [ ] **Add E2E tests** for critical user flows
+- [x] ~~**Add E2E tests**~~ - ✅ COMPLETED (2025-09-30) - tests/ directory created
 - [ ] **Set up CI/CD pipeline** (GitHub Actions)
 
 ---
@@ -117,8 +117,22 @@
 
 ## 🔧 Technical Debt
 
+### Modular Architecture Migration (New in 2025-09-30)
+- [x] ~~**Create modules/ directory structure**~~ - ✅ COMPLETED (2025-09-30)
+- [x] ~~**Extract common components (CSS, JS, HTML templates)**~~ - ✅ COMPLETED (2025-09-30)
+- [x] ~~**Implement pilot modular FSM**~~ - ✅ COMPLETED (2025-09-30)
+- [x] ~~**Setup static files mounting for /modules**~~ - ✅ COMPLETED (2025-09-30)
+- [ ] **Migrate Connect++ to modules/cpp/**
+- [ ] **Migrate Connect Display to modules/cd/**
+- [ ] **Migrate Connect Manager to modules/cm/**
+- [ ] **Migrate Fleet Data Manager to modules/fdm/**
+- [ ] **Migrate Fleet Config Manager to modules/fcm/**
+- [ ] **Migrate Fleet Workshop Manager to modules/fwm/**
+- [ ] **Remove legacy code from main.py after full migration**
+
 ### Code Quality
-- [ ] **Refactor main.py** - Split into smaller modules
+- [x] ~~**Refactor main.py**~~ - ✅ IN PROGRESS: Modular architecture pattern implemented
+- [x] ~~**Extract Fleet Software router**~~ - ✅ COMPLETED (2025-09-30) - backend/api/fleet_software_router.py
 - [ ] **Remove duplicate code** - DRY principles
 - [ ] **Add type hints** - Full typing coverage
 - [ ] **Code style enforcement** - Black, flake8, mypy

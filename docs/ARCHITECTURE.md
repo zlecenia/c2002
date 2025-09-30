@@ -21,7 +21,7 @@ Fleet Management System is a comprehensive web application designed for managing
 
 ### Design Principles
 
-1. **Modularity** - 5 independent frontend modules with specialized purposes
+1. **Modularity** - 7 independent frontend modules with specialized purposes
 2. **Role-Based Access Control** - 6 roles with fine-grained permissions
 3. **RESTful API** - Clean, predictable API endpoints
 4. **Data Integrity** - PostgreSQL with proper constraints and relationships
@@ -112,7 +112,137 @@ Fleet Management System is a comprehensive web application designed for managing
 
 ## 📦 Module Architecture
 
-The system consists of 5 independent frontend modules, each with specific responsibilities:
+### Modular Architecture (New in 2025-09-30)
+
+The system is transitioning to a **modular architecture pattern** for better code organization and maintainability.
+
+#### Directory Structure
+
+```
+modules/
+├── common/              # Shared components across all modules
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── common.css        (465 lines - 3-column layout, navigation, auth UI)
+│   │   └── js/
+│   │       ├── auth.js           (193 lines - JWT authentication, role switching)
+│   │       └── utils.js          (88 lines - API calls, error handling)
+│   ├── templates/
+│   │   └── base_layout.html      (Base template for modules)
+│   └── __init__.py
+├── cpp/                # Connect++ module (Operator)
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+├── cd/                 # Connect Display module (LCD 7.9")
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+├── cm/                 # Connect Manager module (Superuser)
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+├── fdm/                # Fleet Data Manager (Manager)
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+├── fcm/                # Fleet Config Manager (Configurator)
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+├── fsm/                # Fleet Software Manager (Maker) - PILOT MODULE
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   │   ├── index.html            (Modular FSM page)
+│   │   ├── fsm.css               (Module-specific styles)
+│   │   └── fsm.js                (Module-specific logic)
+│   └── __init__.py
+├── fwm/                # Fleet Workshop Manager
+│   ├── api/
+│   ├── backend/
+│   ├── frontend/
+│   └── __init__.py
+└── __init__.py
+```
+
+#### Pilot Implementation: Fleet Software Manager
+
+**Status:** Modular FSM is fully functional as a pilot demonstration
+
+**Endpoint:** `/fsm-modular`
+
+**Features:**
+- 3-column responsive layout (15% left sidebar + 70% main content + 15% right sidebar)
+- Top navigation menu with all modules
+- Dashboard with 4 statistic cards
+- Software management (CRUD operations)
+- API test section in right column
+- Shared CSS/JS from `modules/common/`
+- Module-specific CSS/JS from `modules/fsm/frontend/`
+
+**Static Files Mounting:**
+```python
+app.mount("/modules", StaticFiles(directory="modules"), name="modules")
+```
+
+**URL Pattern:**
+- Common CSS: `/modules/common/static/css/common.css`
+- Common JS: `/modules/common/static/js/auth.js`, `/modules/common/static/js/utils.js`
+- Module CSS: `/modules/fsm/frontend/fsm.css`
+- Module JS: `/modules/fsm/frontend/fsm.js`
+
+#### Common Components
+
+**common.css (465 lines)**
+- Global variables and reset styles
+- 3-column layout system (`.container`, `.left-sidebar`, `.main-content`, `.right-sidebar`)
+- Top navigation bar (`.nav-menu`)
+- Authentication UI components
+- Card system for dashboards
+- Button styles and form controls
+- Responsive breakpoints for mobile devices
+
+**auth.js (193 lines)**
+- JWT token management (`getAuthToken()`, `setAuthToken()`, `clearAuthToken()`)
+- User authentication (`login()`, `logout()`)
+- Role switching functionality (`switchRole()`)
+- Auth state management (`checkAuthState()`)
+- Current user retrieval (`getCurrentUser()`)
+
+**utils.js (88 lines)**
+- API request helper (`apiRequest()`)
+- Error handling and display
+- Response formatting
+- Common utility functions
+
+#### Migration Status
+
+**Completed:**
+- ✅ Common components infrastructure (`modules/common/`)
+- ✅ Pilot modular FSM (`modules/fsm/`)
+- ✅ Static file mounting (`/modules`)
+- ✅ Module registry pattern (prepared for all 7 modules)
+
+**Pending:**
+- 🔄 Connect++ migration
+- 🔄 Connect Display migration
+- 🔄 Connect Manager migration
+- 🔄 Fleet Data Manager migration
+- 🔄 Fleet Config Manager migration
+- 🔄 Fleet Workshop Manager migration
+
+**Legacy:**
+- Existing modules remain in `main.py` (6784 lines) until migration
+
+---
+
+The system consists of 7 independent frontend modules, each with specific responsibilities:
 
 ### 1. Connect++ (Operator Module)
 

@@ -10,11 +10,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Coming Soon
+- Migration of remaining 6 modules to modular architecture
 - Additional customer fields management
 - Advanced reporting and analytics
 - Email notifications system
 - Mobile app (iOS/Android)
 - Real-time WebSocket updates
+
+---
+
+## [1.1.0] - 2025-09-30
+
+### 🏗️ Major Architectural Refactoring
+
+#### Modular Architecture Implementation
+- **Created `modules/` directory structure** - Organized code into modular components
+- **Extracted common components** to `modules/common/`:
+  - `common.css` (465 lines) - 3-column layout, navigation, auth UI, responsive design
+  - `auth.js` (193 lines) - JWT authentication, role switching, token management
+  - `utils.js` (88 lines) - API requests, error handling, utilities
+  - `base_layout.html` - Reusable template for all modules
+- **Pilot modular implementation** - Fleet Software Manager as demonstration module
+  - New endpoint: `/fsm-modular`
+  - Fully functional with 3-column responsive layout
+  - Dashboard with statistics cards
+  - Software CRUD operations
+  - API test section
+- **Module registry pattern** - Prepared infrastructure for all 7 modules (cpp, cd, cm, fdm, fcm, fsm, fwm)
+- **Static files mounting** - Changed from `/static/modules` to `/modules` for better organization
+
+#### Backend Refactoring
+- **Extracted Fleet Software router** - Moved to `backend/api/fleet_software_router.py`
+  - Separated concerns from monolithic main.py
+  - Cleaner API structure
+  - Improved maintainability
+
+#### Frontend Improvements
+- **Consistent 3-column layout** across modular components
+  - 15% left sidebar (module menu)
+  - 70% main content
+  - 15% right sidebar (login/role switcher)
+- **Top navigation menu** - Unified module switching interface
+- **Shared authentication UI** - Consistent login experience
+
+### 🔧 Fixed
+- **Static file loading** - Resolved 404 errors for CSS/JS files
+  - Fixed path resolution from `/static/modules/...` to `/modules/...`
+  - Proper mounting of modules directory
+- **Module navigation** - Improved routing between modules
+
+### 📚 Documentation Updates
+- **Updated ARCHITECTURE.md** - Added detailed modular architecture section
+- **Updated TODO.md** - Marked completed tasks, added migration checklist
+- **Created E2E tests** - Test suite in `tests/` directory
 
 ---
 
