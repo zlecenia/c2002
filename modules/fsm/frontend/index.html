@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Software Manager - Fleet Management</title>
+    <!-- Common styles -->
+    <link rel="stylesheet" href="/static/modules/common/static/css/common.css">
+    <!-- Module specific styles -->
+    <link rel="stylesheet" href="/static/modules/fsm/frontend/fsm.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/">🏠 Home</a></li>
+            <li><a href="/cpp">🔗 Connect++</a></li>
+            <li><a href="/connect-display">📺 Connect Display</a></li>
+            <li><a href="/connect-manager">⚙️ Connect Manager</a></li>
+            <li><a href="/fleet-data-manager">📊 Fleet Data Manager</a></li>
+            <li><a href="/fleet-config-manager">🔧 Fleet Config Manager</a></li>
+            <li><a href="/fsm-modular" class="active">💿 Fleet Software Manager (Modular)</a></li>
+            <li><a href="/fleet-workshop-manager">🔨 Fleet Workshop Manager</a></li>
+            <li><a href="/docs">📚 API Docs</a></li>
+        </ul>
+    </nav>
+    
+    <!-- 3-Column Layout -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <h3>💿 Menu Modułu</h3>
+            <div class="menu-section">
+                <button class="menu-item" onclick="scrollTo(0,0)">📊 Dashboard</button>
+                <button class="menu-item active" onclick="showTab('software-tab')">📦 Oprogramowanie</button>
+                <button class="menu-item" onclick="showTab('versions-tab')">🔢 Wersje</button>
+                <button class="menu-item" onclick="showTab('installations-tab')">💾 Instalacje</button>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API Endpoints Test</h4>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testSoftwareAPI()">Test Software API</button>
+                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content-wrapper">
+            <h1>💾 Fleet Software Manager</h1>
+            <p style="color: #27ae60; font-weight: bold;">✨ Modular Version - Demo</p>
+            
+            <!-- Dashboard Statistics -->
+            <div class="dashboard" id="dashboard">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-software">-</div>
+                    <div class="stat-label">Całkowite oprogramowanie</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-versions">-</div>
+                    <div class="stat-label">Wersje oprogramowania</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="devices-with-software">-</div>
+                    <div class="stat-label">Urządzenia z oprogramowaniem</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="recent-installations">-</div>
+                    <div class="stat-label">Dzisiejsze instalacje</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('software-tab')">📦 Oprogramowanie</button>
+                <button class="tab-button" onclick="showTab('installations-tab')">💾 Instalacje</button>
+            </div>
+
+            <!-- Software Tab -->
+            <div id="software-tab" class="tab-content active">
+                <div class="card">
+                    <h3>📦 Zarządzanie Oprogramowaniem</h3>
+                    <button class="btn btn-primary" onclick="loadSoftware()">Odśwież listę</button>
+                    <button class="btn btn-success" onclick="showCreateSoftwareForm()">Dodaj oprogramowanie</button>
+                    
+                    <div id="software-list" style="margin-top: 20px;">
+                        <p>Kliknij "Odśwież listę" aby załadować oprogramowanie...</p>
+                    </div>
+
+                    <!-- Create Software Form -->
+                    <div id="create-software-form" style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #27ae60; border-radius: 8px;">
+                        <h4>➕ Dodaj nowe oprogramowanie</h4>
+                        <div class="form-group">
+                            <label>Nazwa oprogramowania:*</label>
+                            <input type="text" id="software-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Opis:</label>
+                            <textarea id="software-description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Dostawca:</label>
+                            <input type="text" id="software-vendor">
+                        </div>
+                        <div class="form-group">
+                            <label>Kategoria:*</label>
+                            <select id="software-category">
+                                <option value="">Wybierz kategorię</option>
+                                <option value="firmware">Firmware</option>
+                                <option value="application">Aplikacja</option>
+                                <option value="driver">Driver</option>
+                                <option value="tool">Narzędzie</option>
+                                <option value="middleware">Middleware</option>
+                                <option value="os">System operacyjny</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Platforma:</label>
+                            <input type="text" id="software-platform" placeholder="np. ARM, x86, Linux">
+                        </div>
+                        <div class="form-group">
+                            <label>URL repozytorium:</label>
+                            <input type="url" id="software-repository">
+                        </div>
+                        <button class="btn btn-success" onclick="createSoftware()">Utwórz</button>
+                        <button class="btn btn-secondary" onclick="hideCreateSoftwareForm()">Anuluj</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Installations Tab -->
+            <div id="installations-tab" class="tab-content">
+                <div class="card">
+                    <h3>💾 Historia Instalacji</h3>
+                    <button class="btn btn-primary" onclick="loadInstallations()">Odśwież listę</button>
+                    
+                    <div id="installations-list" style="margin-top: 20px;">
+                        <p>Kliknij "Odśwież listę" aby załadować historię instalacji...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result" style="margin-top: 20px;"></div>
+        </main>
+        
+        <!-- Right Sidebar (Auth) -->
+        <aside class="right-sidebar">
+            <div class="sidebar-auth">
+                <h3>🔐 Logowanie</h3>
+                <div id="login-form">
+                    <input type="text" id="username" placeholder="Username">
+                    <input type="password" id="password" placeholder="Password">
+                    <button onclick="handleLogin()" class="btn-login">Zaloguj</button>
+                </div>
+                <div id="user-info" style="display: none;"></div>
+                <div id="auth-status" class="auth-status not-logged-in">❌ Niezalogowany</div>
+                <div id="login-result"></div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Common JavaScript -->
+    <script src="/static/modules/common/static/js/auth.js"></script>
+    <script src="/static/modules/common/static/js/utils.js"></script>
+    <!-- Module specific JavaScript -->
+    <script src="/static/modules/fsm/frontend/fsm.js"></script>
+</body>
+</html>

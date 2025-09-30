@@ -52,6 +52,8 @@ app.include_router(fleet_software_router, prefix=settings.api_v1_str)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount modules static files
+app.mount("/static/modules", StaticFiles(directory="modules"), name="modules")
 
 # Initialize sample data endpoint
 @app.post("/api/v1/init-data")
@@ -5294,6 +5296,13 @@ async def fleet_config_manager():
     </body>
     </html>
     """
+
+# Fleet Software Manager - Modular Version (Demo)
+@app.get("/fsm-modular", response_class=HTMLResponse)
+async def fleet_software_manager_modular():
+    """Modular version of Fleet Software Manager using external CSS/JS files"""
+    with open("modules/fsm/frontend/index.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 # Fleet Software Manager Module
 @app.get("/fleet-software-manager", response_class=HTMLResponse)

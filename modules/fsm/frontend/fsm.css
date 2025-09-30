@@ -1,0 +1,94 @@
+/* Fleet Software Manager - Module Specific Styles */
+
+/* Override left sidebar active color for FSM */
+.sidebar .menu-item.active {
+    background: #27ae60 !important;
+    font-weight: bold;
+}
+
+/* Dashboard stats specific styling */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.stat-label {
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Software version badges */
+.version-badge {
+    background: #3498db;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: white;
+}
+
+.status-installed {
+    background: #27ae60;
+}
+
+.status-pending {
+    background: #f39c12;
+}
+
+.status-failed {
+    background: #e74c3c;
+}
+
+/* Category badges */
+.category-badge {
+    background: #9b59b6;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+/* Two-column layout for main content */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
