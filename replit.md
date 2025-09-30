@@ -4,6 +4,20 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Complete CRUD Operations - Fixed Missing JavaScript Functions
+  - **Resolved critical CRUD functionality gaps** across all 4 modules with edit/delete operations
+  - **Fleet Data Manager**: Added missing editDevice(), updateDevice(), deleteDevice(), editCustomer(), updateCustomer(), deleteCustomer() functions
+  - **Commands Manager**: Added missing deleteScenario() function for test scenario removal
+  - **Fleet Config Manager**: Added missing editSystemConfig(), deleteSystemConfig(), editTestScenario(), deleteTestScenario() functions
+  - **Fleet Software Manager**: Added missing viewSoftware(), deleteSoftware(), viewVersion() functions
+  - **Total: 12 CRUD functions added** to complete full create, read, update, delete functionality
+  - All functions properly implement makeAuthenticatedRequest for JWT token handling
+  - Success/error messaging with user-friendly Polish language feedback
+  - Automatic list refresh after data modifications
+  - Dynamic form switching between create/update modes
+  - **Verified**: All modules tested with no JavaScript errors, full CRUD operations functional
+  - **Test API sections** consistently placed in left sidebar across Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
+
 - **September 30, 2025**: Fixed Login Layout Consistency Across All Modules
   - **Resolved duplicate auth sections issue** in Commands Manager, Fleet Data Manager, Fleet Config Manager, Fleet Software Manager
   - Removed legacy `.auth-section` HTML blocks with old login fields (login-username-old, login-password-old, etc.)
@@ -23,7 +37,6 @@ Comprehensive Fleet Management System based on Polish technical specifications, 
   - **docs/ARCHITECTURE.md**: System architecture, module design, authentication flow, deployment strategy
   - **docs/API.md**: Complete API documentation with 58 endpoints breakdown by router (auth: 5, fleet_config: 19, fleet_data: 11, fleet_software: 10, scenarios: 8, users: 5)
   - **docs/DATABASE.md**: Database schema with 14 tables, relationships, JSON fields, accurate field names from backend/models/models.py
-  - **Known Limitations documented**: Fleet Software Manager missing viewSoftware() and deleteSoftware() functions (planned Q4 2025)
   - **Architect-validated**: All documentation accurate and aligned with actual implementation
 
 - **September 30, 2025**: Sidebar Layout + Multi-Role Authentication + Responsive Design
