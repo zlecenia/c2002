@@ -6075,8 +6075,15 @@ async def fleet_software_manager():
             }
 
             async function viewSoftware(softwareId) {
-                const software = allSoftware.find(s => s.id === softwareId);
-                if (!software) return;
+                const software = softwareList.find(s => s.id === softwareId);
+                if (!software) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result">
+                        ❌ Nie znaleziono oprogramowania o ID: ${softwareId}
+                        </div>
+                    `;
+                    return;
+                }
 
                 document.getElementById('result').innerHTML = `
                     <div class="result" style="background: #e8f5e9; border-color: #4caf50;">
@@ -6088,6 +6095,8 @@ async def fleet_software_manager():
                         <p><strong>Repository:</strong> ${software.repository_url ? `<a href="${software.repository_url}" target="_blank">${software.repository_url}</a>` : 'Brak'}</p>
                         <p><strong>Status:</strong> ${software.is_active ? '<span class="status-badge status-installed">Aktywne</span>' : '<span class="status-badge status-failed">Nieaktywne</span>'}</p>
                         <p><strong>Utworzono:</strong> ${new Date(software.created_at).toLocaleDateString()}</p>
+                        <p><strong>Liczba wersji:</strong> ${software.versions_count || 0}</p>
+                        <p><strong>Najnowsza wersja:</strong> <span class="version-badge">${software.latest_version || 'Brak'}</span></p>
                     </div>
                 `;
             }
