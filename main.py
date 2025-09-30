@@ -4335,12 +4335,19 @@ async def fleet_config_manager():
             }
 
             async function loadDashboard() {
+                if (!getAuthToken()) {
+                    return; // Don't send request if not authenticated
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-config/dashboard');
                     
                     if (response.ok) {
                         const data = await response.json();
                         displayDashboard(data);
+                    } else if (response.status === 401) {
+                        console.log('Unauthorized - please login');
+                        clearAuthToken();
                     }
                 } catch (error) {
                     console.error('Error loading dashboard:', error);
@@ -4370,6 +4377,12 @@ async def fleet_config_manager():
             }
 
             async function loadSystemConfigs() {
+                if (!getAuthToken()) {
+                    document.getElementById('system-configs-list').innerHTML = 
+                        '<p style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć konfigurację systemu...</p>';
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-config/system-configs');
                     
@@ -4378,7 +4391,8 @@ async def fleet_config_manager():
                         displaySystemConfigs(systemConfigs);
                     } else if (response.status === 401 || response.status === 403) {
                         document.getElementById('system-configs-list').innerHTML = 
-                            '<p style="color: #e74c3c;">❌ Brak autoryzacji Configurator</p>';
+                            '<p style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Configurator</p>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
@@ -4412,6 +4426,12 @@ async def fleet_config_manager():
             }
 
             async function loadDeviceConfigs() {
+                if (!getAuthToken()) {
+                    document.getElementById('device-configs-table').getElementsByTagName('tbody')[0].innerHTML = 
+                        '<tr><td colspan="6" style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć konfigurację urządzeń...</td></tr>';
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-config/device-configs');
                     
@@ -4420,7 +4440,8 @@ async def fleet_config_manager():
                         displayDeviceConfigs(deviceConfigs);
                     } else if (response.status === 401 || response.status === 403) {
                         document.getElementById('device-configs-table').getElementsByTagName('tbody')[0].innerHTML = 
-                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Configurator</td></tr>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
@@ -4455,6 +4476,12 @@ async def fleet_config_manager():
             }
 
             async function loadTestScenarios() {
+                if (!getAuthToken()) {
+                    document.getElementById('test-scenarios-table').getElementsByTagName('tbody')[0].innerHTML = 
+                        '<tr><td colspan="5" style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć scenariusze testowe...</td></tr>';
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-config/test-scenario-configs');
                     
@@ -4463,7 +4490,8 @@ async def fleet_config_manager():
                         displayTestScenarios(testScenarios);
                     } else if (response.status === 401 || response.status === 403) {
                         document.getElementById('test-scenarios-table').getElementsByTagName('tbody')[0].innerHTML = 
-                            '<tr><td colspan="5" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                            '<tr><td colspan="5" style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Configurator</td></tr>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
@@ -4986,6 +5014,12 @@ async def fleet_config_manager():
             let editingTemplateId = null;
 
             async function loadJsonTemplates() {
+                if (!getAuthToken()) {
+                    document.querySelector('#json-templates-table tbody').innerHTML = 
+                        '<tr><td colspan="6" style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć szablony JSON...</td></tr>';
+                    return;
+                }
+                
                 const typeFilter = document.getElementById('template-type-filter').value;
                 const categoryFilter = document.getElementById('template-category-filter').value;
                 
@@ -5001,7 +5035,8 @@ async def fleet_config_manager():
                         displayJsonTemplates(jsonTemplates);
                     } else if (response.status === 401 || response.status === 403) {
                         document.querySelector('#json-templates-table tbody').innerHTML = 
-                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji Configurator</td></tr>';
+                            '<tr><td colspan="6" style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Configurator</td></tr>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
