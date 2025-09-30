@@ -2236,9 +2236,31 @@ async def fleet_config_manager():
             .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
             .nav-menu a:hover { background: #34495e; }
             .nav-menu a.active { background: #9b59b6; }
-            .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-            .header { background: #9b59b6; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-            .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            
+            /* Hide header and module-info */
+            .header { display: none !important; }
+            .module-info { display: none !important; }
+            
+            /* New app layout with sidebar */
+            .app-layout { display: flex; min-height: calc(100vh - 50px); }
+            .sidebar { width: 15%; min-width: 200px; background: #1f2a37; color: white; padding: 20px; position: sticky; top: 0; height: calc(100vh - 50px); overflow-y: auto; }
+            .main-content-wrapper { width: 85%; padding: 20px; overflow-y: auto; }
+            
+            /* Sidebar auth section */
+            .sidebar-auth { background: #374151; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #9b59b6; }
+            .sidebar-auth h4 { margin-top: 0; font-size: 14px; }
+            .sidebar-auth input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #4b5563; background: #1f2a37; color: white; border-radius: 4px; box-sizing: border-box; }
+            .sidebar-auth button { width: 100%; }
+            .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
+            
+            /* Sidebar module menu */
+            .sidebar-menu { margin-top: 20px; }
+            .sidebar-menu h4 { font-size: 14px; margin-bottom: 15px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px; }
+            .sidebar-menu .tab { display: block; width: 100%; background: #374151; color: white; border: none; padding: 12px; text-align: left; cursor: pointer; margin-bottom: 5px; border-radius: 4px; border-left: 3px solid transparent; transition: all 0.3s; }
+            .sidebar-menu .tab:hover { background: #4b5563; border-left-color: #9b59b6; }
+            .sidebar-menu .tab.active { background: #9b59b6; border-left-color: #7c3aed; font-weight: bold; }
+            
+            .container { max-width: 100%; margin: 0; padding: 0; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
             .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
             .stat-value { font-size: 2em; font-weight: bold; color: #9b59b6; }
@@ -2286,49 +2308,74 @@ async def fleet_config_manager():
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
-        <div class="container">
-            <div class="header">
-                <h1>⚙️ Fleet Config Manager</h1>
+        
+        <div class="app-layout">
+            <!-- Sidebar with login and module menu -->
+            <div class="sidebar">
+                <div class="sidebar-auth">
+                    <h4>🔐 Logowanie</h4>
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button class="btn" onclick="login()">Zaloguj</button>
+                    <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message"></div>
+                </div>
+                
+                <div class="sidebar-menu">
+                    <h4>⚙️ Menu Modułu</h4>
+                    <button class="tab active" onclick="showTab('system-config')">🔧 Konfiguracja systemu</button>
+                    <button class="tab" onclick="showTab('device-config')">📱 Konfiguracja urządzeń</button>
+                    <button class="tab" onclick="showTab('test-config')">🧪 Scenariusze testowe</button>
+                    <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
+                    <button class="tab" onclick="showTab('backup')">💾 Backup/Restore</button>
+                </div>
             </div>
             
-            <div class="module-info">
-                <h3>Moduł dla Configurator</h3>
-                <p><strong>Port:</strong> 5000</p>
-                <p><strong>Rola:</strong> Configurator</p>
-                <p><strong>Funkcje:</strong> Zarządzanie konfiguracją systemu, urządzeń i scenariuszy testowych</p>
-            </div>
-
-            <div class="auth-section">
-                <h4>🔐 Uwierzytelnianie</h4>
-                <div id="auth-status">
-                    <p>Zaloguj się jako Configurator aby uzyskać dostęp do funkcji:</p>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="login-username" placeholder="Username" style="padding: 5px;">
-                        <input type="password" id="login-password" placeholder="Password" style="padding: 5px;">
-                        <button class="btn" onclick="login()">Zaloguj</button>
-                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+            <!-- Main content area -->
+            <div class="main-content-wrapper">
+                <div class="container">
+                    <div class="header">
+                        <h1>⚙️ Fleet Config Manager</h1>
                     </div>
-                    <div id="auth-message" style="margin-top: 10px;"></div>
-                </div>
-            </div>
-
-            <!-- Dashboard Statistics -->
-            <div id="dashboard-section" style="display: none;">
-                <h3>📈 Configuration Dashboard</h3>
-                <div class="dashboard" id="dashboard-stats">
-                    <!-- Stats will be loaded here -->
-                </div>
-            </div>
-
-            <div class="main-content">
-                <div class="section">
-                    <div class="tabs">
-                        <button class="tab active" onclick="showTab('system-config')">Konfiguracja systemu</button>
-                        <button class="tab" onclick="showTab('device-config')">Konfiguracja urządzeń</button>
-                        <button class="tab" onclick="showTab('test-config')">Scenariusze testowe</button>
-                        <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
-                        <button class="tab" onclick="showTab('backup')">Backup/Restore</button>
+                    
+                    <div class="module-info">
+                        <h3>Moduł dla Configurator</h3>
+                        <p><strong>Port:</strong> 5000</p>
+                        <p><strong>Rola:</strong> Configurator</p>
+                        <p><strong>Funkcje:</strong> Zarządzanie konfiguracją systemu, urządzeń i scenariuszy testowych</p>
                     </div>
+
+                    <div class="auth-section">
+                        <h4>🔐 Uwierzytelnianie</h4>
+                        <div id="auth-status">
+                            <p>Zaloguj się jako Configurator aby uzyskać dostęp do funkcji:</p>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
+                                <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
+                                <button class="btn" onclick="login()">Zaloguj</button>
+                                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
+                            </div>
+                            <div id="auth-message-old" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Statistics -->
+                    <div id="dashboard-section" style="display: none;">
+                        <h3>📈 Configuration Dashboard</h3>
+                        <div class="dashboard" id="dashboard-stats">
+                            <!-- Stats will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="main-content">
+                        <div class="section">
+                            <div class="tabs" style="display: none;">
+                                <button class="tab active" onclick="showTab('system-config')">Konfiguracja systemu</button>
+                                <button class="tab" onclick="showTab('device-config')">Konfiguracja urządzeń</button>
+                                <button class="tab" onclick="showTab('test-config')">Scenariusze testowe</button>
+                                <button class="tab" onclick="showTab('json-templates')">📋 Szablony JSON</button>
+                                <button class="tab" onclick="showTab('backup')">Backup/Restore</button>
+                            </div>
 
                     <!-- System Configuration Tab -->
                     <div id="system-config-tab" class="tab-content active">
@@ -2610,6 +2657,8 @@ async def fleet_config_manager():
             </div>
 
             <div id="result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
         </div>
 
         <script>
