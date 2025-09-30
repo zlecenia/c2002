@@ -22,7 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 Initial Release
 
-Complete Fleet Management System implementation with 5 webGUI modules.
+Complete Fleet Management System implementation with 7 webGUI modules.
+
+### 🔧 Fixed - 2025-09-30 (Latest)
+- **Eliminated 401 Unauthorized errors** for unauthenticated users before login
+- Added JWT token validation before API requests in Fleet Config Manager, Fleet Data Manager, and Fleet Software Manager
+- Implemented user-friendly messages: "💡 Zaloguj się aby zobaczyć..." instead of silent errors
+- Added clearAuthToken() handling for expired/invalid tokens
+- Improved user experience with proper error handling and feedback
 
 ### ✨ Added
 
