@@ -2469,14 +2469,18 @@ async def fleet_config_manager():
                             <div class="form-group">
                                 <label>📝 Wartości domyślne (JSON):</label>
                                 <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                                    <button type="button" class="btn btn-secondary" onclick="formatTemplateJSON()">🎨 Formatuj JSON</button>
-                                    <button type="button" class="btn btn-secondary" onclick="validateTemplateJSON()">✔️ Waliduj JSON</button>
+                                    <button type="button" class="btn btn-secondary" onclick="templateJsonEditor.addField()">➕ Dodaj pole</button>
                                     <button type="button" class="btn btn-secondary" onclick="clearTemplateJSON()">🗑️ Wyczyść</button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleTemplateJSONView()">👁️ Podgląd JSON</button>
                                 </div>
-                                <textarea id="template-default-values" rows="10" style="font-family: monospace; font-size: 13px;" 
-                                    placeholder='{"pressure_min": 0, "pressure_max": 50, "duration": 60, "tolerance": 2}'></textarea>
+                                <div id="template-json-tree-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                    <!-- Tree editor będzie tu renderowany -->
+                                </div>
+                                <div id="template-json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                    <!-- JSON preview -->
+                                </div>
                                 <small style="color: #7f8c8d;">
-                                    Wpisz JSON z wartościami domyślnymi dla tego szablonu
+                                    Edytuj wartości domyślne używając pól powyżej
                                 </small>
                                 <div id="json-validation-result" style="margin-top: 5px;"></div>
                             </div>
@@ -2512,6 +2516,242 @@ async def fleet_config_manager():
             let systemConfigs = [];
             let deviceConfigs = [];
             let testScenarios = [];
+
+            // ========== UNIVERSAL JSON TREE EDITOR ==========
+            class JSONTreeEditor {
+                constructor(containerId) {
+                    this.container = document.getElementById(containerId);
+                    this.data = {};
+                    this.fieldCounter = 0;
+                }
+
+                init(jsonData = {}) {
+                    this.data = jsonData;
+                    this.render();
+                }
+
+                render() {
+                    this.container.innerHTML = '';
+                    if (Object.keys(this.data).length === 0) {
+                        this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
+                        return;
+                    }
+                    
+                    for (const [key, value] of Object.entries(this.data)) {
+                        this.renderField(key, value, this.container);
+                    }
+                }
+
+                renderField(key, value, parentElement, path = '') {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.style.cssText = 'margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd;';
+                    
+                    const currentPath = path ? `${path}.${key}` : key;
+                    const type = this.getType(value);
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; gap: 10px;';
+                    
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'text';
+                    keyInput.value = key;
+                    keyInput.style.cssText = 'flex: 0 0 180px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px; font-weight: bold;';
+                    keyInput.onchange = (e) => this.renameKey(path, key, e.target.value);
+                    
+                    const typeSelect = document.createElement('select');
+                    typeSelect.style.cssText = 'flex: 0 0 100px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    ['string', 'number', 'boolean', 'object', 'array'].forEach(t => {
+                        const option = document.createElement('option');
+                        option.value = t;
+                        option.textContent = t;
+                        option.selected = type === t;
+                        typeSelect.appendChild(option);
+                    });
+                    typeSelect.onchange = (e) => this.changeType(currentPath, e.target.value);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.className = 'btn btn-danger';
+                    deleteBtn.style.cssText = 'padding: 3px 8px; margin-left: auto;';
+                    deleteBtn.onclick = () => this.deleteField(currentPath);
+                    
+                    headerDiv.appendChild(keyInput);
+                    headerDiv.appendChild(typeSelect);
+                    headerDiv.appendChild(deleteBtn);
+                    fieldDiv.appendChild(headerDiv);
+                    
+                    const valueDiv = document.createElement('div');
+                    
+                    if (type === 'object') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #3498db; margin-top: 10px;';
+                        for (const [childKey, childValue] of Object.entries(value)) {
+                            this.renderField(childKey, childValue, valueDiv, currentPath);
+                        }
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj pole do obiektu';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addFieldToObject(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'array') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #9b59b6; margin-top: 10px;';
+                        value.forEach((item, index) => {
+                            this.renderField(`[${index}]`, item, valueDiv, currentPath);
+                        });
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj element do array';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addArrayElement(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'boolean') {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = value;
+                        checkbox.style.cssText = 'width: 20px; height: 20px;';
+                        checkbox.onchange = (e) => this.setValue(currentPath, e.target.checked);
+                        valueDiv.appendChild(checkbox);
+                    } else if (type === 'number') {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, parseFloat(e.target.value));
+                        valueDiv.appendChild(input);
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, e.target.value);
+                        valueDiv.appendChild(input);
+                    }
+                    
+                    fieldDiv.appendChild(valueDiv);
+                    parentElement.appendChild(fieldDiv);
+                }
+
+                getType(value) {
+                    if (Array.isArray(value)) return 'array';
+                    if (value === null) return 'string';
+                    return typeof value;
+                }
+
+                setValue(path, value) {
+                    const keys = path.split('.').filter(k => k && !k.startsWith('['));
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = value;
+                    this.render();
+                }
+
+                addField() {
+                    const newKey = `field_${this.fieldCounter++}`;
+                    this.data[newKey] = '';
+                    this.render();
+                }
+
+                addFieldToObject(path) {
+                    const obj = this.getValueByPath(path);
+                    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                        obj[`field_${this.fieldCounter++}`] = '';
+                        this.render();
+                    }
+                }
+
+                addArrayElement(path) {
+                    const arr = this.getValueByPath(path);
+                    if (arr && Array.isArray(arr)) {
+                        arr.push('');
+                        this.render();
+                    }
+                }
+
+                deleteField(path) {
+                    const keys = path.split('.').filter(k => k);
+                    if (keys.length === 1) {
+                        delete this.data[keys[0]];
+                    } else {
+                        let current = this.data;
+                        for (let i = 0; i < keys.length - 1; i++) {
+                            current = current[keys[i]];
+                        }
+                        delete current[keys[keys.length - 1]];
+                    }
+                    this.render();
+                }
+
+                renameKey(parentPath, oldKey, newKey) {
+                    if (oldKey === newKey) return;
+                    
+                    if (!parentPath) {
+                        this.data[newKey] = this.data[oldKey];
+                        delete this.data[oldKey];
+                    } else {
+                        const parent = this.getValueByPath(parentPath);
+                        parent[newKey] = parent[oldKey];
+                        delete parent[oldKey];
+                    }
+                    this.render();
+                }
+
+                changeType(path, newType) {
+                    const defaultValues = {
+                        'string': '',
+                        'number': 0,
+                        'boolean': false,
+                        'object': {},
+                        'array': []
+                    };
+                    
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = defaultValues[newType];
+                    this.render();
+                }
+
+                getValueByPath(path) {
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (const key of keys) {
+                        current = current[key];
+                    }
+                    return current;
+                }
+
+                clear() {
+                    this.data = {};
+                    this.render();
+                }
+
+                getJSON() {
+                    return this.data;
+                }
+
+                setJSON(jsonData) {
+                    this.data = jsonData;
+                    this.render();
+                }
+            }
+
+            // Initialize JSON Tree Editor for Templates
+            const templateJsonEditor = new JSONTreeEditor('template-json-tree-editor');
+            templateJsonEditor.init({});
+
+            function toggleTemplateJSONView() {
+                const preview = document.getElementById('template-json-preview');
+                if (preview.style.display === 'none') {
+                    preview.style.display = 'block';
+                    preview.textContent = JSON.stringify(templateJsonEditor.getJSON(), null, 2);
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
 
             function getAuthToken() {
                 if (!authToken) {
@@ -3198,6 +3438,8 @@ async def fleet_config_manager():
                 document.getElementById('template-form-title').textContent = 'Dodaj szablon JSON';
                 document.getElementById('add-template-form').style.display = 'block';
                 document.getElementById('json-template-form').reset();
+                templateJsonEditor.clear();
+                document.getElementById('template-json-preview').style.display = 'none';
                 document.getElementById('template-id').value = '';
                 document.getElementById('form-title').textContent = 'Nowy szablon JSON';
             }
@@ -3205,6 +3447,8 @@ async def fleet_config_manager():
             function hideTemplateForm() {
                 document.getElementById('add-template-form').style.display = 'none';
                 document.getElementById('json-template-form').reset();
+                templateJsonEditor.clear();
+                document.getElementById('template-json-preview').style.display = 'none';
                 editingTemplateId = null;
                 document.getElementById('form-title').textContent = 'Formularz konfiguracji';
             }
@@ -3238,8 +3482,9 @@ async def fleet_config_manager():
                     document.getElementById('template-type').value = template.template_type;
                     document.getElementById('template-category').value = template.category || '';
                     document.getElementById('template-description').value = template.description || '';
-                    document.getElementById('template-default-values').value = JSON.stringify(template.default_values, null, 2);
+                    templateJsonEditor.setJSON(template.default_values);
                     document.getElementById('template-schema').value = template.schema ? JSON.stringify(template.schema, null, 2) : '';
+                    document.getElementById('template-json-preview').style.display = 'none';
                     
                     document.getElementById('form-title').textContent = 'Edycja szablonu JSON';
                 }
@@ -3287,22 +3532,22 @@ async def fleet_config_manager():
                     description: document.getElementById('template-description').value || null
                 };
 
-                // Parse JSON fields
-                try {
-                    const defaultValuesText = document.getElementById('template-default-values').value;
-                    if (defaultValuesText.trim()) {
-                        templateData.default_values = JSON.parse(defaultValuesText);
-                    } else {
-                        alert('Wartości domyślne (JSON) są wymagane');
-                        return;
-                    }
+                // Get JSON from tree editor
+                const defaultValues = templateJsonEditor.getJSON();
+                if (Object.keys(defaultValues).length === 0) {
+                    alert('Wartości domyślne (JSON) są wymagane - dodaj przynajmniej jedno pole');
+                    return;
+                }
+                templateData.default_values = defaultValues;
 
+                // Parse schema JSON (optional)
+                try {
                     const schemaText = document.getElementById('template-schema').value;
                     if (schemaText.trim()) {
                         templateData.schema = JSON.parse(schemaText);
                     }
                 } catch (e) {
-                    alert('Błąd parsowania JSON: ' + e.message);
+                    alert('Błąd parsowania Schema JSON: ' + e.message);
                     return;
                 }
 
@@ -3353,35 +3598,10 @@ async def fleet_config_manager():
                 }
             }
 
-            function formatTemplateJSON() {
-                const textarea = document.getElementById('template-default-values');
-                try {
-                    const json = JSON.parse(textarea.value);
-                    textarea.value = JSON.stringify(json, null, 2);
-                    document.getElementById('json-validation-result').innerHTML = 
-                        '<span style="color: green;">✔️ JSON sformatowany poprawnie</span>';
-                } catch (e) {
-                    document.getElementById('json-validation-result').innerHTML = 
-                        '<span style="color: red;">❌ Nieprawidłowy JSON: ' + e.message + '</span>';
-                }
-            }
-
-            function validateTemplateJSON() {
-                const textarea = document.getElementById('template-default-values');
-                try {
-                    JSON.parse(textarea.value);
-                    document.getElementById('json-validation-result').innerHTML = 
-                        '<span style="color: green;">✔️ JSON jest poprawny</span>';
-                } catch (e) {
-                    document.getElementById('json-validation-result').innerHTML = 
-                        '<span style="color: red;">❌ Błąd: ' + e.message + '</span>';
-                }
-            }
-
             function clearTemplateJSON() {
-                if (confirm('Czy na pewno chcesz wyczyścić JSON?')) {
-                    document.getElementById('template-default-values').value = '';
-                    document.getElementById('json-validation-result').innerHTML = '';
+                if (confirm('Czy na pewno chcesz wyczyścić wszystkie pola JSON?')) {
+                    templateJsonEditor.clear();
+                    document.getElementById('template-json-preview').style.display = 'none';
                 }
             }
 
