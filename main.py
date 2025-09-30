@@ -867,6 +867,20 @@ async def commands_manager():
                 }
             }
 
+            function showCreateForm() {
+                const formSection = document.getElementById('scenario-form');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function showScenarios() {
+                const scenariosSection = document.getElementById('scenarios-list');
+                if (scenariosSection) {
+                    scenariosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
             async function login() {
                 const username = document.getElementById('login-username').value;
                 const password = document.getElementById('login-password').value;
@@ -4127,10 +4141,10 @@ async def fleet_software_manager():
 
                 <h3>💿 Menu Modułu</h3>
                 <div class="menu-section">
-                    <div class="menu-item active" onclick="showTab('software')">📦 Oprogramowanie</div>
-                    <div class="menu-item" onclick="showTab('versions')">🔢 Wersje</div>
-                    <div class="menu-item" onclick="showTab('installations')">💾 Instalacje</div>
-                    <div class="menu-item" onclick="showTab('dashboard')">📊 Dashboard</div>
+                    <div class="menu-item active" onclick="scrollToSection('software-tab')">📦 Oprogramowanie</div>
+                    <div class="menu-item" onclick="scrollToSection('versions-tab')">🔢 Wersje</div>
+                    <div class="menu-item" onclick="scrollToSection('installations-tab')">💾 Instalacje</div>
+                    <div class="menu-item" onclick="scrollToSection('dashboard')">📊 Dashboard</div>
                 </div>
             </div>
 
@@ -4374,6 +4388,18 @@ async def fleet_software_manager():
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                }
+            }
+
+            function scrollToSection(sectionId) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    document.querySelectorAll('.menu-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
                 }
             }
 
