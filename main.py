@@ -685,13 +685,26 @@ async def commands_manager():
                         </div>
                         <div class="form-group">
                             <label>Typ urządzenia:</label>
-                            <select id="device-type">
+                            <select id="device-type" onchange="loadTemplatesForType()">
                                 <option value="">Wybierz typ urządzenia</option>
                                 <option value="mask_tester">Tester masek</option>
                                 <option value="pressure_sensor">Czujnik ciśnienia</option>
                                 <option value="flow_meter">Przepływomierz</option>
                             </select>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>📋 Szablon JSON (opcjonalnie):</label>
+                            <button type="button" class="btn btn-secondary" onclick="showTemplates()">🔽 Wybierz szablon JSON</button>
+                            <div id="templates-list" style="display: none; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 4px;"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>📝 Konfiguracja JSON (test_flow):</label>
+                            <textarea id="json-config" rows="8" style="font-family: monospace; font-size: 12px;" placeholder='{"pressure_min": 0, "pressure_max": 50, "duration": 60}'></textarea>
+                            <small style="color: #7f8c8d;">Edytuj JSON ręcznie lub wybierz szablon powyżej</small>
+                        </div>
+
                         <button type="button" class="btn" onclick="createScenario()">Utwórz Scenariusz</button>
                     </form>
 
@@ -888,14 +901,89 @@ async def commands_manager():
                 `;
             }
 
+            let jsonTemplates = [];
+
+            async function loadTemplatesForType() {
+                const deviceType = document.getElementById('device-type').value;
+                if (!deviceType) {
+                    document.getElementById('templates-list').style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const response = await makeAuthenticatedRequest(
+                        `/api/v1/fleet-config/json-templates?template_type=test_flow&category=${deviceType}`
+                    );
+                    
+                    if (response.ok) {
+                        jsonTemplates = await response.json();
+                        if (jsonTemplates.length > 0) {
+                            document.getElementById('templates-list').innerHTML = `
+                                <p style="margin-bottom: 10px;"><strong>Dostępne szablony dla ${deviceType}:</strong></p>
+                                ${jsonTemplates.map(t => `
+                                    <div style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" 
+                                         onclick="applyTemplate(${t.id})">
+                                        <strong>${t.name}</strong>
+                                        <br><small style="color: #7f8c8d;">${t.description || 'Brak opisu'}</small>
+                                    </div>
+                                `).join('')}
+                            `;
+                        } else {
+                            document.getElementById('templates-list').innerHTML = 
+                                '<p style="color: #7f8c8d;">Brak dostępnych szablonów dla tego typu urządzenia</p>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading templates:', error);
+                }
+            }
+
+            function showTemplates() {
+                const templatesList = document.getElementById('templates-list');
+                if (templatesList.style.display === 'none') {
+                    templatesList.style.display = 'block';
+                    loadTemplatesForType();
+                } else {
+                    templatesList.style.display = 'none';
+                }
+            }
+
+            function applyTemplate(templateId) {
+                const template = jsonTemplates.find(t => t.id === templateId);
+                if (template) {
+                    const jsonConfig = document.getElementById('json-config');
+                    jsonConfig.value = JSON.stringify(template.default_values, null, 2);
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="result" style="background: #d4edda; border-color: #c3e6cb;">
+                        ✅ Szablon "${template.name}" zastosowany! Możesz edytować wartości JSON poniżej.
+                        </div>
+                    `;
+                    
+                    document.getElementById('templates-list').style.display = 'none';
+                }
+            }
+
             async function createScenario() {
                 const name = document.getElementById('scenario-name').value;
                 const description = document.getElementById('scenario-description').value;
                 const deviceType = document.getElementById('device-type').value;
+                const jsonConfigText = document.getElementById('json-config').value;
 
                 if (!name) {
                     alert('Podaj nazwę scenariusza');
                     return;
+                }
+
+                // Parse JSON config
+                let testFlow = null;
+                if (jsonConfigText.trim()) {
+                    try {
+                        testFlow = JSON.parse(jsonConfigText);
+                    } catch (e) {
+                        alert('Błąd parsowania JSON: ' + e.message);
+                        return;
+                    }
                 }
 
                 try {
@@ -905,6 +993,7 @@ async def commands_manager():
                             name: name,
                             description: description,
                             device_type: deviceType,
+                            test_flow: testFlow,
                             is_active: true
                         })
                     });
@@ -923,11 +1012,14 @@ async def commands_manager():
                     document.getElementById('result').innerHTML = `
                         <div class="result">
                         ✅ Scenariusz utworzony pomyślnie: ${result.name}
+                        ${testFlow ? '<br><small>Z konfiguracją JSON</small>' : ''}
                         </div>
                     `;
                     
                     // Clear form
                     document.getElementById('scenario-form').reset();
+                    document.getElementById('json-config').value = '';
+                    document.getElementById('templates-list').style.display = 'none';
                     
                     // Reload scenarios
                     loadScenarios();
