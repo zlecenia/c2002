@@ -4,6 +4,20 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Sidebar Layout + Multi-Role Authentication + Responsive Design
+  - **Implemented 15% sidebar layout across ALL 5 modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager, Commands Manager, Connect++)
+  - Sidebar contains login section with username/password inputs and logout button
+  - Module-specific navigation menu in sidebar for easy tab switching
+  - Hidden .header and .module-info elements via CSS for clean design
+  - **Multi-role JWT authentication**: Extended JWT tokens to include roles array and active_role field
+  - Added `/api/v1/auth/switch-role` endpoint for switching roles without re-login
+  - Updated maker1 user with all 6 roles (maker, operator, admin, superuser, manager, configurator)
+  - **Responsive design**: Added @media (max-width: 768px) queries to all 5 modules
+  - Mobile layout stacks sidebar above content (flex-direction: column)
+  - Sidebar becomes 100% width on mobile devices
+  - Grid layouts switch to single column on mobile
+  - Tested and validated on desktop and mobile breakpoints
+
 - **September 30, 2025**: URL Hash Navigation & Visual JSON Editors in Fleet Config Manager
   - **Added URL hash tracking to all 3 multi-tab modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager)
   - Browser URL now reflects current tab (e.g., `/fleet-config-manager#system-config`)

@@ -547,13 +547,27 @@ async def connect_plus():
             .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
             .nav-menu a:hover { background: #34495e; }
             .nav-menu a.active { background: #3498db; }
-            .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            h1 { color: #2c3e50; text-align: center; }
-            .module-info { background: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0; }
+            h1 { display: none; }
+            .module-info { display: none; }
+            .app-container { display: flex; min-height: calc(100vh - 52px); }
+            .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+            .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+            .sidebar .menu-section { margin-top: 20px; }
+            .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
+            .sidebar .menu-item:hover { background: #7f8c8d; }
+            .sidebar .menu-item.active { background: #3498db; font-weight: bold; }
+            .main-content-area { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+            .container { max-width: 100%; margin: 0; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
             .api-test { margin: 20px 0; }
             button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
             button:hover { background: #2980b9; }
             .result { margin: 10px 0; padding: 10px; background: #d5edda; border-radius: 5px; border: 1px solid #c3e6cb; }
+            
+            @media (max-width: 768px) {
+                .app-container { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+                .main-content-area { width: 100%; }
+            }
         </style>
     </head>
     <body>
@@ -568,22 +582,34 @@ async def connect_plus():
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
-        <div class="container">
-            <h1>🔗 Connect++ Module</h1>
-            <div class="module-info">
-                <h3>Moduł dla Operatorów</h3>
-                <p><strong>Port:</strong> 5000</p>
-                <p><strong>Rola:</strong> Operator</p>
-                <p><strong>Funkcje:</strong> Obsługa testów urządzeń</p>
+        <div class="app-container">
+            <div class="sidebar">
+                <h3>🔗 Menu Modułu</h3>
+                <div class="menu-section">
+                    <div class="menu-item active">📊 Test API</div>
+                    <div class="menu-item">🔧 Ustawienia</div>
+                </div>
             </div>
-            
-            <div class="api-test">
-                <h3>Test API Endpoints:</h3>
-                <button onclick="testUsers()">Test Users</button>
-                <button onclick="testDevices()">Test Devices</button>
-                <button onclick="testCustomers()">Test Customers</button>
-                <button onclick="testScenarios()">Test Scenarios</button>
-                <div id="result"></div>
+
+            <div class="main-content-area">
+                <div class="container">
+                    <h1>🔗 Connect++ Module</h1>
+                    <div class="module-info">
+                        <h3>Moduł dla Operatorów</h3>
+                        <p><strong>Port:</strong> 5000</p>
+                        <p><strong>Rola:</strong> Operator</p>
+                        <p><strong>Funkcje:</strong> Obsługa testów urządzeń</p>
+                    </div>
+                    
+                    <div class="api-test">
+                        <h3>Test API Endpoints:</h3>
+                        <button onclick="testUsers()">Test Users</button>
+                        <button onclick="testDevices()">Test Devices</button>
+                        <button onclick="testCustomers()">Test Customers</button>
+                        <button onclick="testScenarios()">Test Scenarios</button>
+                        <div id="result"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -612,6 +638,7 @@ async def connect_plus():
             function testCustomers() { testAPI('customers', 'Customers'); }
             function testScenarios() { testAPI('test-scenarios', 'Test Scenarios'); }
         </script>
+        </div>
     </body>
     </html>
     """
@@ -634,9 +661,21 @@ async def commands_manager():
             .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
             .nav-menu a:hover { background: #34495e; }
             .nav-menu a.active { background: #e74c3c; }
-            .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-            .header { background: #e74c3c; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-            .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .header { display: none; }
+            .module-info { display: none; }
+            .auth-section { display: none; }
+            .app-container { display: flex; min-height: calc(100vh - 52px); }
+            .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+            .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+            .sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+            .sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+            .sidebar .menu-section { margin-top: 20px; }
+            .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
+            .sidebar .menu-item:hover { background: #7f8c8d; }
+            .sidebar .menu-item.active { background: #e74c3c; font-weight: bold; }
+            .main-content-area { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
             .btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
@@ -652,6 +691,13 @@ async def commands_manager():
             .scenario-item.active { background-color: #e74c3c; color: white; }
             .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #e74c3c; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
             .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+            
+            @media (max-width: 768px) {
+                .app-container { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+                .main-content-area { width: 100%; }
+                .main-content { grid-template-columns: 1fr; }
+            }
         </style>
     </head>
     <body>
@@ -666,7 +712,26 @@ async def commands_manager():
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
-        <div class="container">
+        <div class="app-container">
+            <div class="sidebar">
+                <h3>🔐 Logowanie</h3>
+                <div class="login-section">
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button class="btn btn-success" onclick="login()">Zaloguj</button>
+                    <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <h3>⚙️ Menu Modułu</h3>
+                <div class="menu-section">
+                    <div class="menu-item active" onclick="showScenarios()">📋 Lista Scenariuszy</div>
+                    <div class="menu-item" onclick="showCreateForm()">➕ Nowy Scenariusz</div>
+                </div>
+            </div>
+
+            <div class="main-content-area">
+            <div class="container">
             <div class="header">
                 <h1>⚙️ Commands Manager</h1>
             </div>
@@ -683,12 +748,12 @@ async def commands_manager():
                 <div id="auth-status">
                     <p>Zaloguj się jako Superuser aby uzyskać dostęp do funkcji:</p>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="login-username" placeholder="Username" style="padding: 5px;">
-                        <input type="password" id="login-password" placeholder="Password" style="padding: 5px;">
+                        <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
+                        <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
                         <button class="btn" onclick="login()">Zaloguj</button>
-                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
                     </div>
-                    <div id="auth-message" style="margin-top: 10px;"></div>
+                    <div id="auth-message-old" style="margin-top: 10px;"></div>
                 </div>
             </div>
 
@@ -1360,6 +1425,9 @@ async def commands_manager():
                 }
             });
         </script>
+            </div>
+            </div>
+        </div>
     </body>
     </html>
     """
@@ -1435,6 +1503,13 @@ async def fleet_data_manager():
             .result { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #27ae60; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
             .auth-section { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
             .filter-section { background: #e8f5e8; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+            
+            @media (max-width: 768px) {
+                .app-layout { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 2px solid #34495e; }
+                .main-content-wrapper { width: 100%; }
+                .main-content { grid-template-columns: 1fr; }
+            }
         </style>
     </head>
     <body>
@@ -2342,6 +2417,14 @@ async def fleet_config_manager():
             .config-header { font-weight: bold; color: #9b59b6; margin-bottom: 10px; }
             .config-value { background: white; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; }
             .backup-section { background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 15px 0; }
+            
+            @media (max-width: 768px) {
+                .app-layout { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 2px solid #34495e; }
+                .main-content-wrapper { width: 100%; }
+                .main-content { grid-template-columns: 1fr; }
+                .tabs { flex-direction: column; }
+            }
         </style>
     </head>
     <body>
@@ -3961,9 +4044,21 @@ async def fleet_software_manager():
             .nav-menu a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: background 0.3s; }
             .nav-menu a:hover { background: #34495e; }
             .nav-menu a.active { background: #34495e; }
-            .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-            .header { background: #34495e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-            .module-info { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .header { display: none; }
+            .module-info { display: none; }
+            .auth-section { display: none; }
+            .app-container { display: flex; min-height: calc(100vh - 52px); }
+            .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
+            .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+            .sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+            .sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+            .sidebar .menu-section { margin-top: 20px; }
+            .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
+            .sidebar .menu-item:hover { background: #7f8c8d; }
+            .sidebar .menu-item.active { background: #27ae60; font-weight: bold; }
+            .main-content-area { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
             .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
             .stat-value { font-size: 2em; font-weight: bold; color: #34495e; }
@@ -3998,6 +4093,13 @@ async def fleet_software_manager():
             .status-pending { background: #f39c12; }
             .status-failed { background: #e74c3c; }
             .category-badge { background: #9b59b6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+            
+            @media (max-width: 768px) {
+                .app-container { flex-direction: column; }
+                .sidebar { width: 100%; height: auto; position: relative; border-bottom: 2px solid #34495e; }
+                .main-content-area { width: 100%; }
+                .main-content { grid-template-columns: 1fr; }
+            }
         </style>
     </head>
     <body>
@@ -4012,7 +4114,28 @@ async def fleet_software_manager():
                 <li><a href="/docs">📚 API Docs</a></li>
             </ul>
         </nav>
-        <div class="container">
+        <div class="app-container">
+            <div class="sidebar">
+                <h3>🔐 Logowanie</h3>
+                <div class="login-section">
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button class="btn btn-success" onclick="login()">Zaloguj</button>
+                    <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <h3>💿 Menu Modułu</h3>
+                <div class="menu-section">
+                    <div class="menu-item active" onclick="showTab('software')">📦 Oprogramowanie</div>
+                    <div class="menu-item" onclick="showTab('versions')">🔢 Wersje</div>
+                    <div class="menu-item" onclick="showTab('installations')">💾 Instalacje</div>
+                    <div class="menu-item" onclick="showTab('dashboard')">📊 Dashboard</div>
+                </div>
+            </div>
+
+            <div class="main-content-area">
+            <div class="container">
             <div class="header">
                 <h1>💾 Fleet Software Manager</h1>
             </div>
@@ -4029,12 +4152,12 @@ async def fleet_software_manager():
                 <div id="auth-status">
                     <p>Zaloguj się jako Maker aby uzyskać dostęp do funkcji:</p>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="login-username" placeholder="Username" style="padding: 5px;">
-                        <input type="password" id="login-password" placeholder="Password" style="padding: 5px;">
+                        <input type="text" id="login-username-old" placeholder="Username" style="padding: 5px;">
+                        <input type="password" id="login-password-old" placeholder="Password" style="padding: 5px;">
                         <button class="btn" onclick="login()">Zaloguj</button>
-                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                        <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn-old">Wyloguj</button>
                     </div>
-                    <div id="auth-message" style="margin-top: 10px;"></div>
+                    <div id="auth-message-old" style="margin-top: 10px;"></div>
                 </div>
             </div>
 
@@ -4913,6 +5036,9 @@ async def fleet_software_manager():
                 updateAuthUI();
             });
         </script>
+            </div>
+            </div>
+        </div>
     </body>
     </html>
     """
