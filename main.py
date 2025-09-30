@@ -4814,10 +4814,10 @@ async def fleet_software_manager():
             <div class="sidebar">
                 <h3>💿 Menu Modułu</h3>
                 <div class="menu-section">
-                    <div class="menu-item active" onclick="scrollToSection('software-tab')">📦 Oprogramowanie</div>
-                    <div class="menu-item" onclick="scrollToSection('versions-tab')">🔢 Wersje</div>
-                    <div class="menu-item" onclick="scrollToSection('installations-tab')">💾 Instalacje</div>
                     <div class="menu-item" onclick="scrollToSection('dashboard')">📊 Dashboard</div>
+                    <div class="menu-item active" onclick="showTab('software-tab', this)">📦 Oprogramowanie</div>
+                    <div class="menu-item" onclick="showTab('versions-tab', this)">🔢 Wersje</div>
+                    <div class="menu-item" onclick="showTab('installations-tab', this)">💾 Instalacje</div>
                 </div>
             </div>
 
@@ -5245,6 +5245,11 @@ async def fleet_software_manager():
                 // Remove active class from all tab buttons
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.classList.remove('active');
+                });
+                
+                // Remove active class from all menu items
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
                 });
                 
                 // Show selected tab and mark button as active
