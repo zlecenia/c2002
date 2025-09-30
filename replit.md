@@ -4,6 +4,19 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Comprehensive Documentation Suite
+  - **Created complete documentation package** for developers and users
+  - **USERS.md**: Default login credentials, role system explanation, multi-role authentication guide
+  - **README.md**: Full setup instructions, Docker configuration, troubleshooting, API overview
+  - **CHANGELOG.md**: Complete v1.0.0 history with features, known issues (Fleet Software Manager partial implementation)
+  - **TODO.md**: Prioritized task list with Q4 2025 roadmap
+  - **Dockerfile + docker-compose.yml**: Development environment with PostgreSQL 15
+  - **docs/ARCHITECTURE.md**: System architecture, module design, authentication flow, deployment strategy
+  - **docs/API.md**: Complete API documentation with 58 endpoints breakdown by router (auth: 5, fleet_config: 19, fleet_data: 11, fleet_software: 10, scenarios: 8, users: 5)
+  - **docs/DATABASE.md**: Database schema with 14 tables, relationships, JSON fields, accurate field names from backend/models/models.py
+  - **Known Limitations documented**: Fleet Software Manager missing viewSoftware() and deleteSoftware() functions (planned Q4 2025)
+  - **Architect-validated**: All documentation accurate and aligned with actual implementation
+
 - **September 30, 2025**: Sidebar Layout + Multi-Role Authentication + Responsive Design
   - **Implemented 15% sidebar layout across ALL 5 modules** (Fleet Config Manager, Fleet Data Manager, Fleet Software Manager, Commands Manager, Connect++)
   - Sidebar contains login section with username/password inputs and logout button
