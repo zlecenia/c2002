@@ -37,7 +37,7 @@
 - [ ] **CSV export/import** for devices and customers
 - [ ] **Device location tracking** on map
 
-### Features - Commands Manager
+### Features - Connect Manager
 - [ ] **Test execution engine** - Actually run tests on devices
 - [ ] **Test results visualization** - Charts and graphs
 - [ ] **Test scheduling** - Run tests at specific times

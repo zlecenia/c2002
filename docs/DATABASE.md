@@ -284,7 +284,7 @@ System and device configuration settings (unified table).
 
 **Component Values:**
 - `CPP` - Connect++
-- `CM` - Commands Manager
+- `CM` - Connect Manager
 - `FDM` - Fleet Data Manager
 - `FCM` - Fleet Config Manager
 - `FSM` - Fleet Software Manager
@@ -523,7 +523,7 @@ The system uses JSON columns extensively for flexibility:
 | test_reports | pressure_data | Pressure data | No |
 | system_logs | details | Log details | No |
 
-**Visual JSON Editors:** Fleet Data Manager, Fleet Config Manager, and Commands Manager modules provide interactive tree-based JSON editors for relevant fields, eliminating manual JSON syntax errors.
+**Visual JSON Editors:** Fleet Data Manager, Fleet Config Manager, and Connect Manager modules provide interactive tree-based JSON editors for relevant fields, eliminating manual JSON syntax errors.
 
 ---
 
