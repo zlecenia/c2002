@@ -2800,12 +2800,19 @@ async def fleet_data_manager():
             });
 
             async function loadDashboard() {
+                if (!getAuthToken()) {
+                    return; // Don't send request if not authenticated
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-data/dashboard');
                     
                     if (response.ok) {
                         const data = await response.json();
                         displayDashboard(data);
+                    } else if (response.status === 401) {
+                        console.log('Unauthorized - please login');
+                        clearAuthToken();
                     }
                 } catch (error) {
                     console.error('Error loading dashboard:', error);
@@ -2835,6 +2842,12 @@ async def fleet_data_manager():
             }
 
             async function loadDevices() {
+                if (!getAuthToken()) {
+                    document.getElementById('devices-table').getElementsByTagName('tbody')[0].innerHTML = 
+                        '<tr><td colspan="5" style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć urządzenia...</td></tr>';
+                    return;
+                }
+                
                 try {
                     const deviceType = document.getElementById('device-type-filter').value;
                     const status = document.getElementById('device-status-filter').value;
@@ -2850,7 +2863,8 @@ async def fleet_data_manager():
                         displayDevices(devices);
                     } else if (response.status === 401 || response.status === 403) {
                         document.getElementById('devices-table').getElementsByTagName('tbody')[0].innerHTML = 
-                            '<tr><td colspan="5" style="color: #e74c3c;">❌ Brak autoryzacji Manager</td></tr>';
+                            '<tr><td colspan="5" style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Manager</td></tr>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
@@ -2903,6 +2917,12 @@ async def fleet_data_manager():
             }
 
             async function loadCustomers() {
+                if (!getAuthToken()) {
+                    document.getElementById('customers-table').getElementsByTagName('tbody')[0].innerHTML = 
+                        '<tr><td colspan="4" style="color: #95a5a6;">💡 Zaloguj się aby zobaczyć klientów...</td></tr>';
+                    return;
+                }
+                
                 try {
                     const response = await makeAuthenticatedRequest('/api/v1/fleet-data/customers');
                     
@@ -2911,7 +2931,8 @@ async def fleet_data_manager():
                         displayCustomers(customers);
                     } else if (response.status === 401 || response.status === 403) {
                         document.getElementById('customers-table').getElementsByTagName('tbody')[0].innerHTML = 
-                            '<tr><td colspan="4" style="color: #e74c3c;">❌ Brak autoryzacji Manager</td></tr>';
+                            '<tr><td colspan="4" style="color: #e74c3c;">❌ Brak autoryzacji - wymagana rola Manager</td></tr>';
+                        clearAuthToken();
                     }
                 } catch (error) {
                     document.getElementById('result').innerHTML = `
