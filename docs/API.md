@@ -18,7 +18,7 @@
 
 ## 🌐 Overview
 
-The Fleet Management System API is a RESTful API built with FastAPI. It provides **58 endpoints** for managing devices, customers, software, configurations, and test scenarios.
+The Fleet Management System API is a RESTful API built with FastAPI. It provides **58 endpoints** for managing devices, customers, software, configurations, and test scenarios, plus **8 module pages** for the user interface.
 
 ### API Characteristics
 
@@ -813,6 +813,44 @@ Content-Type: application/json
 
 ---
 
+## 🖥️ Module Pages
+
+The system provides 8 HTML pages for the user interface modules:
+
+### Legacy Modules (in main.py)
+
+| Endpoint | Module | Role | Description |
+|----------|--------|------|-------------|
+| `/` | Landing Page | - | Homepage with system overview |
+| `/connect-plus-plus` | Connect++ | operator | Simple device testing interface |
+| `/connect-display` | Connect Display | - | LCD touchscreen interface (1280×400px) |
+| `/connect-manager` | Connect Manager | superuser | Test scenario management |
+| `/fleet-data-manager` | Fleet Data Manager | manager | Device and customer management |
+| `/fleet-config-manager` | Fleet Config Manager | configurator | System configuration |
+| `/fleet-software-manager` | Fleet Software Manager | maker | Software package management |
+| `/fleet-workshop-manager` | Fleet Workshop Manager | - | Maintenance operations |
+
+### Modular Modules (New Architecture - 2025-09-30)
+
+| Endpoint | Module | Status | Description |
+|----------|--------|--------|-------------|
+| `/fsm-modular` | Fleet Software Manager | ✅ Pilot | Modular architecture demonstration |
+
+**Modular Features:**
+- 3-column responsive layout (15% + 70% + 15%)
+- Top navigation menu with all modules
+- Shared common components (CSS, JS)
+- Dashboard with statistics
+- API test section in right column
+
+**Static Assets:**
+- Common CSS: `/modules/common/static/css/common.css`
+- Common JS: `/modules/common/static/js/auth.js`, `/modules/common/static/js/utils.js`
+- Module CSS: `/modules/fsm/frontend/fsm.css`
+- Module JS: `/modules/fsm/frontend/fsm.js`
+
+---
+
 ## 📚 Interactive Documentation
 
 Visit the interactive API documentation:
@@ -828,4 +866,4 @@ Features:
 ---
 
 **Last Updated:** September 30, 2025  
-**Version:** 1.0.0
+**Version:** 1.1.0
