@@ -30,6 +30,9 @@ Complete Fleet Management System implementation with 7 webGUI modules.
 - Implemented user-friendly messages: "💡 Zaloguj się aby zobaczyć..." instead of silent errors
 - Added clearAuthToken() handling for expired/invalid tokens
 - Improved user experience with proper error handling and feedback
+- **Fixed `viewSoftware()` function** in Fleet Software Manager - corrected reference from non-existent `allSoftware` to `softwareList`
+- **Verified `deleteSoftware()` function** in Fleet Software Manager - properly deletes software with confirmation dialog
+- Enhanced software details display with version count and latest version information
 
 ### ✨ Added
 
