@@ -674,6 +674,8 @@ async def commands_manager():
             .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
             .sidebar .menu-item:hover { background: #7f8c8d; }
             .sidebar .menu-item.active { background: #e74c3c; font-weight: bold; }
+            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .main-content-area { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
             .container { max-width: 100%; margin: 0; padding: 0; }
             .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -721,6 +723,13 @@ async def commands_manager():
                     <button class="btn btn-success" onclick="login()">Zaloguj</button>
                     <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
                     <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
 
                 <h3>⚙️ Menu Modułu</h3>
@@ -859,11 +868,88 @@ async def commands_manager():
                 document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
                 
                 if (isLoggedIn) {
+                    const userRoles = getUserRoles();
+                    const activeRole = getActiveRole();
+                    
                     document.getElementById('auth-message').innerHTML = 
-                        '<span style="color: green;">✅ Zalogowany jako Superuser</span>';
+                        `<span style="color: green;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                    
+                    // Show role switcher if user has multiple roles
+                    if (userRoles && userRoles.length > 1) {
+                        const roleSelect = document.getElementById('role-select');
+                        roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                        userRoles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                            if (role === activeRole) {
+                                option.selected = true;
+                            }
+                            roleSelect.appendChild(option);
+                        });
+                        document.getElementById('role-switcher').style.display = 'block';
+                    } else {
+                        document.getElementById('role-switcher').style.display = 'none';
+                    }
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+            }
+
+            function getUserRoles() {
+                const token = getAuthToken();
+                if (!token) return [];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.roles || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function getActiveRole() {
+                const token = getAuthToken();
+                if (!token) return '';
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.active_role || payload.role || '';
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            async function switchRole() {
+                const selectedRole = document.getElementById('role-select').value;
+                if (!selectedRole) return;
+
+                try {
+                    const response = await fetch('/api/v1/auth/switch-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ new_role: selectedRole })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: green;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                        
+                        // Reload scenarios with new role
+                        loadScenarios();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
                 }
             }
 
