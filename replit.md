@@ -4,9 +4,20 @@
 Comprehensive Fleet Management System based on Polish technical specifications, transformed from minimal GitHub repository (https://github.com/zlecenia/02) into a full-featured enterprise application for testing device masks and fleet operations.
 
 ## Recent Changes
+- **September 30, 2025**: Universal JSON Tree Editor - Interactive Form-Based JSON Editing
+  - **Replaced ALL textarea-based JSON editing with interactive visual tree editors**
+  - Created reusable `JSONTreeEditor` JavaScript class supporting all JSON types (string, number, boolean, object, array)
+  - Dynamic form rendering with type-specific input fields (text, number, checkbox)
+  - Interactive tree structure with expandable/collapsible nested objects and arrays
+  - Real-time field management: add/remove fields, rename keys, change types
+  - JSON preview toggle for verification
+  - **Commands Manager**: Scenarios now use visual JSON tree editor for test_flow configurations
+  - **Fleet Config Manager**: JSON Templates tab now uses visual JSON tree editor for default_values
+  - Eliminated manual JSON syntax errors with intuitive form-based interface
+  - Consistent UX across all modules with copy-paste JSON eliminated
+
 - **September 30, 2025**: JSON Templates Visual Editor in Fleet Config Manager
   - Added new "📋 Szablony JSON" tab to Fleet Config Manager with full CRUD interface
-  - Visual JSON editor with formatting, validation, and clear buttons
   - Complete template management: create, read, update, delete, view
   - Filtering by template type (test_flow, device_config, system_config) and category
   - Schema field now optional for flexibility
