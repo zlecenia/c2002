@@ -552,6 +552,11 @@ async def connect_plus():
             .app-container { display: flex; min-height: calc(100vh - 52px); }
             .sidebar { width: 15%; background: #2c3e50; color: white; padding: 20px; box-sizing: border-box; position: sticky; top: 0; height: calc(100vh - 52px); overflow-y: auto; }
             .sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+            .sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
+            .sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .sidebar .menu-section { margin-top: 20px; }
             .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
             .sidebar .menu-item:hover { background: #7f8c8d; }
@@ -584,6 +589,22 @@ async def connect_plus():
         </nav>
         <div class="app-container">
             <div class="sidebar">
+                <h3>🔐 Logowanie</h3>
+                <div class="login-section">
+                    <input type="text" id="login-username" placeholder="Username">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button onclick="login()">Zaloguj</button>
+                    <button onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
+                    <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
+                </div>
+
                 <h3>🔗 Menu Modułu</h3>
                 <div class="menu-section">
                     <div class="menu-item active">📊 Test API</div>
@@ -614,6 +635,161 @@ async def connect_plus():
         </div>
 
         <script>
+            let authToken = null;
+
+            function getAuthToken() {
+                if (!authToken) {
+                    authToken = localStorage.getItem('jwt_token');
+                }
+                return authToken;
+            }
+
+            function setAuthToken(token) {
+                authToken = token;
+                localStorage.setItem('jwt_token', token);
+                updateAuthUI();
+            }
+
+            function clearAuthToken() {
+                authToken = null;
+                localStorage.removeItem('jwt_token');
+                updateAuthUI();
+            }
+
+            function updateAuthUI() {
+                const isLoggedIn = !!getAuthToken();
+                document.getElementById('login-username').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('login-password').style.display = isLoggedIn ? 'none' : 'inline';
+                document.querySelector('button[onclick="login()"]').style.display = isLoggedIn ? 'none' : 'inline';
+                document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+                
+                if (isLoggedIn) {
+                    const userRoles = getUserRoles();
+                    const activeRole = getActiveRole();
+                    
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #3498db;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                    
+                    if (userRoles && userRoles.length > 1) {
+                        const roleSelect = document.getElementById('role-select');
+                        roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                        userRoles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                            if (role === activeRole) {
+                                option.selected = true;
+                            }
+                            roleSelect.appendChild(option);
+                        });
+                        document.getElementById('role-switcher').style.display = 'block';
+                    } else {
+                        document.getElementById('role-switcher').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('auth-message').innerHTML = 
+                        '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+            }
+
+            function getUserRoles() {
+                const token = getAuthToken();
+                if (!token) return [];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.roles || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function getActiveRole() {
+                const token = getAuthToken();
+                if (!token) return '';
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.active_role || payload.role || '';
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            async function switchRole() {
+                const selectedRole = document.getElementById('role-select').value;
+                if (!selectedRole) return;
+
+                try {
+                    const response = await fetch('/api/v1/auth/switch-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ new_role: selectedRole })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #3498db;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+                }
+            }
+
+            async function login() {
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                if (!username || !password) {
+                    alert('Podaj username i hasło');
+                    return;
+                }
+
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('login-password').value = '';
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #3498db;">✅ Zalogowano jako ${data.user.role}: ${username}</span>`;
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd logowania: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
+                }
+            }
+
+            function logout() {
+                clearAuthToken();
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+            }
+
             async function testAPI(endpoint, name) {
                 try {
                     const response = await fetch('/api/v1/' + endpoint);
@@ -637,6 +813,10 @@ async def connect_plus():
             function testDevices() { testAPI('devices', 'Devices'); }
             function testCustomers() { testAPI('customers', 'Customers'); }
             function testScenarios() { testAPI('test-scenarios', 'Test Scenarios'); }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAuthUI();
+            });
         </script>
         </div>
     </body>
@@ -1568,6 +1748,10 @@ async def fleet_data_manager():
             .sidebar-auth button { width: 100%; }
             .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
             
+            /* Role switcher */
+            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #374151; border-radius: 8px; display: none; }
+            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #4b5563; border-radius: 4px; background: #1f2a37; color: white; }
+            
             /* Sidebar module menu */
             .sidebar-menu { margin-top: 20px; }
             .sidebar-menu h4 { font-size: 14px; margin-bottom: 15px; border-bottom: 2px solid #27ae60; padding-bottom: 8px; }
@@ -1635,6 +1819,13 @@ async def fleet_data_manager():
                     <button class="btn" onclick="login()">Zaloguj</button>
                     <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
                     <div id="auth-message"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
                 
                 <div class="sidebar-menu">
@@ -1812,16 +2003,18 @@ async def fleet_data_manager():
                                 <input type="text" id="customer-name" required>
                             </div>
                             <div class="form-group">
-                                <label>Telefon:</label>
-                                <input type="text" id="customer-phone">
-                            </div>
-                            <div class="form-group">
-                                <label>Email:</label>
-                                <input type="email" id="customer-email">
-                            </div>
-                            <div class="form-group">
-                                <label>Adres:</label>
-                                <textarea id="customer-address" rows="3"></textarea>
+                                <label>📋 Informacje kontaktowe (JSON):</label>
+                                <div style="margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.addField()">+ Dodaj pole</button>
+                                    <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.clear()">🗑️ Wyczyść</button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleCustomerJSONView()">👁️ Podgląd JSON</button>
+                                </div>
+                                <div id="customer-json-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                    <!-- Tree editor -->
+                                </div>
+                                <div id="customer-json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                    <!-- JSON preview -->
+                                </div>
                             </div>
                             <button type="button" class="btn" onclick="createCustomer()">Dodaj klienta</button>
                             <button type="button" class="btn btn-secondary" onclick="hideCustomerForm()">Anuluj</button>
@@ -1877,8 +2070,29 @@ async def fleet_data_manager():
                 document.getElementById('dashboard-section').style.display = isLoggedIn ? 'block' : 'none';
                 
                 if (isLoggedIn) {
+                    const userRoles = getUserRoles();
+                    const activeRole = getActiveRole();
+                    
                     document.getElementById('auth-message').innerHTML = 
-                        '<span style="color: green;">✅ Zalogowany jako Manager</span>';
+                        `<span style="color: #2980b9;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                    
+                    if (userRoles && userRoles.length > 1) {
+                        const roleSelect = document.getElementById('role-select');
+                        roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                        userRoles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                            if (role === activeRole) {
+                                option.selected = true;
+                            }
+                            roleSelect.appendChild(option);
+                        });
+                        document.getElementById('role-switcher').style.display = 'block';
+                    } else {
+                        document.getElementById('role-switcher').style.display = 'none';
+                    }
+                    
                     loadDashboard();
                     loadDevices();
                     loadCustomers();
@@ -1886,7 +2100,63 @@ async def fleet_data_manager():
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    document.getElementById('role-switcher').style.display = 'none';
                     clearTables();
+                }
+            }
+
+            function getUserRoles() {
+                const token = getAuthToken();
+                if (!token) return [];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.roles || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function getActiveRole() {
+                const token = getAuthToken();
+                if (!token) return '';
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.active_role || payload.role || '';
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            async function switchRole() {
+                const selectedRole = document.getElementById('role-select').value;
+                if (!selectedRole) return;
+
+                try {
+                    const response = await fetch('/api/v1/auth/switch-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ new_role: selectedRole })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #2980b9;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                        
+                        loadDevices();
+                        loadCustomers();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
                 }
             }
 
@@ -1972,6 +2242,242 @@ async def fleet_data_manager():
                 }
             }
 
+            // ========== UNIVERSAL JSON TREE EDITOR ==========
+            class JSONTreeEditor {
+                constructor(containerId) {
+                    this.container = document.getElementById(containerId);
+                    this.data = {};
+                    this.fieldCounter = 0;
+                }
+
+                init(jsonData = {}) {
+                    this.data = jsonData;
+                    this.render();
+                }
+
+                render() {
+                    this.container.innerHTML = '';
+                    if (Object.keys(this.data).length === 0) {
+                        this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
+                        return;
+                    }
+                    
+                    for (const [key, value] of Object.entries(this.data)) {
+                        this.renderField(key, value, this.container);
+                    }
+                }
+
+                renderField(key, value, parentElement, path = '') {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.style.cssText = 'margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd;';
+                    
+                    const currentPath = path ? `${path}.${key}` : key;
+                    const type = this.getType(value);
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; gap: 10px;';
+                    
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'text';
+                    keyInput.value = key;
+                    keyInput.style.cssText = 'flex: 0 0 180px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px; font-weight: bold;';
+                    keyInput.onchange = (e) => this.renameKey(path, key, e.target.value);
+                    
+                    const typeSelect = document.createElement('select');
+                    typeSelect.style.cssText = 'flex: 0 0 100px; padding: 5px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                    ['string', 'number', 'boolean', 'object', 'array'].forEach(t => {
+                        const option = document.createElement('option');
+                        option.value = t;
+                        option.textContent = t;
+                        option.selected = type === t;
+                        typeSelect.appendChild(option);
+                    });
+                    typeSelect.onchange = (e) => this.changeType(currentPath, e.target.value);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.className = 'btn btn-danger';
+                    deleteBtn.style.cssText = 'padding: 3px 8px; margin-left: auto;';
+                    deleteBtn.onclick = () => this.deleteField(currentPath);
+                    
+                    headerDiv.appendChild(keyInput);
+                    headerDiv.appendChild(typeSelect);
+                    headerDiv.appendChild(deleteBtn);
+                    fieldDiv.appendChild(headerDiv);
+                    
+                    const valueDiv = document.createElement('div');
+                    
+                    if (type === 'object') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #3498db; margin-top: 10px;';
+                        for (const [childKey, childValue] of Object.entries(value)) {
+                            this.renderField(childKey, childValue, valueDiv, currentPath);
+                        }
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj pole do obiektu';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addFieldToObject(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'array') {
+                        valueDiv.style.cssText = 'padding-left: 20px; border-left: 3px solid #9b59b6; margin-top: 10px;';
+                        value.forEach((item, index) => {
+                            this.renderField(`[${index}]`, item, valueDiv, currentPath);
+                        });
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = '+ Dodaj element do array';
+                        addBtn.className = 'btn btn-secondary';
+                        addBtn.style.cssText = 'margin-top: 5px; font-size: 12px; padding: 3px 10px;';
+                        addBtn.onclick = () => this.addArrayElement(currentPath);
+                        valueDiv.appendChild(addBtn);
+                    } else if (type === 'boolean') {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = value;
+                        checkbox.style.cssText = 'width: 20px; height: 20px;';
+                        checkbox.onchange = (e) => this.setValue(currentPath, e.target.checked);
+                        valueDiv.appendChild(checkbox);
+                    } else if (type === 'number') {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, parseFloat(e.target.value));
+                        valueDiv.appendChild(input);
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = value;
+                        input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;';
+                        input.onchange = (e) => this.setValue(currentPath, e.target.value);
+                        valueDiv.appendChild(input);
+                    }
+                    
+                    fieldDiv.appendChild(valueDiv);
+                    parentElement.appendChild(fieldDiv);
+                }
+
+                getType(value) {
+                    if (Array.isArray(value)) return 'array';
+                    if (value === null) return 'string';
+                    return typeof value;
+                }
+
+                setValue(path, value) {
+                    const keys = path.split('.').filter(k => k && !k.startsWith('['));
+                    const arrayIndices = path.match(/\[(\d+)\]/g);
+                    
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = value;
+                    this.render();
+                }
+
+                addField() {
+                    const newKey = `field_${this.fieldCounter++}`;
+                    this.data[newKey] = '';
+                    this.render();
+                }
+
+                addFieldToObject(path) {
+                    const obj = this.getValueByPath(path);
+                    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                        obj[`field_${this.fieldCounter++}`] = '';
+                        this.render();
+                    }
+                }
+
+                addArrayElement(path) {
+                    const arr = this.getValueByPath(path);
+                    if (arr && Array.isArray(arr)) {
+                        arr.push('');
+                        this.render();
+                    }
+                }
+
+                deleteField(path) {
+                    const keys = path.split('.').filter(k => k);
+                    if (keys.length === 1) {
+                        delete this.data[keys[0]];
+                    } else {
+                        let current = this.data;
+                        for (let i = 0; i < keys.length - 1; i++) {
+                            current = current[keys[i]];
+                        }
+                        delete current[keys[keys.length - 1]];
+                    }
+                    this.render();
+                }
+
+                renameKey(parentPath, oldKey, newKey) {
+                    if (oldKey === newKey) return;
+                    
+                    if (!parentPath) {
+                        this.data[newKey] = this.data[oldKey];
+                        delete this.data[oldKey];
+                    } else {
+                        const parent = this.getValueByPath(parentPath);
+                        parent[newKey] = parent[oldKey];
+                        delete parent[oldKey];
+                    }
+                    this.render();
+                }
+
+                changeType(path, newType) {
+                    const defaultValues = {
+                        'string': '',
+                        'number': 0,
+                        'boolean': false,
+                        'object': {},
+                        'array': []
+                    };
+                    
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = defaultValues[newType];
+                    this.render();
+                }
+
+                getValueByPath(path) {
+                    const keys = path.split('.').filter(k => k);
+                    let current = this.data;
+                    for (const key of keys) {
+                        current = current[key];
+                    }
+                    return current;
+                }
+
+                clear() {
+                    this.data = {};
+                    this.render();
+                }
+
+                getData() {
+                    return this.data;
+                }
+
+                setData(jsonData) {
+                    this.data = jsonData;
+                    this.render();
+                }
+            }
+
+            let customerJsonEditor;
+
+            function toggleCustomerJSONView() {
+                const preview = document.getElementById('customer-json-preview');
+                if (preview.style.display === 'none') {
+                    preview.style.display = 'block';
+                    preview.textContent = JSON.stringify(customerJsonEditor.getData(), null, 2);
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
             function showTab(tabName, skipHashUpdate = false) {
                 // Hide all tabs
                 document.querySelectorAll('.tab-content').forEach(tab => {
@@ -2015,6 +2521,15 @@ async def fleet_data_manager():
             
             // Load tab from hash on page load
             window.addEventListener('DOMContentLoaded', function() {
+                customerJsonEditor = new JSONTreeEditor('customer-json-editor');
+                customerJsonEditor.setData({
+                    phone: '',
+                    email: '',
+                    address: '',
+                    company: '',
+                    notes: ''
+                });
+                
                 const hash = window.location.hash.substring(1);
                 if (hash) {
                     showTab(hash, true);
@@ -2202,6 +2717,14 @@ async def fleet_data_manager():
                 document.getElementById('add-customer-form').style.display = 'block';
                 document.getElementById('form-title').textContent = 'Dodaj klienta';
                 currentEditingCustomer = null;
+                
+                customerJsonEditor.setData({
+                    phone: '',
+                    email: '',
+                    address: '',
+                    company: '',
+                    notes: ''
+                });
             }
 
             function hideCustomerForm() {
@@ -2262,11 +2785,7 @@ async def fleet_data_manager():
             async function createCustomer() {
                 const customerData = {
                     name: document.getElementById('customer-name').value,
-                    contact_info: {
-                        phone: document.getElementById('customer-phone').value,
-                        email: document.getElementById('customer-email').value,
-                        address: document.getElementById('customer-address').value
-                    }
+                    contact_info: customerJsonEditor.getData()
                 };
 
                 if (!customerData.name) {
@@ -2476,6 +2995,10 @@ async def fleet_config_manager():
             .sidebar-auth button { width: 100%; }
             .sidebar-auth #auth-message { font-size: 12px; margin-top: 10px; }
             
+            /* Role switcher */
+            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #374151; border-radius: 8px; display: none; }
+            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #4b5563; border-radius: 4px; background: #1f2a37; color: white; }
+            
             /* Sidebar module menu */
             .sidebar-menu { margin-top: 20px; }
             .sidebar-menu h4 { font-size: 14px; margin-bottom: 15px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px; }
@@ -2550,6 +3073,13 @@ async def fleet_config_manager():
                     <button class="btn" onclick="login()">Zaloguj</button>
                     <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
                     <div id="auth-message"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
                 
                 <div class="sidebar-menu">
@@ -3162,8 +3692,29 @@ async def fleet_config_manager():
                 document.getElementById('dashboard-section').style.display = isLoggedIn ? 'block' : 'none';
                 
                 if (isLoggedIn) {
+                    const userRoles = getUserRoles();
+                    const activeRole = getActiveRole();
+                    
                     document.getElementById('auth-message').innerHTML = 
-                        '<span style="color: green;">✅ Zalogowany jako Configurator</span>';
+                        `<span style="color: #9b59b6;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                    
+                    if (userRoles && userRoles.length > 1) {
+                        const roleSelect = document.getElementById('role-select');
+                        roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                        userRoles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                            if (role === activeRole) {
+                                option.selected = true;
+                            }
+                            roleSelect.appendChild(option);
+                        });
+                        document.getElementById('role-switcher').style.display = 'block';
+                    } else {
+                        document.getElementById('role-switcher').style.display = 'none';
+                    }
+                    
                     loadDashboard();
                     loadSystemConfigs();
                     loadDeviceConfigs();
@@ -3172,7 +3723,65 @@ async def fleet_config_manager():
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    document.getElementById('role-switcher').style.display = 'none';
                     clearData();
+                }
+            }
+
+            function getUserRoles() {
+                const token = getAuthToken();
+                if (!token) return [];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.roles || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function getActiveRole() {
+                const token = getAuthToken();
+                if (!token) return '';
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.active_role || payload.role || '';
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            async function switchRole() {
+                const selectedRole = document.getElementById('role-select').value;
+                if (!selectedRole) return;
+
+                try {
+                    const response = await fetch('/api/v1/auth/switch-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ new_role: selectedRole })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #9b59b6;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                        
+                        loadSystemConfigs();
+                        loadDeviceConfigs();
+                        loadTestScenarios();
+                        loadJsonTemplates();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
                 }
             }
 
@@ -4153,6 +4762,8 @@ async def fleet_software_manager():
             .sidebar .login-section { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
             .sidebar .login-section input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #95a5a6; border-radius: 4px; box-sizing: border-box; }
             .sidebar .login-section button { width: 100%; margin-bottom: 5px; }
+            .sidebar .role-switcher { margin-top: 15px; padding: 10px; background: #34495e; border-radius: 8px; display: none; }
+            .sidebar .role-switcher select { width: 100%; padding: 8px; border: 1px solid #95a5a6; border-radius: 4px; background: white; }
             .sidebar .menu-section { margin-top: 20px; }
             .sidebar .menu-item { display: block; padding: 12px; background: #34495e; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; }
             .sidebar .menu-item:hover { background: #7f8c8d; }
@@ -4223,6 +4834,13 @@ async def fleet_software_manager():
                     <button class="btn btn-success" onclick="login()">Zaloguj</button>
                     <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
                     <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+
+                <div class="role-switcher" id="role-switcher">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
+                    <select id="role-select" onchange="switchRole()">
+                        <option value="">Wybierz rolę...</option>
+                    </select>
                 </div>
 
                 <h3>💿 Menu Modułu</h3>
@@ -4468,12 +5086,88 @@ async def fleet_software_manager():
                 document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
                 
                 if (isLoggedIn) {
+                    const userRoles = getUserRoles();
+                    const activeRole = getActiveRole();
+                    
                     document.getElementById('auth-message').innerHTML = 
-                        '<span style="color: green;">✅ Zalogowany jako Maker</span>';
+                        `<span style="color: #27ae60;">✅ Zalogowany jako <strong>${activeRole}</strong></span>`;
+                    
+                    if (userRoles && userRoles.length > 1) {
+                        const roleSelect = document.getElementById('role-select');
+                        roleSelect.innerHTML = '<option value="">Wybierz rolę...</option>';
+                        userRoles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                            if (role === activeRole) {
+                                option.selected = true;
+                            }
+                            roleSelect.appendChild(option);
+                        });
+                        document.getElementById('role-switcher').style.display = 'block';
+                    } else {
+                        document.getElementById('role-switcher').style.display = 'none';
+                    }
+                    
                     loadDashboard();
                 } else {
                     document.getElementById('auth-message').innerHTML = 
                         '<span style="color: #e74c3c;">❌ Niezalogowany</span>';
+                    document.getElementById('role-switcher').style.display = 'none';
+                }
+            }
+
+            function getUserRoles() {
+                const token = getAuthToken();
+                if (!token) return [];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.roles || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function getActiveRole() {
+                const token = getAuthToken();
+                if (!token) return '';
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.active_role || payload.role || '';
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            async function switchRole() {
+                const selectedRole = document.getElementById('role-select').value;
+                if (!selectedRole) return;
+
+                try {
+                    const response = await fetch('/api/v1/auth/switch-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ new_role: selectedRole })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAuthToken(data.access_token);
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #27ae60;">✅ Przełączono na rolę: <strong>${selectedRole}</strong></span>`;
+                        
+                        loadDashboard();
+                    } else {
+                        const error = await response.json();
+                        document.getElementById('auth-message').innerHTML = 
+                            `<span style="color: #e74c3c;">❌ Błąd przełączania roli: ${error.detail}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById('auth-message').innerHTML = 
+                        `<span style="color: #e74c3c;">❌ Błąd połączenia: ${error.message}</span>`;
                 }
             }
 
