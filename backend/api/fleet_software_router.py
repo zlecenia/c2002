@@ -116,7 +116,7 @@ class SoftwareVersionResponse(BaseModel):
     is_beta: bool
     requires_reboot: bool
     compatibility: Optional[Dict[str, Any]]
-    created_by: int
+    created_by: Optional[int]
     created_at: Optional[datetime]
     released_at: Optional[datetime]
     software_name: str = ""

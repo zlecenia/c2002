@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 
 from backend.db.base import get_db
-from backend.models.models import Device, TestScenario, User, Configuration
+from backend.models.models import Device, TestScenario, User, Configuration, JsonTemplate
 from backend.auth.auth import require_role, get_current_user
 
 router = APIRouter(prefix="/fleet-config", tags=["Fleet Configuration Management"])
@@ -446,11 +446,11 @@ def get_test_scenario_configs(
     for scenario in scenarios:
         scenario_configs.append({
             "scenario_id": scenario.id,
-            "scenario_name": scenario.scenario_name,
-            "test_type": scenario.test_type,
-            "parameters": scenario.parameters or {},
-            "expected_results": scenario.expected_results or {},
-            "is_active": True,  # Assuming scenarios are active by default
+            "scenario_name": scenario.name,
+            "device_type": scenario.device_type,
+            "test_flow": scenario.test_flow or {},
+            "description": scenario.description,
+            "is_active": scenario.is_active,
             "created_at": scenario.created_at,
             "updated_at": scenario.updated_at
         })
@@ -465,7 +465,7 @@ def create_test_scenario_config(
 ):
     """Create new test scenario configuration (Configurator only)."""
     # Check for duplicate scenario name
-    existing = db.query(TestScenario).filter(TestScenario.scenario_name == scenario_config.scenario_name).first()
+    existing = db.query(TestScenario).filter(TestScenario.name == scenario_config.scenario_name).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -473,10 +473,10 @@ def create_test_scenario_config(
         )
     
     db_scenario = TestScenario(
-        scenario_name=scenario_config.scenario_name,
-        test_type=scenario_config.test_type,
-        parameters=scenario_config.parameters,
-        expected_results=scenario_config.expected_results
+        name=scenario_config.scenario_name,
+        device_type=scenario_config.test_type,
+        test_flow=scenario_config.parameters,
+        description=str(scenario_config.expected_results)
     )
     
     db.add(db_scenario)
@@ -655,3 +655,167 @@ def restore_configurations(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error restoring configurations: {str(e)}"
         )
+
+# JSON Templates - Pydantic Models
+class JsonTemplateCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    template_type: str = Field(..., min_length=1, max_length=100)
+    category: Optional[str] = Field(None, max_length=100)
+    schema: Dict[str, Any] = Field(...)
+    default_values: Dict[str, Any] = Field(...)
+    description: Optional[str] = None
+    is_active: bool = Field(default=True)
+
+    @validator('name')
+    def validate_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Template name cannot be empty')
+        return v.strip()
+    
+    @validator('template_type')
+    def validate_template_type(cls, v):
+        allowed_types = ['scenario', 'device_config', 'software_config', 'test_flow', 'system_config']
+        if v not in allowed_types:
+            raise ValueError(f'Template type must be one of: {allowed_types}')
+        return v
+
+class JsonTemplateUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    template_type: Optional[str] = Field(None, min_length=1, max_length=100)
+    category: Optional[str] = Field(None, max_length=100)
+    schema: Optional[Dict[str, Any]] = None
+    default_values: Optional[Dict[str, Any]] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class JsonTemplateResponse(BaseModel):
+    id: int
+    name: str
+    template_type: str
+    category: Optional[str]
+    schema: Dict[str, Any]
+    default_values: Dict[str, Any]
+    description: Optional[str]
+    is_active: bool
+    created_by: Optional[int]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
+# JSON Templates CRUD Endpoints
+@router.get("/json-templates", response_model=List[JsonTemplateResponse])
+def get_json_templates(
+    template_type: Optional[str] = None,
+    category: Optional[str] = None,
+    is_active: Optional[bool] = True,
+    current_user: User = Depends(require_role("configurator")),
+    db: Session = Depends(get_db)
+):
+    """Get all JSON templates with optional filtering (Configurator only)."""
+    query = db.query(JsonTemplate)
+    
+    if template_type:
+        query = query.filter(JsonTemplate.template_type == template_type)
+    if category:
+        query = query.filter(JsonTemplate.category == category)
+    if is_active is not None:
+        query = query.filter(JsonTemplate.is_active == is_active)
+    
+    templates = query.all()
+    return templates
+
+@router.get("/json-templates/{template_id}", response_model=JsonTemplateResponse)
+def get_json_template(
+    template_id: int,
+    current_user: User = Depends(require_role("configurator")),
+    db: Session = Depends(get_db)
+):
+    """Get specific JSON template by ID (Configurator only)."""
+    template = db.query(JsonTemplate).filter(JsonTemplate.id == template_id).first()
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="JSON template not found"
+        )
+    return template
+
+@router.post("/json-templates", response_model=JsonTemplateResponse)
+def create_json_template(
+    template: JsonTemplateCreate,
+    current_user: User = Depends(require_role("configurator")),
+    db: Session = Depends(get_db)
+):
+    """Create new JSON template (Configurator only)."""
+    # Check for duplicate name
+    existing = db.query(JsonTemplate).filter(JsonTemplate.name == template.name).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Template with name '{template.name}' already exists"
+        )
+    
+    db_template = JsonTemplate(
+        name=template.name,
+        template_type=template.template_type,
+        category=template.category,
+        schema=template.schema,
+        default_values=template.default_values,
+        description=template.description,
+        is_active=template.is_active,
+        created_by=current_user.id
+    )
+    
+    db.add(db_template)
+    db.commit()
+    db.refresh(db_template)
+    
+    return db_template
+
+@router.put("/json-templates/{template_id}", response_model=JsonTemplateResponse)
+def update_json_template(
+    template_id: int,
+    template_update: JsonTemplateUpdate,
+    current_user: User = Depends(require_role("configurator")),
+    db: Session = Depends(get_db)
+):
+    """Update JSON template (Configurator only)."""
+    template = db.query(JsonTemplate).filter(JsonTemplate.id == template_id).first()
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="JSON template not found"
+        )
+    
+    # Update fields
+    update_data = template_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(template, field, value)
+    
+    db.commit()
+    db.refresh(template)
+    
+    return template
+
+@router.delete("/json-templates/{template_id}")
+def delete_json_template(
+    template_id: int,
+    current_user: User = Depends(require_role("configurator")),
+    db: Session = Depends(get_db)
+):
+    """Delete JSON template (Configurator only)."""
+    template = db.query(JsonTemplate).filter(JsonTemplate.id == template_id).first()
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="JSON template not found"
+        )
+    
+    db.delete(template)
+    db.commit()
+    
+    return {
+        "message": "JSON template deleted successfully",
+        "template_id": template_id
+    }

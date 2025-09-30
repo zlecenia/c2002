@@ -228,3 +228,21 @@ class SoftwareInstallation(Base):
     device = relationship("Device")
     version = relationship("SoftwareVersion", back_populates="installations")
     initiator = relationship("User", foreign_keys=[initiated_by])
+
+class JsonTemplate(Base):
+    __tablename__ = "json_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    template_type = Column(String(100), nullable=False)  # scenario, device_config, software_config, test_flow
+    category = Column(String(100))  # mask_tester, pressure_sensor, flow_meter, etc.
+    schema = Column(JSON, nullable=False)  # JSON schema definition
+    default_values = Column(JSON, nullable=False)  # Default JSON values
+    description = Column(Text)
+    is_active = Column(Boolean, default=True)
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    creator = relationship("User")
