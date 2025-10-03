@@ -128,11 +128,19 @@ GET  /redoc    → 200 OK ✅ (ReDoc)
 | `TESTING_REPORT.md` | Raport testów | ✅ **NEW** |
 | `todo.md` | Lista zadań | ✅ **UPDATED** |
 | `FINAL_SUMMARY.md` | Ten dokument | ✅ **NEW** |
+| `QUICK_START.md` | Szybki start | ✅ **NEW** |
 | `.env.example` | Przykładowa konfiguracja | ✅ Complete |
 
 ---
 
 ## 🚀 **JAK URUCHOMIĆ I PRZETESTOWAĆ**
+
+### ⚠️ WAŻNE: Katalog Roboczy
+**Wszystkie komendy muszą być uruchamiane z katalogu modułu CPP:**
+```bash
+cd /home/tom/github/zlecenia/c2002/modules/cpp
+```
+❌ NIE z głównego katalogu projektu!
 
 ### 1. Uruchom Aplikację
 ```bash
@@ -178,9 +186,9 @@ curl http://localhost:8080/health
 - **Backend:** 12 plików Python
 - **Frontend:** 25 plików React/TypeScript
 - **Docker:** 5 plików konfiguracyjnych
-- **Tests:** 2 pliki testowe
-- **Docs:** 7 plików dokumentacji
-- **Total:** **60+ plików**
+- **Tests:** 2 pliki testowe + 1 skrypt
+- **Docs:** 8 plików dokumentacji
+- **Total:** **65+ plików**
 
 ### Kod
 - **Backend LOC:** ~2,500 linii
