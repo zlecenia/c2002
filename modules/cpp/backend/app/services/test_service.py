@@ -69,7 +69,7 @@ class TestService:
             estimated_duration=estimated_duration,
             total_steps=total_steps,
             current_step=0,
-            metadata={
+            meta_data={
                 'device_kind_id': device_kind_id,
                 'device_type_id': device_type_id,
                 'test_kind_id': test_kind_id
@@ -191,9 +191,9 @@ class TestService:
         session.end_time = datetime.utcnow()
         
         if reason:
-            if not session.metadata:
-                session.metadata = {}
-            session.metadata['abort_reason'] = reason
+            if not session.meta_data:
+                session.meta_data = {}
+            session.meta_data['abort_reason'] = reason
         
         self.db.commit()
         self.db.refresh(session)

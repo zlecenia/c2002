@@ -33,7 +33,7 @@ class TestSession(Base):
     
     result = Column(String(50))  # PASSED, FAILED, WARNING
     
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
     
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -96,7 +96,7 @@ class SensorReading(Base):
     
     timestamp = Column(DateTime, nullable=False, default=func.now(), index=True)
     
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
     
     # Relationships
     test_session = relationship("TestSession", back_populates="sensor_readings")

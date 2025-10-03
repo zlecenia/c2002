@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTestStore } from '../stores/testStore';
 import { apiService } from '../services/api';
 
 const TestExecutionPage: React.FC = () => {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [testData, setTestData] = useState<any>(null);
+  const [_testData, setTestData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const totalSteps = 7;

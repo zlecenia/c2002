@@ -83,7 +83,7 @@ class ApiService {
   }
 
   // Mock login for demo
-  async login(username: string, password: string) {
+  async login(username: string, _password: string) {
     // Mock implementation
     return {
       access_token: 'mock-jwt-token',
