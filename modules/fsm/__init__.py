@@ -19,7 +19,7 @@ MODULE_PATH = "/fleet-software-manager"
 router = APIRouter(tags=["Fleet Software Manager"])
 
 # Setup templates directory
-templates_dir = Path(__file__).parent / "templates"
+templates_dir = Path("pages/fsm")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 @router.get("/fleet-software-manager", response_class=HTMLResponse)

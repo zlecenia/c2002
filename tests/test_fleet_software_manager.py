@@ -38,7 +38,8 @@ def test_create_software(api_url, auth_headers):
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == software_data["name"]
-    return data["id"]
+    assert "id" in data
+    assert isinstance(data["id"], int)
 
 
 def test_update_software(api_url, auth_headers):

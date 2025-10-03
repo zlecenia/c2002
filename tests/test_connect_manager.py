@@ -29,7 +29,8 @@ def test_create_scenario(api_url, admin_token):
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == scenario_data["name"]
-    return data["id"]
+    assert "id" in data
+    assert isinstance(data["id"], int)
 
 
 def test_get_scenario(api_url, admin_token):

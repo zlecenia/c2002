@@ -6,7 +6,7 @@ from pathlib import Path
 router = APIRouter()
 
 # Setup templates directory
-templates_dir = Path(__file__).parent / "templates"
+templates_dir = Path("pages/cpp")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 @router.get("/connect-plus", response_class=HTMLResponse)

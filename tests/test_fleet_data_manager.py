@@ -41,7 +41,8 @@ def test_create_device(api_url, manager_token):
     assert response.status_code == 200
     data = response.json()
     assert data["serial_number"] == device_data["serial_number"]
-    return data["id"]
+    assert "id" in data
+    assert isinstance(data["id"], int)
 
 
 def test_update_device(api_url, manager_token):

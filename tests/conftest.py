@@ -1,9 +1,14 @@
 import pytest
 import requests
 from typing import Dict, Optional
+import time
+import random
 
 BASE_URL = "http://localhost:5000"
 API_V1 = f"{BASE_URL}/api/v1"
+
+# Create a unique test run ID for the entire test session
+pytest.test_run_id = int(time.time() * 1000) + random.randint(1000, 9999)
 
 
 @pytest.fixture(scope="session")
