@@ -5,18 +5,26 @@ let testScenarios = [];
 
 // ========== UNIVERSAL JSON TREE EDITOR ==========
 class JSONTreeEditor {
-    constructor(containerId) {
+    constructor(containerId, initialData = {}) {
+        this.containerId = containerId;
         this.container = document.getElementById(containerId);
-        this.data = {};
+        this.data = initialData || {};
         this.fieldCounter = 0;
+        // Auto-render if container is present
+        if (this.container) {
+            this.render();
+        }
     }
 
     init(jsonData = {}) {
-        this.data = jsonData;
-        this.render();
+        this.data = jsonData || {};
+        if (this.container) {
+            this.render();
+        }
     }
 
     render() {
+        if (!this.container) return;
         this.container.innerHTML = '';
         if (Object.keys(this.data).length === 0) {
             this.container.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Brak pól. Kliknij "+ Dodaj pole" aby rozpocząć</p>';
@@ -219,9 +227,18 @@ class JSONTreeEditor {
         return this.data;
     }
 
+    // Backward-compatible wrappers
+    getData() {
+        return this.getJSON();
+    }
+
     setJSON(jsonData) {
-        this.data = jsonData;
+        this.data = jsonData || {};
         this.render();
+    }
+
+    setData(jsonData) {
+        this.setJSON(jsonData);
     }
 }
 

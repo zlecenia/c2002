@@ -1,0 +1,61 @@
+/* Shared login/right-sidebar styles. Uses --accent-color for highlights. */
+:root {
+  --accent-color: #3498db; /* default accent */
+}
+
+.right-sidebar .sidebar-auth,
+.right-sidebar .login-section {
+  background: #374151;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--accent-color);
+}
+
+.right-sidebar .sidebar-auth h4,
+.right-sidebar .login-section h4,
+.right-sidebar h3 {
+  margin-top: 0;
+  font-size: 14px;
+}
+
+.right-sidebar .sidebar-auth input,
+.right-sidebar .login-section input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #4b5563;
+  background: #1f2a37;
+  color: white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.right-sidebar .sidebar-auth button,
+.right-sidebar .login-section button {
+  width: 100%;
+}
+
+.right-sidebar .sidebar-auth #auth-message,
+.right-sidebar .login-section #auth-message,
+.right-sidebar #auth-message {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.right-sidebar .role-switcher {
+  margin-top: 15px;
+  padding: 10px;
+  background: #374151;
+  border-radius: 8px;
+  display: none;
+}
+
+.right-sidebar .role-switcher select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  background: #1f2a37;
+  color: white;
+}

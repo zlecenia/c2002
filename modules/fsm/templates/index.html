@@ -6,9 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Vue.js CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- Navigation Menu Styles -->
     <link rel="stylesheet" href="/static/menu/css/nav-menu.css">
+    <!-- Common Styles -->
+    <link rel="stylesheet" href="/static/common/css/common.css">
+    <!-- Shared Components -->
+    <link rel="stylesheet" href="/static/login/css/style.css">
+    <link rel="stylesheet" href="/static/tabs/css/style.css">
     <!-- Module Styles -->
     <link rel="stylesheet" href="/modules/fsm/templates/fsm.css">
     <!-- Module Scripts -->
@@ -19,21 +24,14 @@
     <div id="nav-menu-app">
         <nav-menu current-path="/fleet-software-manager"></nav-menu>
     </div>
-    <div class="app-layout">
+    <div class="container">
         <div class="sidebar">
             <h3>💿 Menu Modułu{% if modular %} - Modular Version{% endif %}</h3>
             <div class="menu-item" onclick="scrollToSection('dashboard')">📊 Dashboard</div>
             <div class="menu-item active" onclick="showTab('software-tab', this)">📦 Oprogramowanie</div>
             <div class="menu-item" onclick="showTab('versions-tab', this)">🔢 Wersje</div>
             <div class="menu-item" onclick="showTab('installations-tab', this)">💾 Instalacje</div>
-            
-            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
-                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API Test</h4>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testSoftwareAPI()">Test Software</button>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testVersionsAPI()">Test Versions</button>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testInstallationsAPI()">Test Installations</button>
-                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
-            </div>
+
         </div>
 
         <div class="main-content-wrapper">
@@ -159,9 +157,20 @@
             <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj</button>
             <div id="auth-message" style="margin-top: 10px; font-size: 12px;"></div>
         </div>
+
         <div class="role-switcher" id="role-switcher">
             <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz rolę:</label>
-            <select id="role-select" onchange="switchRole()"><option value="">Wybierz...</option></select>
+            <select id="role-select" onchange="switchRole()">
+                <option value="">Wybierz rolę...</option>
+            </select>
+        </div>
+
+        <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+            <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API Test</h4>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testSoftwareAPI()">Test Software</button>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testVersionsAPI()">Test Versions</button>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testInstallationsAPI()">Test Installations</button>
+            <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
         </div>
     </div>
 </div>

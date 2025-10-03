@@ -79,7 +79,30 @@ import os
 
 if os.path.exists("static") and os.path.isdir("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
-# Mount modules static files (separate path to avoid conflicts)
+
+    # Backward-compatibility mounts for common static assets used by docs/tests
+    if os.path.exists("static/common") and os.path.isdir("static/common"):
+        # Legacy direct path
+        app.mount("/common/static", StaticFiles(directory="static/common"), name="legacy-common-static")
+        # Compatibility for tests expecting /modules/common/static/...
+        app.mount(
+            "/modules/common/static",
+            StaticFiles(directory="static/common"),
+            name="compat-modules-common-static",
+        )
+
+# FSM module compatibility mounts for legacy frontend paths
+if os.path.exists("modules/fsm/templates") and os.path.isdir("modules/fsm/templates"):
+    # Legacy direct path
+    app.mount("/fsm/frontend", StaticFiles(directory="modules/fsm/templates"), name="legacy-fsm-frontend")
+    # Compatibility for tests expecting /modules/fsm/frontend/...
+    app.mount(
+        "/modules/fsm/frontend",
+        StaticFiles(directory="modules/fsm/templates"),
+        name="compat-modules-fsm-frontend",
+    )
+
+# Mount modules static files (broad catch-all) placed after specific mounts
 if os.path.exists("modules") and os.path.isdir("modules"):
     app.mount("/modules", StaticFiles(directory="modules"), name="modules")
 

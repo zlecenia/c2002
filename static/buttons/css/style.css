@@ -1,0 +1,40 @@
+/* Shared buttons with module accent via --accent-color */
+:root {
+  --accent-color: #3498db;
+}
+
+.btn {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px;
+  font-size: 14px;
+}
+
+.btn:hover {
+  /* slightly darker */
+  background: color-mix(in oklab, var(--accent-color), black 12%);
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: #fff;
+}
+.btn-secondary:hover { background: #7f8c8d; }
+
+.btn-success {
+  background: #27ae60;
+  color: #fff;
+}
+.btn-success:hover { background: #229954; }
+
+.btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.btn-danger:hover { background: #c0392b; }
+
+.btn-sm { padding: 5px 10px; font-size: 12px; }

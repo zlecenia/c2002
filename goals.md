@@ -1,3 +1,14 @@
+sidebar-auth
+
+przenieś wszystkie statycznme pliki z modules/*/templates/* do fodleru pages/
+czyli  modules/[nazwa_modulu]/templates/[plik]
+do pages/[nazwa_modulu]/[plik]
+
+np.
+modules/fcm/templates/index.html
+do
+pages/fcm/index.html
+
 # Fleet Management System - Goals & Migration Status
 
 ## 🎯 Current System Status & Completed Migrations
