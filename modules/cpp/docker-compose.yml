@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: cpp-postgres
+    environment:
+      POSTGRES_USER: cppuser
+      POSTGRES_PASSWORD: cpppass
+      POSTGRES_DB: cppdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cppuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: cpp-redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cpp-backend
+    environment:
+      DATABASE_URL: postgresql://cppuser:cpppass@postgres:5432/cppdb
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: cpp-secret-key-change-in-production
+      CORS_ORIGINS: '["http://localhost:3000", "http://localhost:8080"]'
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:socket_app --host 0.0.0.0 --port 8080 --reload
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cpp-frontend
+    environment:
+      VITE_API_URL: http://localhost:8080/api/v1
+      VITE_SOCKET_URL: http://localhost:8080
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: cpp-network
