@@ -5,7 +5,7 @@ This file imports and configures all module routers for the FastAPI application
 from fastapi import FastAPI
 
 # Import module routers
-from modules.common import router as common_router
+from static.common import router as common_router
 from modules.cpp import router as cpp_router
 from modules.cd import router as cd_router
 from modules.cm import router as cm_router

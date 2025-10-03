@@ -184,7 +184,7 @@ down:
 	$(DOCKER_COMPOSE) down
 	@echo "✅ Containers stopped"
 
-docker-restart:
+restart:
 	@echo "🔄 Restarting Docker containers..."
 	$(DOCKER_COMPOSE) restart
 	@echo "✅ Containers restarted"

@@ -119,15 +119,15 @@
 
 ### Modular Architecture Migration (New in 2025-09-30)
 - [x] ~~**Create modules/ directory structure**~~ - ✅ COMPLETED (2025-09-30)
-- [x] ~~**Extract common components (CSS, JS, HTML templates)**~~ - ✅ COMPLETED (2025-09-30)
+- [x] ~~**Extract common components (CSS, JS, HTML templates)**~~ - ✅ COMPLETED (2025-10-03)
 - [x] ~~**Implement pilot modular FSM**~~ - ✅ COMPLETED (2025-09-30)
 - [x] ~~**Setup static files mounting for /modules**~~ - ✅ COMPLETED (2025-09-30)
 - [ ] **Migrate Connect++ to modules/cpp/**
-- [ ] **Migrate Connect Display to modules/cd/**
-- [ ] **Migrate Connect Manager to modules/cm/**
+- [x] ~~**Migrate Connect Display to modules/cd/**~~ - ✅ COMPLETED (2025-10-03) - CSS extracted to cd.css
+- [x] ~~**Migrate Connect Manager to modules/cm/**~~ - ✅ COMPLETED (2025-10-03) - JavaScript extracted to cm.js
 - [ ] **Migrate Fleet Data Manager to modules/fdm/**
 - [ ] **Migrate Fleet Config Manager to modules/fcm/**
-- [ ] **Migrate Fleet Workshop Manager to modules/fwm/**
+- [x] ~~**Migrate Fleet Workshop Manager to modules/fwm/**~~ - ✅ COMPLETED (2025-10-03) - JavaScript extracted to fwm.js
 - [ ] **Remove legacy code from main.py after full migration**
 
 ### Code Quality
@@ -252,6 +252,6 @@
 
 ---
 
-**Last Updated:** September 30, 2025  
+**Last Updated:** October 3, 2025  
 **Version:** 1.0.0  
 **Maintained by:** Development Team
