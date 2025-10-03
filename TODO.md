@@ -133,7 +133,7 @@
 ### Code Quality
 - [x] ~~**Refactor main.py**~~ - ✅ IN PROGRESS: Modular architecture pattern implemented
 - [x] ~~**Extract Fleet Software router**~~ - ✅ COMPLETED (2025-09-30) - backend/api/fleet_software_router.py
-- [ ] **Remove duplicate code** - DRY principles
+- [x] ~~**Remove duplicate code**~~ - ✅ COMPLETED (2025-10-03) - HTML refactoring: FSM (778→172), FDM (1393→241), FCM (786→404), CM (741→478)
 - [x] ~~**Add type hints**~~ - ✅ COMPLETED (2025-10-03) - Added type hints to db/base.py, existing files already typed
 - [x] ~~**Code style enforcement**~~ - ✅ COMPLETED (2025-10-03) - Added Black, flake8, mypy configs + Makefile commands
 - [ ] **Documentation strings** - Docstrings for all functions
