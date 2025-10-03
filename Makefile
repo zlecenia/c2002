@@ -230,8 +230,21 @@ docker-shell:
 
 test:
 	@echo "🧪 Running all tests..."
-	$(PYTEST) tests/ -v
-	@echo "✅ Tests complete"
+	@mkdir -p logs
+	@echo "🔧 Ensuring no old server on :5000..."
+	@sh -c 'if command -v lsof >/dev/null 2>&1; then lsof -ti:5000 | xargs -r kill -9 || true; else pkill -f "uvicorn.*main:app" || true; fi'
+	@echo "🚀 Starting FastAPI for tests..."
+	@sh -c 'nohup uvicorn main:app --host 0.0.0.0 --port 5000 > logs/test_server.log 2>&1 & echo $$! > .test_server.pid'
+	@echo "⏳ Waiting for /health..."
+	@sh -c 'for i in $$(seq 1 60); do code=$$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health || true); if [ "$$code" = "200" ]; then echo "✅ API ready"; break; fi; sleep 0.5; done'
+	@echo "🌱 Seeding sample data..."
+	@sh -c 'curl -s -X POST http://localhost:5000/api/v1/init-data >/dev/null || true'
+	@echo "🧪 Running pytest..."
+	@sh -c '$(PYTEST) tests/ -v'; STATUS=$$?; \
+	PID=$$(cat .test_server.pid 2>/dev/null || echo ""); \
+	if [ -n "$$PID" ]; then kill $$PID || true; fi; \
+	rm -f .test_server.pid; \
+	if [ $$STATUS -eq 0 ]; then echo "✅ Tests complete"; else echo "❌ Tests failed"; exit $$STATUS; fi
 
 test-auth:
 	@echo "🧪 Running authentication tests..."
