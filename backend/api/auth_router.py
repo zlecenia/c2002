@@ -114,13 +114,17 @@ def login_with_qr(qr_request: QRLoginRequest, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 def read_current_user(current_user: User = Depends(get_current_user)):
-    """Get current user information."""
+    """Get current user information, including roles from token."""
+    roles = getattr(current_user, "token_roles", []) or []
+    active_role = getattr(current_user, "token_active_role", None) or str(current_user.role)
     return {
         "id": current_user.id,
         "username": current_user.username,
-        "role": current_user.role,
+        "role": str(current_user.role),
+        "roles": roles,
+        "active_role": active_role,
         "email": current_user.email,
     }
 

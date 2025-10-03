@@ -11,8 +11,8 @@ from backend.models.models import User
 import secrets
 import string
 
-# Security scheme
-security = HTTPBearer()
+# Security scheme (no auto error -> we'll return 401 consistently)
+security = HTTPBearer(auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -96,6 +96,14 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    # Return 401 when Authorization header is missing or not Bearer
+    if credentials is None or not credentials.scheme or credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     token_data = verify_token(credentials.credentials)
     if token_data is None:

@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from backend.core.config import settings
-from backend.db.base import get_db, engine
+from backend.db.base import get_db, engine, SessionLocal
 from backend.models.models import (
     Base,
     User,
@@ -106,6 +106,39 @@ if os.path.exists("modules/fsm/templates") and os.path.isdir("modules/fsm/templa
 if os.path.exists("modules") and os.path.isdir("modules"):
     app.mount("/modules", StaticFiles(directory="modules"), name="modules")
 
+
+# Seed default users for tests on startup
+@app.on_event("startup")
+def seed_default_users_on_startup():
+    db = SessionLocal()
+    try:
+        def upsert_user(username: str, role: str, email: str):
+            user = db.query(User).filter(User.username == username).first()
+            if not user:
+                user = User(
+                    username=username,
+                    password_hash=get_password_hash("pass"),
+                    email=email,
+                    role=role,
+                    qr_code=generate_qr_code(),
+                    is_active=True,
+                )
+                db.add(user)
+            else:
+                # Keep predictable creds/role for tests
+                user.role = role
+                user.email = email or user.email
+                user.is_active = True
+                user.password_hash = get_password_hash("pass")
+
+        upsert_user("admin", "superuser", "admin@fleetmanagement.com")
+        upsert_user("operator1", "operator", "operator1@fleetmanagement.com")
+        upsert_user("manager1", "manager", "manager1@fleetmanagement.com")
+        upsert_user("configurator", "configurator", "configurator@fleetmanagement.com")
+        upsert_user("maker1", "maker", "maker1@fleet.com")
+        db.commit()
+    finally:
+        db.close()
 
 # Initialize sample data endpoint
 @app.post("/api/v1/init-data")

@@ -13,3 +13,8 @@ templates = Jinja2Templates(directory=str(templates_dir))
 async def connect_plus_page(request: Request):
     """Render Connect Plus page"""
     return templates.TemplateResponse("index.html", {"request": request})
+
+@router.get("/connect-plus-plus", response_class=HTMLResponse)
+async def connect_plus_plus_page(request: Request):
+    """Alias route for historical tests and links"""
+    return templates.TemplateResponse("index.html", {"request": request})
