@@ -73,13 +73,14 @@ app.include_router(fleet_workshop_router, prefix=settings.api_v1_str)
 # Import and include module routes
 from modules.routes import include_module_routes
 
+# Include all module page routes
 include_module_routes(app)
-# Mount static files (check directory exists first)
+
 import os
 
+# Mount static files (check directory exists first)
 if os.path.exists("static") and os.path.isdir("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
-
     # Backward-compatibility mounts for common static assets used by docs/tests
     if os.path.exists("static/common") and os.path.isdir("static/common"):
         # Legacy direct path
@@ -91,14 +92,27 @@ if os.path.exists("static") and os.path.isdir("static"):
             name="compat-modules-common-static",
         )
 
+# Mount pages directory for page assets
+if os.path.exists("pages") and os.path.isdir("pages"):
+    app.mount("/pages", StaticFiles(directory="pages"), name="pages")
+
 # FSM module compatibility mounts for legacy frontend paths
-if os.path.exists("modules/fsm/templates") and os.path.isdir("modules/fsm/templates"):
-    # Legacy direct path
-    app.mount("/fsm/frontend", StaticFiles(directory="modules/fsm/templates"), name="legacy-fsm-frontend")
-    # Compatibility for tests expecting /modules/fsm/frontend/...
+fsm_pages_dir = "pages/fsm"
+fsm_legacy_dir = "modules/fsm/templates"
+if os.path.exists(fsm_pages_dir) and os.path.isdir(fsm_pages_dir):
+    # Prefer new pages directory
+    app.mount("/fsm/frontend", StaticFiles(directory=fsm_pages_dir), name="legacy-fsm-frontend")
     app.mount(
         "/modules/fsm/frontend",
-        StaticFiles(directory="modules/fsm/templates"),
+        StaticFiles(directory=fsm_pages_dir),
+        name="compat-modules-fsm-frontend",
+    )
+elif os.path.exists(fsm_legacy_dir) and os.path.isdir(fsm_legacy_dir):
+    # Fallback to old modules directory if pages/fsm not present
+    app.mount("/fsm/frontend", StaticFiles(directory=fsm_legacy_dir), name="legacy-fsm-frontend")
+    app.mount(
+        "/modules/fsm/frontend",
+        StaticFiles(directory=fsm_legacy_dir),
         name="compat-modules-fsm-frontend",
     )
 

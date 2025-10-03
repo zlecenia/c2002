@@ -5,7 +5,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-# Setup templates directory
+# Setup templates directory (migrated to pages/cm)
 templates_dir = Path("pages/cm")
 templates = Jinja2Templates(directory=str(templates_dir))
 

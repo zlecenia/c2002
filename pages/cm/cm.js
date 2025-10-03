@@ -950,7 +950,7 @@ function displayDeviceConfigs(configs) {
                     <td>${config.device_type}</td>
                     <td>${config.status}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
-                        ${JSON.stringify(config.configuration).substring(0, 50)}...
+                        ${config.configuration ? JSON.stringify(config.configuration).substring(0, 50) + '...' : 'Brak konfiguracji'}
                     </td>
                     <td>
                         <button class="btn btn-secondary" onclick="editDeviceConfig(${config.device_id})">Edytuj</button>
@@ -999,7 +999,7 @@ function displayTestScenarios(scenarios) {
                     <td>${scenario.scenario_name}</td>
                     <td>${scenario.test_type}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
-                        ${JSON.stringify(scenario.parameters).substring(0, 50)}...
+                        ${scenario.parameters ? JSON.stringify(scenario.parameters).substring(0, 50) + '...' : 'Brak parametrów'}
                     </td>
                     <td>
                         <button class="btn btn-secondary" onclick="editTestScenario(${scenario.scenario_id})">Edytuj</button>
