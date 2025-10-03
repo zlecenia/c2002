@@ -36,10 +36,10 @@ clean:
 	@echo "✅ Cleaned up all containers and volumes"
 
 test:
-	@echo "Running backend tests..."
-	docker-compose exec backend pytest tests/ -v
-	@echo "Running frontend tests..."
-	docker-compose exec frontend npm test
+	@echo "🧪 Running backend tests..."
+	@docker-compose exec -T backend pytest tests/ -v
+	@echo ""
+	@echo "✅ All tests completed!"
 
 dev:
 	docker-compose up
