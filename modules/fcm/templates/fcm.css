@@ -101,60 +101,11 @@ body {
     gap: 20px;
 }
 
-.section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
-}
+/* Section styles moved to /static/sections/css/style.css */
 
 /* Tabs styles moved to /static/tabs/css/style.css */
 
-.btn {
-    background: #9b59b6;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 5px;
-    font-size: 14px;
-}
-
-.btn:hover {
-    background: #8e44ad;
-}
-
-.btn-secondary {
-    background: #95a5a6;
-}
-
-.btn-secondary:hover {
-    background: #7f8c8d;
-}
-
-.btn-success {
-    background: #27ae60;
-}
-
-.btn-success:hover {
-    background: #229954;
-}
-
-.btn-danger {
-    background: #e74c3c;
-}
-
-.btn-danger:hover {
-    background: #c0392b;
-}
-
-.btn-sm {
-    padding: 5px 10px;
-    font-size: 12px;
-}
+/* Button styles moved to /static/buttons/css/style.css */
 
 .form-group {
     margin-bottom: 15px;

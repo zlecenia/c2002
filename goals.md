@@ -1,6 +1,6 @@
 sidebar-auth
 
-przenieś wszystkie statycznme pliki z modules/*/templates/* do fodleru pages/
+przenieś wszystkie statyczne pliki z modules/*/templates/* do folderu pages/
 czyli  modules/[nazwa_modulu]/templates/[plik]
 do pages/[nazwa_modulu]/[plik]
 

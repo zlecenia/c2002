@@ -111,36 +111,9 @@
             gap: 20px;
         }
 
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-height: calc(100vh - 150px);
-            overflow-y: auto;
-        }
+        /* Section styles moved to /static/sections/css/style.css */
 
-        .btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #c0392b;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
+        /* Button styles moved to /static/buttons/css/style.css */
 
         .form-group {
             margin-bottom: 15px;
