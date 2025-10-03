@@ -172,14 +172,14 @@ docker-build:
 	$(DOCKER_COMPOSE) build --no-cache
 	@echo "✅ Images built"
 
-docker-up:
+up:
 	@echo "🐳 Starting Docker containers..."
-	$(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up --build
 	@echo "✅ Containers started"
 	@echo ""
 	@$(MAKE) docker-ps
 
-docker-down:
+down:
 	@echo "🐳 Stopping Docker containers..."
 	$(DOCKER_COMPOSE) down
 	@echo "✅ Containers stopped"

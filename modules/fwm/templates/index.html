@@ -58,6 +58,8 @@
                 <button class="tab active" onclick="showTab('repairs')">🔩 Naprawy</button>
                 <button class="tab" onclick="showTab('maintenance')">⚙️ Konserwacja</button>
                 <button class="tab" onclick="showTab('parts')">🔧 Części zamienne</button>
+                <button class="tab" onclick="showTab('devices')">📱 Urządzenia</button>
+                <button class="tab" onclick="showTab('customers')">🏢 Klienci</button>
             </div>
         </div>
         
@@ -128,6 +130,150 @@
                                 <tr><td colspan="5" style="text-align: center;">Zaloguj się aby zobaczyć części...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Devices Tab -->
+                    <div id="devices-tab" class="tab-content" style="display: none;">
+                        <div class="filter-section" style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                            <h4>🔍 Filtry</h4>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="device-type-filter" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Wszystkie typy</option>
+                                    <option value="mask_tester">Tester masek</option>
+                                    <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                    <option value="flow_meter">Przepływomierz</option>
+                                </select>
+                                <select id="device-status-filter" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Wszystkie statusy</option>
+                                    <option value="active">Aktywne</option>
+                                    <option value="inactive">Nieaktywne</option>
+                                    <option value="maintenance">Konserwacja</option>
+                                    <option value="decommissioned">Wycofane</option>
+                                </select>
+                                <button class="btn" onclick="loadDevices()">Filtruj</button>
+                                <button class="btn btn-secondary" onclick="clearFilters()">Wyczyść</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>📱 Lista Urządzeń</h3>
+                            <button class="btn" onclick="showAddDeviceForm()">Dodaj urządzenie</button>
+                        </div>
+
+                        <table class="data-table" id="devices-table">
+                            <thead>
+                            <tr>
+                                <th>Numer urządzenia</th>
+                                <th>Typ</th>
+                                <th>Status</th>
+                                <th>Klient</th>
+                                <th>Akcje</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr><td colspan="5">Zaloguj się aby zobaczyć urządzenia...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Customers Tab -->
+                    <div id="customers-tab" class="tab-content" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>🏢 Lista Klientów</h3>
+                            <button class="btn" onclick="showAddCustomerForm()">Dodaj klienta</button>
+                        </div>
+
+                        <table class="data-table" id="customers-table">
+                            <thead>
+                            <tr>
+                                <th>Nazwa</th>
+                                <th>Informacje kontaktowe</th>
+                                <th>Data utworzenia</th>
+                                <th>Akcje</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr><td colspan="4">Zaloguj się aby zobaczyć klientów...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Forms Section -->
+                <div class="section" style="margin-top: 20px;">
+                    <h3 id="form-title">Formularz</h3>
+
+                    <!-- Add Device Form -->
+                    <div id="add-device-form" style="display: none;">
+                        <h4>Dodaj nowe urządzenie</h4>
+                        <form id="device-form">
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Numer urządzenia:</label>
+                                <input type="text" id="device-number" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Typ urządzenia:</label>
+                                <select id="device-type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Wybierz typ</option>
+                                    <option value="mask_tester">Tester masek</option>
+                                    <option value="pressure_sensor">Czujnik ciśnienia</option>
+                                    <option value="flow_meter">Przepływomierz</option>
+                                    <option value="generic_device">Urządzenie ogólne</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Rodzaj urządzenia:</label>
+                                <input type="text" id="kind-of-device" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Numer seryjny:</label>
+                                <input type="text" id="serial-number" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Status:</label>
+                                <select id="device-status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="active">Aktywne</option>
+                                    <option value="inactive">Nieaktywne</option>
+                                    <option value="maintenance">Konserwacja</option>
+                                    <option value="decommissioned">Wycofane</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Klient:</label>
+                                <select id="device-customer" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Brak przypisania</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn" id="device-submit-btn" onclick="saveDevice()">Dodaj urządzenie</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideDeviceForm()">Anuluj</button>
+                        </form>
+                    </div>
+
+                    <!-- Add Customer Form -->
+                    <div id="add-customer-form" style="display: none;">
+                        <h4>Dodaj nowego klienta</h4>
+                        <form id="customer-form">
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">Nazwa klienta:</label>
+                                <input type="text" id="customer-name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;">📋 Informacje kontaktowe (JSON):</label>
+                                <div style="margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.addField()">+ Dodaj pole</button>
+                                    <button type="button" class="btn btn-secondary" onclick="customerJsonEditor.clear()">🗑️ Wyczyść</button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleCustomerJSONView()">👁️ Podgląd JSON</button>
+                                </div>
+                                <div id="customer-json-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f8f9fa; max-height: 400px; overflow-y: auto;">
+                                    <!-- Tree editor -->
+                                </div>
+                                <div id="customer-json-preview" style="display: none; margin-top: 10px; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                                    <!-- JSON preview -->
+                                </div>
+                            </div>
+                            <button type="button" class="btn" id="customer-submit-btn" onclick="saveCustomer()">Dodaj klienta</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideCustomerForm()">Anuluj</button>
+                        </form>
                     </div>
                 </div>
 
@@ -627,6 +773,340 @@
             document.querySelector('button[onclick="login()"]').style.display = 'block';
             document.getElementById('logout-btn').style.display = 'none';
         }
+
+        // Device Management Functions
+        let devices = [];
+        let customers = [];
+        let currentEditingDevice = null;
+        let currentEditingCustomer = null;
+
+        async function loadDevices() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    document.querySelector('#devices-table tbody').innerHTML = 
+                        '<tr><td colspan="5">Musisz być zalogowany aby zobaczyć urządzenia</td></tr>';
+                    return;
+                }
+
+                const response = await fetch('/api/v1/fleet-data/devices', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    devices = await response.json();
+                    displayDevices();
+                } else {
+                    document.querySelector('#devices-table tbody').innerHTML = 
+                        '<tr><td colspan="5">Błąd ładowania urządzeń</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+                document.querySelector('#devices-table tbody').innerHTML = 
+                    '<tr><td colspan="5">Błąd połączenia z serwerem</td></tr>';
+            }
+        }
+
+        function displayDevices() {
+            const tbody = document.querySelector('#devices-table tbody');
+            if (!devices || devices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Brak urządzeń do wyświetlenia</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = devices.map(device => `
+                <tr>
+                    <td>${device.device_number || 'N/A'}</td>
+                    <td>${device.device_type || 'N/A'}</td>
+                    <td><span class="status-badge status-${device.status || 'inactive'}">${device.status || 'N/A'}</span></td>
+                    <td>${device.customer_name || 'Brak przypisania'}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editDevice(${device.id})">Edytuj</button>
+                        <button class="btn" style="background: #e74c3c;" onclick="deleteDevice(${device.id})">Usuń</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadCustomers() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    document.querySelector('#customers-table tbody').innerHTML = 
+                        '<tr><td colspan="4">Musisz być zalogowany aby zobaczyć klientów</td></tr>';
+                    return;
+                }
+
+                const response = await fetch('/api/v1/fleet-data/customers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    customers = await response.json();
+                    displayCustomers();
+                    loadCustomersForSelect();
+                } else {
+                    document.querySelector('#customers-table tbody').innerHTML = 
+                        '<tr><td colspan="4">Błąd ładowania klientów</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                document.querySelector('#customers-table tbody').innerHTML = 
+                    '<tr><td colspan="4">Błąd połączenia z serwerem</td></tr>';
+            }
+        }
+
+        function displayCustomers() {
+            const tbody = document.querySelector('#customers-table tbody');
+            if (!customers || customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Brak klientów do wyświetlenia</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = customers.map(customer => `
+                <tr>
+                    <td>${customer.name}</td>
+                    <td>${customer.contact_info ? JSON.stringify(customer.contact_info).substring(0, 50) + '...' : 'Brak'}</td>
+                    <td>${customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editCustomer(${customer.id})">Edytuj</button>
+                        <button class="btn" style="background: #e74c3c;" onclick="deleteCustomer(${customer.id})">Usuń</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadCustomersForSelect() {
+            const select = document.getElementById('device-customer');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Brak przypisania</option>';
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
+            });
+        }
+
+        function showAddDeviceForm() {
+            document.getElementById('add-device-form').style.display = 'block';
+            document.getElementById('add-customer-form').style.display = 'none';
+            document.getElementById('device-submit-btn').textContent = 'Dodaj urządzenie';
+            document.getElementById('form-title').textContent = 'Dodaj urządzenie';
+            currentEditingDevice = null;
+            clearDeviceForm();
+        }
+
+        function hideDeviceForm() {
+            document.getElementById('add-device-form').style.display = 'none';
+            clearDeviceForm();
+        }
+
+        function showAddCustomerForm() {
+            document.getElementById('add-customer-form').style.display = 'block';
+            document.getElementById('add-device-form').style.display = 'none';
+            document.getElementById('customer-submit-btn').textContent = 'Dodaj klienta';
+            document.getElementById('form-title').textContent = 'Dodaj klienta';
+            currentEditingCustomer = null;
+            clearCustomerForm();
+        }
+
+        function hideCustomerForm() {
+            document.getElementById('add-customer-form').style.display = 'none';
+            clearCustomerForm();
+        }
+
+        function clearDeviceForm() {
+            document.getElementById('device-number').value = '';
+            document.getElementById('device-type').value = '';
+            document.getElementById('kind-of-device').value = '';
+            document.getElementById('serial-number').value = '';
+            document.getElementById('device-status').value = 'active';
+            document.getElementById('device-customer').value = '';
+        }
+
+        function clearCustomerForm() {
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-json-editor').innerHTML = '';
+        }
+
+        async function saveDevice() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Musisz być zalogowany</div>';
+                    return;
+                }
+
+                const deviceData = {
+                    device_number: document.getElementById('device-number').value,
+                    device_type: document.getElementById('device-type').value,
+                    kind_of_device: document.getElementById('kind-of-device').value,
+                    serial_number: document.getElementById('serial-number').value,
+                    status: document.getElementById('device-status').value,
+                    customer_id: document.getElementById('device-customer').value || null
+                };
+
+                const url = currentEditingDevice 
+                    ? `/api/v1/fleet-data/devices/${currentEditingDevice}`
+                    : '/api/v1/fleet-data/devices';
+                
+                const method = currentEditingDevice ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deviceData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #d4edda; border-radius: 4px; color: #155724;">Urządzenie zostało zapisane</div>';
+                    hideDeviceForm();
+                    loadDevices();
+                } else {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd zapisywania urządzenia</div>';
+                }
+            } catch (error) {
+                console.error('Error saving device:', error);
+                document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd połączenia z serwerem</div>';
+            }
+        }
+
+        async function saveCustomer() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Musisz być zalogowany</div>';
+                    return;
+                }
+
+                const customerData = {
+                    name: document.getElementById('customer-name').value,
+                    contact_info: getCustomerContactInfo()
+                };
+
+                const url = currentEditingCustomer 
+                    ? `/api/v1/fleet-data/customers/${currentEditingCustomer}`
+                    : '/api/v1/fleet-data/customers';
+                
+                const method = currentEditingCustomer ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(customerData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #d4edda; border-radius: 4px; color: #155724;">Klient został zapisany</div>';
+                    hideCustomerForm();
+                    loadCustomers();
+                } else {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd zapisywania klienta</div>';
+                }
+            } catch (error) {
+                console.error('Error saving customer:', error);
+                document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd połączenia z serwerem</div>';
+            }
+        }
+
+        function getCustomerContactInfo() {
+            // Simple implementation - returns empty object for now
+            // TODO: Implement JSON editor functionality
+            return {};
+        }
+
+        function clearFilters() {
+            document.getElementById('device-type-filter').value = '';
+            document.getElementById('device-status-filter').value = '';
+            loadDevices();
+        }
+
+        async function editDevice(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+            
+            currentEditingDevice = deviceId;
+            document.getElementById('device-number').value = device.device_number || '';
+            document.getElementById('device-type').value = device.device_type || '';
+            document.getElementById('kind-of-device').value = device.kind_of_device || '';
+            document.getElementById('serial-number').value = device.serial_number || '';
+            document.getElementById('device-status').value = device.status || 'active';
+            document.getElementById('device-customer').value = device.customer_id || '';
+            
+            document.getElementById('device-submit-btn').textContent = 'Aktualizuj urządzenie';
+            document.getElementById('form-title').textContent = 'Edytuj urządzenie';
+            document.getElementById('add-device-form').style.display = 'block';
+        }
+
+        async function editCustomer(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+            
+            currentEditingCustomer = customerId;
+            document.getElementById('customer-name').value = customer.name || '';
+            
+            document.getElementById('customer-submit-btn').textContent = 'Aktualizuj klienta';
+            document.getElementById('form-title').textContent = 'Edytuj klienta';
+            document.getElementById('add-customer-form').style.display = 'block';
+        }
+
+        async function deleteDevice(deviceId) {
+            if (!confirm('Czy na pewno chcesz usunąć to urządzenie?')) return;
+            
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`/api/v1/fleet-data/devices/${deviceId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #d4edda; border-radius: 4px; color: #155724;">Urządzenie zostało usunięte</div>';
+                    loadDevices();
+                } else {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd usuwania urządzenia</div>';
+                }
+            } catch (error) {
+                console.error('Error deleting device:', error);
+            }
+        }
+
+        async function deleteCustomer(customerId) {
+            if (!confirm('Czy na pewno chcesz usunąć tego klienta?')) return;
+            
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`/api/v1/fleet-data/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #d4edda; border-radius: 4px; color: #155724;">Klient został usunięty</div>';
+                    loadCustomers();
+                } else {
+                    document.getElementById('result').innerHTML = '<div style="padding: 15px; background: #fee2e2; border-radius: 4px; color: #dc2626;">Błąd usuwania klienta</div>';
+                }
+            } catch (error) {
+                console.error('Error deleting customer:', error);
+            }
+        }
+
+        // Initialize data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (getAuthToken()) {
+                loadDevices();
+                loadCustomers();
+            }
+        });
     </script>
 
     <!-- Navigation Menu Vue Component Script -->

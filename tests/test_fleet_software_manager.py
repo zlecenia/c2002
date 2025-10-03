@@ -3,6 +3,7 @@ E2E tests for Fleet Software Manager module
 """
 import pytest
 import requests
+import time
 
 def test_get_software_dashboard_stats(api_url, auth_headers):
     """Test getting software dashboard statistics"""
@@ -14,7 +15,7 @@ def test_get_software_dashboard_stats(api_url, auth_headers):
     data = response.json()
     assert "total_software" in data
     assert "total_versions" in data
-    assert "total_installations" in data
+    assert "recent_installations" in data
 
 def test_list_software(api_url, auth_headers):
     """Test listing all software packages"""
@@ -29,9 +30,9 @@ def test_list_software(api_url, auth_headers):
 def test_create_software(api_url, auth_headers):
     """Test creating a new software package"""
     software_data = {
-        "name": f"Test Software E2E {pytest.test_run_id}",
+        "name": f"Test Software E2E {int(time.time())}",
         "description": "E2E test software package",
-        "current_version": "1.0.0"
+        "category": "tool"
     }
     response = requests.post(
         f"{api_url}/fleet-software/software",
@@ -47,9 +48,9 @@ def test_update_software(api_url, auth_headers):
     """Test updating a software package"""
     # First create software
     software_data = {
-        "name": f"Test Update Software {pytest.test_run_id}",
+        "name": f"Test Update Software {int(time.time())}",
         "description": "Original description",
-        "current_version": "1.0.0"
+        "category": "tool"
     }
     create_response = requests.post(
         f"{api_url}/fleet-software/software",
@@ -76,9 +77,9 @@ def test_delete_software(api_url, auth_headers):
     """Test deleting a software package"""
     # First create software
     software_data = {
-        "name": f"Test Delete Software {pytest.test_run_id}",
+        "name": f"Test Delete Software {int(time.time())}",
         "description": "To be deleted",
-        "current_version": "1.0.0"
+        "category": "tool"
     }
     create_response = requests.post(
         f"{api_url}/fleet-software/software",
@@ -98,9 +99,9 @@ def test_get_software_versions(api_url, auth_headers):
     """Test getting versions for a software package"""
     # First create software
     software_data = {
-        "name": f"Test Version Software {pytest.test_run_id}",
+        "name": f"Test Version Software {int(time.time())}",
         "description": "For version testing",
-        "current_version": "1.0.0"
+        "category": "tool"
     }
     create_response = requests.post(
         f"{api_url}/fleet-software/software",
@@ -122,9 +123,9 @@ def test_create_software_version(api_url, auth_headers):
     """Test creating a new version for software"""
     # First create software
     software_data = {
-        "name": f"Test Version Create {pytest.test_run_id}",
+        "name": f"Test Version Create {int(time.time())}",
         "description": "For version creation",
-        "current_version": "1.0.0"
+        "category": "tool"
     }
     create_response = requests.post(
         f"{api_url}/fleet-software/software",

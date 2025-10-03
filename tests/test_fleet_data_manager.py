@@ -3,6 +3,7 @@ E2E tests for Fleet Data Manager module
 """
 import pytest
 import requests
+import time
 
 def test_get_dashboard_stats(api_url, manager_token):
     """Test getting fleet dashboard statistics"""
@@ -32,7 +33,8 @@ def test_create_device(api_url, manager_token):
     """Test creating a new device"""
     headers = {"Authorization": f"Bearer {manager_token}"}
     device_data = {
-        "serial_number": f"TEST-E2E-{pytest.test_run_id}",
+        "device_number": f"DEV-E2E-{int(time.time())}",
+        "serial_number": f"TEST-E2E-{int(time.time())}",
         "device_type": "mask_tester",
         "status": "active",
         "customer_id": 1
@@ -53,7 +55,8 @@ def test_update_device(api_url, manager_token):
     
     # First create a device
     device_data = {
-        "serial_number": f"TEST-UPDATE-{pytest.test_run_id}",
+        "device_number": f"DEV-UPDATE-{int(time.time())}",
+        "serial_number": f"TEST-UPDATE-{int(time.time())}",
         "device_type": "mask_tester",
         "status": "active"
     }
@@ -90,7 +93,7 @@ def test_create_customer(api_url, manager_token):
     """Test creating a new customer"""
     headers = {"Authorization": f"Bearer {manager_token}"}
     customer_data = {
-        "name": f"Test Customer E2E {pytest.test_run_id}",
+        "name": f"Test Customer E2E {int(time.time())}",
         "contact_info": {
             "email": "test@example.com",
             "phone": "+48 123 456 789"

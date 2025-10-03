@@ -61,7 +61,7 @@
     </div>
     <div class="app-layout">
         <div class="sidebar">
-            <h3>💿 Menu Modułu</h3>
+            <h3>💿 Menu Modułu{% if modular %} - Modular Version{% endif %}</h3>
             <div class="menu-item" onclick="scrollToSection('dashboard')">📊 Dashboard</div>
             <div class="menu-item active" onclick="showTab('software-tab', this)">📦 Oprogramowanie</div>
             <div class="menu-item" onclick="showTab('versions-tab', this)">🔢 Wersje</div>

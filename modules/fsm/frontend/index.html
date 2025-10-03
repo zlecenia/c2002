@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fleet Software Manager - Fleet Management</title>
-    
+
     <!-- Vue.js CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- Navigation Menu Styles -->
@@ -15,77 +15,84 @@
     <link rel="stylesheet" href="/modules/fsm/frontend/fsm.css">
 </head>
 <body>
-    <!-- Vue Navigation Menu Component -->
-    <div id="nav-menu-app">
-        <nav-menu current-path="/fsm-modular"></nav-menu>
-    </div>
-    
-    <!-- 3-Column Layout -->
-    <div class="container">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <h3>💿 Menu Modułu</h3>
-            <div class="menu-section">
-                <button class="menu-item" onclick="scrollTo(0,0)">📊 Dashboard</button>
-                <button class="menu-item active" onclick="showTab('software-tab')">📦 Oprogramowanie</button>
-                <button class="menu-item" onclick="showTab('versions-tab')">🔢 Wersje</button>
-                <button class="menu-item" onclick="showTab('installations-tab')">💾 Instalacje</button>
-            </div>
-            
-            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
-                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API Endpoints Test</h4>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;" onclick="testSoftwareAPI()">Test Software API</button>
-                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test Dashboard</button>
-            </div>
-        </aside>
-        
-        <!-- Main Content -->
-        <main class="main-content-wrapper">
-            <h1>💾 Fleet Software Manager</h1>
-            <p style="color: #27ae60; font-weight: bold;">✨ Modular Version - Demo</p>
-            
-            <!-- Dashboard Statistics -->
-            <div class="dashboard" id="dashboard">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-software">-</div>
-                    <div class="stat-label">Całkowite oprogramowanie</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-versions">-</div>
-                    <div class="stat-label">Wersje oprogramowania</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="devices-with-software">-</div>
-                    <div class="stat-label">Urządzenia z oprogramowaniem</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="recent-installations">-</div>
-                    <div class="stat-label">Dzisiejsze instalacje</div>
-                </div>
-            </div>
+<!-- Vue Navigation Menu Component -->
+<div id="nav-menu-app">
+    <nav-menu current-path="/fsm-modular"></nav-menu>
+</div>
 
-            <!-- Tabs -->
-            <div class="tab-buttons">
-                <button class="tab-button active" onclick="showTab('software-tab')">📦 Oprogramowanie</button>
-                <button class="tab-button" onclick="showTab('installations-tab')">💾 Instalacje</button>
-            </div>
+<!-- 3-Column Layout -->
+<div class="container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <h3>💿 Menu Modułu</h3>
+        <div class="menu-section">
+            <button class="menu-item" onclick="scrollTo(0,0)">📊 Dashboard</button>
+            <button class="menu-item active" onclick="showTab('software-tab')">📦 Oprogramowanie</button>
+            <button class="menu-item" onclick="showTab('versions-tab')">🔢 Wersje</button>
+            <button class="menu-item" onclick="showTab('installations-tab')">💾 Instalacje</button>
+        </div>
 
-            <!-- Software Tab -->
-            <div id="software-tab" class="tab-content active">
-                <div class="card">
+        <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+            <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #27ae60; padding-bottom: 8px;">🔍 API
+                Endpoints Test</h4>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;"
+                    onclick="testSoftwareAPI()">Test Software API
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testDashboard()">Test
+                Dashboard
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content-wrapper">
+        <h1>💾 Fleet Software Manager</h1>
+        <p style="color: #27ae60; font-weight: bold;">✨ Modular Version - Demo</p>
+
+        <!-- Dashboard Statistics -->
+        <div class="dashboard" id="dashboard">
+            <div class="stat-card">
+                <div class="stat-value" id="total-software">-</div>
+                <div class="stat-label">Całkowite oprogramowanie</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-versions">-</div>
+                <div class="stat-label">Wersje oprogramowania</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="devices-with-software">-</div>
+                <div class="stat-label">Urządzenia z oprogramowaniem</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="recent-installations">-</div>
+                <div class="stat-label">Dzisiejsze instalacje</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('software-tab', this)">Oprogramowanie</button>
+                    <button class="tab" onclick="showTab('versions-tab', this)">Wersje</button>
+                    <button class="tab" onclick="showTab('installations-tab', this)">Instalacje</button>
+                </div>
+
+                <!-- Software Management Tab -->
+                <div id="software-tab" class="tab-content active">
                     <h3>📦 Zarządzanie Oprogramowaniem</h3>
-                    <button class="btn btn-primary" onclick="loadSoftware()">Odśwież listę</button>
+                    <button class="btn" onclick="loadSoftware()">Odśwież listę</button>
                     <button class="btn btn-success" onclick="showCreateSoftwareForm()">Dodaj oprogramowanie</button>
-                    
-                    <div id="software-list" style="margin-top: 20px;">
+
+                    <div id="software-list">
                         <p>Kliknij "Odśwież listę" aby załadować oprogramowanie...</p>
                     </div>
 
                     <!-- Create Software Form -->
-                    <div id="create-software-form" style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #27ae60; border-radius: 8px;">
+                    <div id="create-software-form"
+                         style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
                         <h4>➕ Dodaj nowe oprogramowanie</h4>
                         <div class="form-group">
-                            <label>Nazwa oprogramowania:*</label>
+                            <label>Nazwa oprogramowania:</label>
                             <input type="text" id="software-name" required>
                         </div>
                         <div class="form-group">
@@ -97,7 +104,7 @@
                             <input type="text" id="software-vendor">
                         </div>
                         <div class="form-group">
-                            <label>Kategoria:*</label>
+                            <label>Kategoria:</label>
                             <select id="software-category">
                                 <option value="">Wybierz kategorię</option>
                                 <option value="firmware">Firmware</option>
@@ -120,46 +127,120 @@
                         <button class="btn btn-secondary" onclick="hideCreateSoftwareForm()">Anuluj</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Installations Tab -->
-            <div id="installations-tab" class="tab-content">
-                <div class="card">
-                    <h3>💾 Historia Instalacji</h3>
-                    <button class="btn btn-primary" onclick="loadInstallations()">Odśwież listę</button>
-                    
-                    <div id="installations-list" style="margin-top: 20px;">
+                <!-- Versions Management Tab -->
+                <div id="versions-tab" class="tab-content">
+                    <h3>🔢 Zarządzanie Wersjami</h3>
+                    <div class="form-group">
+                        <label>Wybierz oprogramowanie:</label>
+                        <select id="version-software-select" onchange="loadVersions()">
+                            <option value="">-- Wybierz oprogramowanie --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="showCreateVersionForm()" id="add-version-btn"
+                            style="display: none;">Dodaj wersję
+                    </button>
+
+                    <div id="versions-list">
+                        <p>Wybierz oprogramowanie aby zobaczyć wersje...</p>
+                    </div>
+
+                    <!-- Create Version Form -->
+                    <div id="create-version-form"
+                         style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
+                        <h4>➕ Dodaj nową wersję</h4>
+                        <div class="form-group">
+                            <label>Numer wersji:</label>
+                            <input type="text" id="version-number" required placeholder="np. 1.0.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Notatki wydania:</label>
+                            <textarea id="version-release-notes" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>URL pobierania:</label>
+                            <input type="url" id="version-download-url">
+                        </div>
+                        <div style="display: flex; gap: 20px;">
+                            <label><input type="checkbox" id="version-stable" checked> Stabilna</label>
+                            <label><input type="checkbox" id="version-beta"> Beta</label>
+                            <label><input type="checkbox" id="version-reboot"> Wymaga restart</label>
+                        </div>
+                        <br>
+                        <button class="btn btn-success" onclick="createVersion()">Utwórz wersję</button>
+                        <button class="btn btn-secondary" onclick="hideCreateVersionForm()">Anuluj</button>
+                    </div>
+                </div>
+
+                <!-- Installations Tab -->
+                <div id="installations-tab" class="tab-content">
+                    <h3>⚙️ Historia Instalacji</h3>
+                    <button class="btn" onclick="loadInstallations()">Odśwież listę</button>
+                    <button class="btn btn-success" onclick="showInstallationForm()">Nowa instalacja</button>
+
+                    <div id="installations-list">
                         <p>Kliknij "Odśwież listę" aby załadować historię instalacji...</p>
+                    </div>
+
+                    <!-- Installation Form -->
+                    <div id="installation-form"
+                         style="display: none; margin-top: 20px; padding: 20px; border: 2px solid #34495e; border-radius: 8px;">
+                        <h4>⚙️ Nowa instalacja oprogramowania</h4>
+                        <div class="form-group">
+                            <label>Urządzenie:</label>
+                            <select id="installation-device" required>
+                                <option value="">-- Wybierz urządzenie --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Wersja oprogramowania:</label>
+                            <select id="installation-version" required>
+                                <option value="">-- Wybierz wersję --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Akcja:</label>
+                            <select id="installation-action" required>
+                                <option value="install">Instaluj</option>
+                                <option value="update">Aktualizuj</option>
+                                <option value="uninstall">Odinstaluj</option>
+                                <option value="rollback">Wycofaj</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notatki:</label>
+                            <textarea id="installation-notes" rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-success" onclick="createInstallation()">Rozpocznij instalację</button>
+                        <button class="btn btn-secondary" onclick="hideInstallationForm()">Anuluj</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="result" style="margin-top: 20px;"></div>
-        </main>
-        
-        <!-- Right Sidebar (Auth) -->
-        <aside class="right-sidebar">
-            <div class="sidebar-auth">
-                <h3>🔐 Logowanie</h3>
-                <div id="login-form">
-                    <input type="text" id="username" placeholder="Username">
-                    <input type="password" id="password" placeholder="Password">
-                    <button onclick="handleLogin()" class="btn-login">Zaloguj</button>
-                </div>
-                <div id="user-info" style="display: none;"></div>
-                <div id="auth-status" class="auth-status not-logged-in">❌ Niezalogowany</div>
-                <div id="login-result"></div>
+        <div id="result" style="margin-top: 20px;"></div>
+
+        <!-- Right sidebar with login -->
+        <div class="right-sidebar">
+            <h3>🔐 Logowanie</h3>
+            <div id="login-form" class="login-section">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button class="btn btn-success" onclick="handleLogin()">Zaloguj</button>
             </div>
-        </aside>
+            <div id="user-info" style="display: none;"></div>
+            <div id="auth-status" class="auth-status not-logged-in">❌ Niezalogowany</div>
+            <div id="login-result"></div>
+        </div>
     </div>
-    
-    <!-- Common JavaScript -->
-    <script src="/modules/common/static/js/auth.js"></script>
-    <script src="/modules/common/static/js/utils.js"></script>
-    <!-- Module specific JavaScript -->
-    <script src="/modules/fsm/frontend/fsm.js"></script>
-    
-    <!-- Navigation Menu Vue Component Script -->
-    <script src="/static/js/nav-menu.js"></script>
+
+<!-- Common JavaScript -->
+<script src="/modules/common/static/js/auth.js"></script>
+<script src="/modules/common/static/js/utils.js"></script>
+<!-- Module specific JavaScript -->
+<script src="/modules/fsm/frontend/fsm.js"></script>
+
+<!-- Navigation Menu Vue Component Script -->
+<script src="/static/js/nav-menu.js"></script>
 </body>
 </html>

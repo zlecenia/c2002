@@ -68,7 +68,6 @@ class SoftwareResponse(BaseModel):
         from_attributes = True
 
 class SoftwareVersionCreate(BaseModel):
-    software_id: int
     version_number: str = Field(..., min_length=1, max_length=50)
     release_notes: Optional[str] = None
     changelog: Optional[str] = None

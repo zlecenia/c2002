@@ -26,3 +26,8 @@ templates = Jinja2Templates(directory=str(templates_dir))
 async def fleet_software_manager_page(request: Request):
     """Render Fleet Software Manager page"""
     return templates.TemplateResponse("index.html", {"request": request})
+
+@router.get("/fsm-modular", response_class=HTMLResponse)
+async def fsm_modular_page(request: Request):
+    """Render Fleet Software Manager modular version page"""
+    return templates.TemplateResponse("index.html", {"request": request, "modular": True})

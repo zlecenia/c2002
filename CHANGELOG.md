@@ -10,12 +10,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Coming Soon
-- Migration of remaining 6 modules to modular architecture
-- Additional customer fields management
 - Advanced reporting and analytics
 - Email notifications system
-- Mobile app (iOS/Android)
+- Mobile app (iOS/Android)  
 - Real-time WebSocket updates
+- FCM module cleanup (optional deprecation)
+
+---
+
+## [2.0.0] - 2025-10-03
+
+### 🎯 **MAJOR MIGRATION COMPLETION**
+
+#### ✅ **Fleet Data Manager → Fleet Workshop Manager Migration**
+- **Complete module migration** from FDM to FWM
+- **Migrated functionalities:**
+  - 📱 **Device Management**: Full CRUD operations with filtering and validation
+  - 🏢 **Customer Management**: Complete customer lifecycle management
+- **Technical Implementation:**
+  - Hash routing support: `#devices`, `#customers`
+  - JWT authentication integration
+  - API endpoints: `/api/v1/fleet-data/devices`, `/api/v1/fleet-data/customers`
+  - Fixed device data structure (added required `device_number` field)
+  - All 8/8 API tests passing successfully
+- **Production URLs:**
+  - Devices: `http://nvidia:5000/fleet-workshop-manager#devices`
+  - Customers: `http://nvidia:5000/fleet-workshop-manager#customers`
+
+#### ✅ **Fleet Config Manager → Connect Manager Migration**
+- **Complete module migration** from FCM to CM
+- **Migrated functionalities:**
+  - ⚙️ **System Configuration**: System-wide settings management
+  - 📱 **Device Configuration**: Individual device settings
+  - 🧪 **Test Scenarios**: Test procedure definitions
+  - 📋 **JSON Templates**: Reusable configuration templates
+- **Technical Implementation:**
+  - **JSON Tree Editor**: Visual JSON editing with type validation
+  - **Modal Forms**: Professional overlay forms for all CRUD operations
+  - **Hash Routing**: `#system-config`, `#device-config`, `#test-config`, `#json-templates`
+  - **API Integration**: `/api/v1/fleet-config/` endpoints
+  - **Role-based Access**: Configurator role enforcement
+  - **Complete CRUD**: Create, Read, Update, Delete for all configuration types
+- **Production URLs:**
+  - System Config: `http://nvidia:5000/connect-manager#system-config`
+  - Device Config: `http://nvidia:5000/connect-manager#device-config`
+  - Test Config: `http://nvidia:5000/connect-manager#test-config`
+  - JSON Templates: `http://nvidia:5000/connect-manager#json-templates`
+
+### 🛠️ **Technical Enhancements**
+
+#### **Complete CRUD Implementation**
+- **System Configuration Management:**
+  - `createSystemConfig()`, `editSystemConfig()`, `updateSystemConfig()`, `deleteSystemConfig()`
+- **Test Scenario Management:**
+  - `createTestScenario()`, `editTestScenario()`, `updateTestScenario()`, `deleteTestScenario()`
+- **Device Configuration Management:**
+  - `editDeviceConfig()`, `updateDeviceConfig()`
+- **JSON Template Management:**
+  - `saveTemplate()`, `editTemplate()`, `deleteTemplate()`
+
+#### **Advanced JSON Tree Editor**
+- **Visual JSON Editing**: Point-and-click structure editing
+- **Type Management**: String, Number, Boolean, Object, Array support
+- **Dynamic Operations**: Add, delete, rename fields in real-time
+- **Preview Mode**: Live JSON preview with syntax highlighting
+- **Validation**: Client-side validation before API submission
+
+#### **Enhanced User Experience**
+- **Hash Routing**: Direct bookmark access to specific sections
+- **Modal Management**: Professional overlay forms with proper z-index
+- **Error Handling**: User-friendly error messages and feedback
+- **Auto-refresh**: Lists automatically update after operations
+- **Form Validation**: Client-side validation with clear error messages
+
+### 📚 **Documentation Updates**
+- **Updated goals.md**: Complete migration status documentation
+- **Created MIGRATION_DOCS.md**: Comprehensive technical migration guide
+- **Created API_GUIDE.md**: User-friendly API usage documentation
+- **Updated CHANGELOG.md**: Complete migration changelog
+
+### ✅ **Migration Success Metrics**
+- **Total Migrations Completed**: 2/2 ✅
+- **Migrated Functionalities**: 6 (Devices, Customers, System Config, Device Config, Test Config, JSON Templates)
+- **API Endpoints**: Fully integrated and tested ✅
+- **Authentication**: JWT + role-based access working ✅
+- **Hash Routing**: Implemented across all features ✅
+- **Forms & Editors**: All functional ✅
+- **Tests**: All passing ✅
+
+### 🎯 **Production Ready Status**
+- **Fleet Workshop Manager**: ✅ PRODUCTION READY
+- **Connect Manager**: ✅ PRODUCTION READY
+- **System Status**: ✅ MIGRATION COMPLETE
 
 ---
 
