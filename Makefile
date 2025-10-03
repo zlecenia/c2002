@@ -51,7 +51,11 @@ help:
 	@echo "  make test-api         Run API tests"
 	@echo "  make test-modules     Run module tests"
 	@echo "  make test-coverage    Run tests with coverage report"
-	@echo "  make lint             Run code linting"
+	@echo "  make lint             Run code linting with flake8"
+	@echo "  make typecheck        Run type checking with mypy"
+	@echo "  make quality          Run all code quality checks"
+	@echo "  make quality-fix      Auto-fix code quality issues"
+	@echo "  make install-dev      Install development dependencies"
 	@echo ""
 	@echo "🛠️  UTILITIES"
 	@echo "  make clean            Clean Python cache files"
@@ -309,5 +313,41 @@ docs-serve:
 	@echo "📚 Serving documentation..."
 	@echo "Visit: http://localhost:5000/docs"
 	@$(MAKE) run
+
+# Code Quality Commands
+lint:
+	@echo "🔍 Running linting with flake8..."
+	@if command -v flake8 >/dev/null 2>&1; then \
+		flake8 backend/ main.py tests/; \
+		echo "✅ Linting completed"; \
+	else \
+		echo "⚠️  flake8 not installed. Install with: pip install flake8"; \
+	fi
+
+typecheck:
+	@echo "🏷️  Running type checking with mypy..."
+	@if command -v mypy >/dev/null 2>&1; then \
+		mypy backend/ main.py; \
+		echo "✅ Type checking completed"; \
+	else \
+		echo "⚠️  mypy not installed. Install with: pip install mypy"; \
+	fi
+
+quality:
+	@echo "🧹 Running all code quality checks..."
+	@$(MAKE) format-check
+	@$(MAKE) lint  
+	@$(MAKE) typecheck
+	@echo "✅ All quality checks completed"
+
+quality-fix:
+	@echo "🛠️  Fixing code quality issues..."
+	@$(MAKE) format
+	@echo "✅ Code quality fixes applied"
+
+install-dev:
+	@echo "📦 Installing development dependencies..."
+	$(PIP) install black flake8 mypy pytest pytest-asyncio httpx
+	@echo "✅ Development dependencies installed"
 
 .DEFAULT_GOAL := help

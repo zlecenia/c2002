@@ -122,11 +122,11 @@
 - [x] ~~**Extract common components (CSS, JS, HTML templates)**~~ - ✅ COMPLETED (2025-10-03)
 - [x] ~~**Implement pilot modular FSM**~~ - ✅ COMPLETED (2025-09-30)
 - [x] ~~**Setup static files mounting for /modules**~~ - ✅ COMPLETED (2025-09-30)
-- [ ] **Migrate Connect++ to modules/cpp/**
+- [x] ~~**Migrate Connect++ to modules/cpp/**~~ - ✅ COMPLETED (2025-10-03) - JavaScript extracted to cpp.js
 - [x] ~~**Migrate Connect Display to modules/cd/**~~ - ✅ COMPLETED (2025-10-03) - CSS extracted to cd.css
-- [x] ~~**Migrate Connect Manager to modules/cm/**~~ - ✅ COMPLETED (2025-10-03) - JavaScript extracted to cm.js
-- [ ] **Migrate Fleet Data Manager to modules/fdm/**
-- [ ] **Migrate Fleet Config Manager to modules/fcm/**
+- [x] ~~**Migrate Connect Manager to modules/cm/**~~ - ✅ COMPLETED (2025-10-03) - All FCM functionality migrated to CM
+- [x] ~~**Migrate Fleet Data Manager to modules/fdm/**~~ - ✅ COMPLETED (2025-10-03) - All FDM functionality migrated to FWM
+- [x] ~~**Migrate Fleet Config Manager to modules/fcm/**~~ - ✅ COMPLETED (2025-10-03) - All FCM functionality migrated to CM  
 - [x] ~~**Migrate Fleet Workshop Manager to modules/fwm/**~~ - ✅ COMPLETED (2025-10-03) - JavaScript extracted to fwm.js
 - [ ] **Remove legacy code from main.py after full migration**
 
@@ -134,8 +134,8 @@
 - [x] ~~**Refactor main.py**~~ - ✅ IN PROGRESS: Modular architecture pattern implemented
 - [x] ~~**Extract Fleet Software router**~~ - ✅ COMPLETED (2025-09-30) - backend/api/fleet_software_router.py
 - [ ] **Remove duplicate code** - DRY principles
-- [ ] **Add type hints** - Full typing coverage
-- [ ] **Code style enforcement** - Black, flake8, mypy
+- [x] ~~**Add type hints**~~ - ✅ COMPLETED (2025-10-03) - Added type hints to db/base.py, existing files already typed
+- [x] ~~**Code style enforcement**~~ - ✅ COMPLETED (2025-10-03) - Added Black, flake8, mypy configs + Makefile commands
 - [ ] **Documentation strings** - Docstrings for all functions
 
 ### Legacy Code

@@ -1,0 +1,60 @@
+[tool.black]
+line-length = 100
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["backend", "modules"]
+
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fleet-management-system"
+version = "2.0.0"
+description = "Comprehensive Fleet Management System with modular architecture"
+authors = [
+    {name = "Development Team", email = "dev@fleet-management.com"}
+]
+license = {text = "MIT"}
+dependencies = [
+    "fastapi>=0.68.0",
+    "uvicorn[standard]>=0.15.0",
+    "sqlalchemy>=1.4.0",
+    "alembic>=1.7.0",
+    "psycopg2-binary>=2.9.0",
+    "bcrypt>=3.2.0",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.5",
+    "pydantic>=1.8.0",
+    "python-dotenv>=0.19.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+    "mypy>=0.910",
+    "pytest>=6.0.0",
+    "pytest-asyncio>=0.15.0",
+    "httpx>=0.24.0"
+]

@@ -3,9 +3,10 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from backend.db.base import Base
 
+
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
@@ -16,45 +17,48 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_active = Column(Boolean, default=True)
-    
+
     # Relationships
     created_scenarios = relationship("TestScenario", back_populates="creator")
     test_reports = relationship("TestReport", back_populates="operator")
     system_logs = relationship("SystemLog", back_populates="user")
 
+
 class Customer(Base):
     __tablename__ = "customers"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     contact_info = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationships
     devices = relationship("Device", back_populates="customer")
     test_reports = relationship("TestReport", back_populates="customer")
 
+
 class Device(Base):
     __tablename__ = "devices"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     device_number = Column(String(100), unique=True, nullable=False, index=True)
     device_type = Column(String(100), nullable=False)
     kind_of_device = Column(String(100))
     serial_number = Column(String(100))
-    status = Column(String(50), default='active')
+    status = Column(String(50), default="active")
     customer_id = Column(Integer, ForeignKey("customers.id"))
     configuration = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     customer = relationship("Customer", back_populates="devices")
     test_reports = relationship("TestReport", back_populates="device")
 
+
 class TestScenario(Base):
     __tablename__ = "test_scenarios"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
@@ -64,15 +68,16 @@ class TestScenario(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_active = Column(Boolean, default=True)
-    
+
     # Relationships
     creator = relationship("User", back_populates="created_scenarios")
     test_steps = relationship("TestStep", back_populates="scenario")
     test_reports = relationship("TestReport", back_populates="test_scenario")
 
+
 class TestStep(Base):
     __tablename__ = "test_steps"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     scenario_id = Column(Integer, ForeignKey("test_scenarios.id"))
     step_order = Column(Integer, nullable=False)
@@ -83,13 +88,14 @@ class TestStep(Base):
     auto_test = Column(Boolean, default=False)
     operator_participation = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationships
     scenario = relationship("TestScenario", back_populates="test_steps")
 
+
 class TestReport(Base):
     __tablename__ = "test_reports"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     test_scenario_id = Column(Integer, ForeignKey("test_scenarios.id"))
     device_id = Column(Integer, ForeignKey("devices.id"))
@@ -101,16 +107,17 @@ class TestReport(Base):
     results = Column(JSON)
     pressure_data = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationships
     test_scenario = relationship("TestScenario", back_populates="test_reports")
     device = relationship("Device", back_populates="test_reports")
     operator = relationship("User", back_populates="test_reports")
     customer = relationship("Customer", back_populates="test_reports")
 
+
 class SystemLog(Base):
     __tablename__ = "system_logs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     log_level = Column(String(50))  # INFO, WARNING, ERROR, HELP
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -118,13 +125,14 @@ class SystemLog(Base):
     details = Column(JSON)
     ip_address = Column(String(45))
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationships
     user = relationship("User", back_populates="system_logs")
 
+
 class Configuration(Base):
     __tablename__ = "configurations"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     config_key = Column(String(100), unique=True, nullable=False)
     config_value = Column(JSON, nullable=False)
@@ -132,9 +140,10 @@ class Configuration(Base):
     updated_by = Column(Integer, ForeignKey("users.id"))
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+
 class Translation(Base):
     __tablename__ = "translations"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String(255), nullable=False)
     language = Column(String(10), nullable=False)
@@ -142,9 +151,10 @@ class Translation(Base):
     component = Column(String(50))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+
 class Software(Base):
     __tablename__ = "software"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False, index=True)
     description = Column(Text)
@@ -158,15 +168,18 @@ class Software(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_active = Column(Boolean, default=True)
-    
+
     # Relationships
     creator = relationship("User", foreign_keys=[created_by])
-    versions = relationship("SoftwareVersion", back_populates="software", cascade="all, delete-orphan")
+    versions = relationship(
+        "SoftwareVersion", back_populates="software", cascade="all, delete-orphan"
+    )
     device_installations = relationship("DeviceSoftware", back_populates="software")
+
 
 class SoftwareVersion(Base):
     __tablename__ = "software_versions"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     software_id = Column(Integer, ForeignKey("software.id"), nullable=False)
     version_number = Column(String(50), nullable=False)
@@ -183,39 +196,45 @@ class SoftwareVersion(Base):
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     released_at = Column(DateTime(timezone=True))
-    
+
     # Relationships
     software = relationship("Software", back_populates="versions")
     creator = relationship("User", foreign_keys=[created_by])
     installations = relationship("SoftwareInstallation", back_populates="version")
 
+
 class DeviceSoftware(Base):
     __tablename__ = "device_software"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     software_id = Column(Integer, ForeignKey("software.id"), nullable=False)
     version_id = Column(Integer, ForeignKey("software_versions.id"))
     installed_version = Column(String(50))
-    installation_status = Column(String(50), default='not_installed')  # not_installed, installing, installed, failed, outdated
+    installation_status = Column(
+        String(50), default="not_installed"
+    )  # not_installed, installing, installed, failed, outdated
     installation_date = Column(DateTime(timezone=True))
     last_updated = Column(DateTime(timezone=True), onupdate=func.now())
     configuration = Column(JSON)  # software-specific configuration
     notes = Column(Text)
-    
+
     # Relationships
     device = relationship("Device")
     software = relationship("Software", back_populates="device_installations")
     version = relationship("SoftwareVersion")
 
+
 class SoftwareInstallation(Base):
     __tablename__ = "software_installations"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     version_id = Column(Integer, ForeignKey("software_versions.id"), nullable=False)
     action = Column(String(50), nullable=False)  # install, update, uninstall, rollback
-    status = Column(String(50), default='pending')  # pending, in_progress, completed, failed, cancelled
+    status = Column(
+        String(50), default="pending"
+    )  # pending, in_progress, completed, failed, cancelled
     initiated_by = Column(Integer, ForeignKey("users.id"))
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
@@ -224,18 +243,21 @@ class SoftwareInstallation(Base):
     previous_version = Column(String(50))
     new_version = Column(String(50))
     rollback_point = Column(JSON)  # data needed for rollback
-    
+
     # Relationships
     device = relationship("Device")
     version = relationship("SoftwareVersion", back_populates="installations")
     initiator = relationship("User", foreign_keys=[initiated_by])
 
+
 class JsonTemplate(Base):
     __tablename__ = "json_templates"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    template_type = Column(String(100), nullable=False)  # scenario, device_config, software_config, test_flow
+    template_type = Column(
+        String(100), nullable=False
+    )  # scenario, device_config, software_config, test_flow
     category = Column(String(100))  # mask_tester, pressure_sensor, flow_meter, etc.
     schema = Column(JSON, nullable=False)  # JSON schema definition
     default_values = Column(JSON, nullable=False)  # Default JSON values
@@ -244,20 +266,24 @@ class JsonTemplate(Base):
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     creator = relationship("User")
 
+
 # Fleet Workshop Manager Models
+
 
 class Repair(Base):
     __tablename__ = "repairs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     repair_type = Column(String(100), nullable=False)  # corrective, preventive, upgrade
-    priority = Column(String(20), default='medium')  # low, medium, high, critical
-    status = Column(String(50), default='pending')  # pending, in_progress, completed, cancelled, failed
+    priority = Column(String(20), default="medium")  # low, medium, high, critical
+    status = Column(
+        String(50), default="pending"
+    )  # pending, in_progress, completed, cancelled, failed
     description = Column(Text, nullable=False)
     problem_description = Column(Text)
     solution_description = Column(Text)
@@ -275,25 +301,32 @@ class Repair(Base):
     attachments = Column(JSON)  # file paths or URLs
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     device = relationship("Device")
     technician = relationship("User", foreign_keys=[technician_id])
     assigned_user = relationship("User", foreign_keys=[assigned_to])
     reporter = relationship("User", foreign_keys=[reported_by])
 
+
 class Maintenance(Base):
     __tablename__ = "maintenance"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
-    maintenance_type = Column(String(100), nullable=False)  # routine, scheduled, condition_based, predictive
-    schedule_type = Column(String(50))  # daily, weekly, monthly, quarterly, yearly, hours_based, cycles_based
+    maintenance_type = Column(
+        String(100), nullable=False
+    )  # routine, scheduled, condition_based, predictive
+    schedule_type = Column(
+        String(50)
+    )  # daily, weekly, monthly, quarterly, yearly, hours_based, cycles_based
     frequency_value = Column(Integer)  # number of days/hours/cycles between maintenance
     last_performed = Column(DateTime(timezone=True))
     next_due = Column(DateTime(timezone=True))
-    status = Column(String(50), default='scheduled')  # scheduled, overdue, in_progress, completed, skipped
-    priority = Column(String(20), default='medium')  # low, medium, high, critical
+    status = Column(
+        String(50), default="scheduled"
+    )  # scheduled, overdue, in_progress, completed, skipped
+    priority = Column(String(20), default="medium")  # low, medium, high, critical
     title = Column(String(255), nullable=False)
     description = Column(Text)
     checklist = Column(JSON)  # array of checklist items with completion status
@@ -306,15 +339,16 @@ class Maintenance(Base):
     attachments = Column(JSON)  # file paths or URLs
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     device = relationship("Device")
     technician = relationship("User", foreign_keys=[technician_id])
     creator = relationship("User", foreign_keys=[created_by])
 
+
 class Part(Base):
     __tablename__ = "parts"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     part_number = Column(String(100), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
@@ -323,12 +357,12 @@ class Part(Base):
     manufacturer = Column(String(255))
     supplier = Column(String(255))
     unit_price = Column(Integer)  # in cents
-    currency = Column(String(3), default='PLN')
+    currency = Column(String(3), default="PLN")
     stock_quantity = Column(Integer, default=0)
     min_stock_level = Column(Integer, default=0)
     max_stock_level = Column(Integer)
     location = Column(String(255))  # warehouse location
-    status = Column(String(50), default='active')  # active, discontinued, obsolete
+    status = Column(String(50), default="active")  # active, discontinued, obsolete
     compatible_devices = Column(JSON)  # array of device types/models
     specifications = Column(JSON)  # technical specifications
     datasheet_url = Column(String(500))
@@ -338,6 +372,6 @@ class Part(Base):
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     creator = relationship("User", foreign_keys=[created_by])

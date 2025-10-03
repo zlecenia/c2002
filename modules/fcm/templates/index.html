@@ -741,39 +741,39 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <div id="result" style="margin-top: 20px;"></div>
+    <div id="result" style="margin-top: 20px;"></div>
 
-        <!-- Right sidebar with login -->
-        <div class="right-sidebar">
-            <div class="sidebar-auth">
-                <h4>🔐 Logowanie</h4>
-                <input type="text" id="login-username" placeholder="Username">
-                <input type="password" id="login-password" placeholder="Password">
-                <button class="btn" onclick="login()">Zaloguj</button>
-                <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj
-                </button>
-                <div id="auth-message"></div>
-            </div>
+    <!-- Right sidebar with login -->
+    <div class="right-sidebar">
+        <div class="sidebar-auth">
+            <h4>🔐 Logowanie</h4>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button class="btn" onclick="login()">Zaloguj</button>
+            <button class="btn btn-secondary" onclick="logout()" style="display: none;" id="logout-btn">Wyloguj
+            </button>
+            <div id="auth-message"></div>
+        </div>
 
-            <div class="role-switcher" id="role-switcher">
-                <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz
-                    rolę:</label>
-                <select id="role-select" onchange="switchRole()">
-                    <option value="">Wybierz rolę...</option>
-                </select>
-            </div>
+        <div class="role-switcher" id="role-switcher">
+            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #ecf0f1;">🔄 Przełącz
+                rolę:</label>
+            <select id="role-select" onchange="switchRole()">
+                <option value="">Wybierz rolę...</option>
+            </select>
+        </div>
 
-            <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
-                <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍
-                    Test API</h4>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;"
-                        onclick="testConfigAPI()">Test Config API
-                </button>
-                <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">
-                    Test Dashboard
-                </button>
-            </div>
+        <div style="margin-top: 20px; padding: 10px; background: #374151; border-radius: 8px;">
+            <h4 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #9b59b6; padding-bottom: 8px;">🔍
+                Test API</h4>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px; font-size: 12px;"
+                    onclick="testConfigAPI()">Test Config API
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" onclick="testConfigDashboard()">
+                Test Dashboard
+            </button>
         </div>
     </div>
 </div>
@@ -781,7 +781,7 @@
 
 <script src="/modules/fcm/templates/fcm.js"></script>
 <!-- Navigation Menu Vue Component Script -->
-<script src="/menu/js/nav-menu.js"></script>
+<script src="/static/menu/js/nav-menu.js"></script>
 
 </body>
 </html>
