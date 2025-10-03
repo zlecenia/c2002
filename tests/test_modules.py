@@ -66,7 +66,7 @@ def test_modular_fsm_page_loads(base_url):
 
 def test_common_css_loads(base_url):
     """Test common CSS file loads from modules"""
-    response = requests.get(f"{base_url}/modules/common/static/css/common.css")
+    response = requests.get(f"{base_url}/modules/common/static/css/base.css")
     assert response.status_code == 200
     assert "text/css" in response.headers.get("content-type", "")
 
